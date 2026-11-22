@@ -495,9 +495,10 @@ function busca(q,exato){
  const tr=pool[Math.floor(Math.random()*pool.length)]||acervo[0];return {...tr,parecida:true};
 }
 function idDoLink(q){const m=String(q).match(/(?:youtu\.be\/|v=|shorts\/|embed\/)([\w-]{11})/);return m?m[1]:null}
-async function buscaYT(q){const k=(store.get('ytkey','')||'').trim();if(!k)return null;
- try{const r=await fetch('https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoEmbeddable=true&safeSearch=strict&maxResults=1&q='+encodeURIComponent(q)+'&key='+encodeURIComponent(k));const j=await r.json();const it=j.items&&j.items[0];if(!it)return null;
- const t=it.snippet.title.replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"');if(ofensivo(t))return null;return {id:it.id.videoId,tipo:'yt',titulo:t,artista:it.snippet.channelTitle,estilo:'Pedido'}}catch(e){return null}}
+const YT_KEY='AIzaSyCZxQWm5ubOwRyhfc0tOcxNXzu4IJdSrF8';
+async function buscaYT(q){const k=(store.get('ytkey','')||'').trim()||YT_KEY;if(!k)return null;const ck=store.get('ytcache',{}),nk=norm(q);if(ck[nk])return ck[nk];
+ try{const r=await fetch('https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoEmbeddable=true&safeSearch=strict&videoCategoryId=10&regionCode=BR&maxResults=1&q='+encodeURIComponent(q)+'&key='+encodeURIComponent(k));const j=await r.json();const it=j.items&&j.items[0];if(!it)return null;
+ const t=it.snippet.title.replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"');if(ofensivo(t))return null;const tr={id:it.id.videoId,tipo:'yt',titulo:t,artista:it.snippet.channelTitle,estilo:'Pedido'};ck[nk]=tr;const ks=Object.keys(ck);if(ks.length>300)delete ck[ks[0]];store.set('ytcache',ck);return tr}catch(e){return null}}
 function enviarPedido(){const nome=$('pNome').value.trim()||'Ouvinte',f=$('pArq').files[0];let q=$('pMus').value.trim();if(!q&&f)q=f.name.replace(/\.[^.]+$/,'').replace(/_/g,' ');if(!q)return;$('pArq').value='';
  const c=$('chat');c.insertAdjacentHTML('beforeend',`<div class="msg me"><small>${esc(nome)}</small>${esc(q)}</div>`);
  $('pMus').value='';
@@ -560,7 +561,7 @@ $('miniBtn').addEventListener('click',()=>$('btnPlay').click());
 new IntersectionObserver(es=>{document.body.classList.toggle('miniOn',!es[0].isIntersecting)},{threshold:.15}).observe(document.querySelector('.deck'));
 function sugere(){const q=norm($('pMus').value).trim(),box=$('sug');if(q.length<2){box.hidden=true;$('pMus').setAttribute('aria-expanded','false');return}
  const ws=q.split(/\s+/);const r=acervo.filter(t=>{const h=norm(t.titulo+' '+t.artista+' '+t.estilo);return ws.every(w=>h.includes(w))}).slice(0,7);
- if(!r.length){box.innerHTML='<div class="sugVazio">Não achei na lista. Envie mesmo assim: o robô toca uma no mesmo estilo.</div>'}
+ if(!r.length){box.innerHTML='<div class="sugVazio">Não está na lista, mas pode pedir: o robô procura no YouTube.</div>'}
  else box.innerHTML=r.map((t,i)=>`<button type="button" role="option" class="sugIt" data-i="${acervo.indexOf(t)}"><img src="${esc(capa(t)||'img/e-econtec.png')}" alt="" loading="lazy"><span><b>${esc(t.titulo)}</b><small>${esc(t.artista)} · ${esc(t.estilo)}</small></span></button>`).join('');
  box.hidden=false;$('pMus').setAttribute('aria-expanded','true')}
 $('pMus').addEventListener('input',sugere);$('pMus').addEventListener('focus',sugere);
