@@ -134,11 +134,30 @@ ol.q li::before{content:counter(q);flex:none;width:26px;height:26px;border-radiu
 .e3d,.np .logo.e3d{background:radial-gradient(120% 120% at 25% 15%,#ff5a6e 0%,#c8102e 45%,#4a0610 100%)!important;box-shadow:inset 0 2px 0 #ffffff55,inset 0 -6px 12px #00000055,0 10px 22px #00000066,0 3px 0 #3a0610}
 ol.q li{display:grid;grid-template-columns:26px minmax(0,1fr);gap:2px 10px}ol.q li::before{grid-row:span 2}
 ol.q li .tag{grid-column:2}
+
+.marcaTxt{display:flex;flex-direction:column;line-height:1;gap:2px}
+.marcaTxt h1{font-family:Outfit,sans-serif;font-weight:800;font-size:clamp(24px,4.4vw,34px);letter-spacing:.01em;-webkit-text-fill-color:initial;background:none;filter:drop-shadow(0 2px 0 #0008)}
+.marcaTxt .econ{-webkit-text-fill-color:transparent;background:linear-gradient(180deg,#ff6b7d,#d0122f 55%,#8e0f1f);-webkit-background-clip:text;background-clip:text}
+.marcaTxt .tec{-webkit-text-fill-color:transparent;background:linear-gradient(180deg,#fff1b8,#f0c14b 50%,#b8860b);-webkit-background-clip:text;background-clip:text}
+.marcaTxt .contab{font-family:Outfit,sans-serif;font-weight:700;font-size:clamp(10px,1.6vw,13px);letter-spacing:.32em;color:#e3b341}
+.marcaTxt .radioTag{font-size:11px;color:#d8c5c5;letter-spacing:.08em;text-transform:uppercase;margin-top:2px}
+.admtag{margin:4px 0 0;align-self:flex-start;background:linear-gradient(180deg,#e5223f,#a50f26);font-weight:700}
+.zapCli{display:inline-flex;align-items:center;gap:8px;margin-top:8px;min-height:44px;padding:0 16px;border-radius:99px;background:linear-gradient(180deg,#2fe07a,#1fa855);color:#04210f!important;font-weight:800;text-decoration:none;box-shadow:0 6px 16px #25d36655}
+.zapCli span{font-weight:600;opacity:.85}
+.zapCli:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.cl{grid-template-columns:56px minmax(0,1fr) auto;padding:14px 0}
+.btnEd{min-height:40px;padding:0 16px;font-size:14px;background:linear-gradient(180deg,#ffe08a,#c9971c);color:#3a0610;font-weight:700}
+.admForm{margin-top:8px;padding:16px;border-radius:18px;background:#120c0d;border:1px solid #f0c14b44}
+.admForm h4{margin:0;font-family:Outfit,sans-serif;font-size:18px;color:#ffd978}
+.admForm label:not(.file){font-size:13px;font-weight:600;color:#e3cccc;margin-top:4px}
+#btnCli{background:linear-gradient(180deg,#e5223f,#a50f26);color:#fff}
+@media(max-width:640px){.cl{grid-template-columns:48px minmax(0,1fr)}.cl>div:last-child:not(:nth-child(2)){grid-column:1/-1}}
+.zapCli{display:flex;flex-wrap:wrap;justify-content:center;text-align:center;row-gap:0;padding:8px 18px;width:100%;max-width:340px;font-size:16px}.zapCli span{flex-basis:100%;font-size:14px}
 </style>
 </head>
 <body>
 <header class="band"><div class="wrap">
-  <img class="marcaTopo" src="img/logo-econtec.png" alt="ECONTEC Contabilidade"><h1>Rádio ECONTEC</h1>
+  <img class="marcaTopo" src="img/e-econtec.png" alt=""><div class="marcaTxt"><h1 aria-label="Rádio ECONTEC Contabilidade"><span class="econ">ECON</span><span class="tec">TEC</span></h1><div class="contab">CONTABILIDADE</div><div class="radioTag">Rádio ao vivo</div></div>
   <button type="button" id="instalar">Instalar app</button>
   <span class="lamp" id="lamp"><i></i><span id="lampTxt">Ao vivo (toque para ouvir)</span></span>
   <a class="zapbtn" href="https://wa.me/5564984192320" target="_blank" rel="noopener">WhatsApp ECONTEC (64) 9 8419-2320</a>
@@ -183,10 +202,14 @@ ol.q li .tag{grid-column:2}
     <section class="card">
       <h3>Anúncios dos clientes</h3>
       <div id="clientes"></div>
-      <form id="fCli" class="adm">
-        <input id="cNome" placeholder="Nome do cliente" maxlength="60" required>
-        <textarea id="cTxt" placeholder="Texto que o locutor vai ler" maxlength="400" required></textarea>
-        <input id="cZap" placeholder="WhatsApp do cliente com DDD, ex.: 64 9 8419-2320" maxlength="20" inputmode="tel" autocomplete="off">
+      <form id="fCli" class="adm admForm">
+        <h4 id="fCliTit">Novo anúncio</h4>
+        <label for="cNome">Nome do cliente</label>
+        <input id="cNome" placeholder="ex.: Padaria Pão Dourado" maxlength="60" required>
+        <label for="cTxt">Texto que a locutora vai ler</label>
+        <textarea id="cTxt" placeholder="Texto do anúncio" maxlength="400" required></textarea>
+        <label for="cZap">WhatsApp do cliente (com DDD)</label>
+        <input id="cZap" placeholder="ex.: 64 9 8419-2320" maxlength="20" inputmode="tel" autocomplete="off">
         <div class="row"><label class="file">Logo (opcional)<input id="cLogo" type="file" accept="image/*"></label><button type="button" id="btnCli">Adicionar anúncio</button></div>
       </form>
       <p class="note">Toque no WhatsApp para falar direto com o anunciante. Durante cada anúncio também aparece o botão do WhatsApp na tela.</p>
@@ -242,7 +265,7 @@ const zapLink=n=>'https://wa.me/'+String(n||'').replace(/\D/g,'').replace(/^(?!5
 const zapFmt=n=>{const d=String(n||'').replace(/\D/g,'').replace(/^55/,'');return d.length===11?`(${d.slice(0,2)}) ${d[2]} ${d.slice(3,7)}-${d.slice(7)}`:d};
 const AUDIO_CLI={'Padaria Pão Dourado':'v/f-padaria.mp3','Auto Peças Avenida':'v/f-autopecas.mp3'};
 const ADMIN=/[?&#]admin\b/.test(location.search+location.hash);
-if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('h1');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador</span>')}
+if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador</span>')}
 const CLI_PADRAO=[
  {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'img/logo-econtec.png',zap:ZAP_ECONTEC},
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
@@ -465,19 +488,19 @@ let editados=ADMIN?store.get('editados',{}):{},editando=null;
 function listaAdmin(){return oficiais.map((c,i)=>{const e=editados[c.nome];const o=Object.assign({},c,e||{},{_t:'of',_i:i});if(e&&e.txt!==c.txt)o.audio='';return o}).concat(locais.map((c,i)=>Object.assign({},c,{_t:'lo',_i:i})))}
 function renderCli(){
  const L=ADMIN?listaAdmin():oficiais;
- $('clientes').innerHTML=L.map(c=>`<div class="cl"><div class="lg">${c.logo?`<img src="${esc(c.logo)}" alt="">`:esc(c.nome[0]||'?')}</div><div><b>${esc(c.nome)}</b><p>${esc(c.txt)}</p>${c.zap?`<p><a href="${esc(zapLink(c.zap))}" target="_blank" rel="noopener">WhatsApp ${esc(zapFmt(c.zap))}</a></p>`:''}${ADMIN&&(c._t==='lo'||editados[oficiais[c._i]&&oficiais[c._i].nome])?'<p class="note">Alterado só neste aparelho. Peça ao Claude para publicar para todos.</p>':''}</div>${ADMIN?`<div style="display:grid;gap:6px"><button type="button" class="lite" data-ed="${c._t}:${c._i}">Editar</button>${c._t==='lo'?`<button type="button" class="lite" data-del="${c._i}">Remover</button>`:''}</div>`:''}</div>`).join('')||'<p class="note">Nenhum anúncio cadastrado.</p>';
+ $('clientes').innerHTML=L.map(c=>`<div class="cl"><div class="lg">${c.logo?`<img src="${esc(c.logo)}" alt="">`:esc(c.nome[0]||'?')}</div><div><b>${esc(c.nome)}</b><p>${esc(c.txt)}</p>${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.2c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.9s.7-2.1 1-2.4c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .5l-.4.6-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l2 .9c.3.1.5.2.5.3.1.1.1.7-.1 1.3z"/></svg>Chamar no WhatsApp <span>${esc(zapFmt(c.zap))}</span></a>`:''}${ADMIN&&(c._t==='lo'||editados[oficiais[c._i]&&oficiais[c._i].nome])?'<p class="note">Alterado só neste aparelho. Peça ao Claude para publicar para todos.</p>':''}</div>${ADMIN?`<div style="display:grid;gap:6px"><button type="button" class="btnEd" data-ed="${c._t}:${c._i}">Editar</button>${c._t==='lo'?`<button type="button" class="lite" data-del="${c._i}">Remover</button>`:''}</div>`:''}</div>`).join('')||'<p class="note">Nenhum anúncio cadastrado.</p>';
 }
 function salvaCli(){store.set('clientes3',locais);store.set('editados',editados);clientes=oficiais.concat(locais);cacheGrade={};renderCli()}
 $('clientes').addEventListener('click',e=>{if(!ADMIN)return;const d=e.target.dataset;
  if(d.del!==undefined){locais.splice(+d.del,1);salvaCli();return}
  if(d.ed){const [t,k]=d.ed.split(':'),c=listaAdmin().find(x=>x._t===t&&x._i===+k);if(!c)return;
   editando={t,i:+k,orig:t==='of'?oficiais[+k].nome:c.nome,logo:c.logo||''};
-  $('cNome').value=c.nome;$('cTxt').value=c.txt;$('cZap').value=c.zap?zapFmt(c.zap):'';$('btnCli').textContent='Salvar alterações';
+  $('cNome').value=c.nome;$('cTxt').value=c.txt;$('cZap').value=c.zap?zapFmt(c.zap):'';$('btnCli').textContent='Salvar alterações';$('fCliTit').textContent='Editando: '+c.nome;
   $('fCli').scrollIntoView({behavior:'smooth',block:'center'});$('cTxt').focus()}});
 function enviarCli(){if(!ADMIN)return;const nome=$('cNome').value.trim(),txt=$('cTxt').value.trim();if(!nome||!txt){bot('Para salvar um anúncio, preencha o nome do cliente e o texto.',true);return}const zap=$('cZap').value.replace(/\D/g,''),f=$('cLogo').files[0];
  if(ofensivo(txt)){alertMsg('O texto do anúncio tem palavras bloqueadas pelo filtro.');return}
  const add=logo=>{
-  if(editando){const o={nome,txt,zap,logo:logo||editando.logo};if(editando.t==='of')editados[editando.orig]=o;else locais[editando.i]=o;editando=null;$('btnCli').textContent='Adicionar anúncio'}
+  if(editando){const o={nome,txt,zap,logo:logo||editando.logo};if(editando.t==='of')editados[editando.orig]=o;else locais[editando.i]=o;editando=null;$('btnCli').textContent='Adicionar anúncio';$('fCliTit').textContent='Novo anúncio'}
   else locais.push({nome,txt,logo,zap});
   salvaCli();$('fCli').reset();bot('Anúncio salvo neste aparelho. Para entrar na rádio de todos, peça ao Claude no chat.')};
  if(f){const r=new FileReader();r.onload=()=>add(r.result);r.readAsDataURL(f)}else add('');
