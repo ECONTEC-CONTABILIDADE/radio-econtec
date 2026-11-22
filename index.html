@@ -126,7 +126,7 @@ label.file input{display:none}
         <input id="cZap" placeholder="WhatsApp do cliente com DDD, ex.: 64 9 8419-2320" maxlength="20" inputmode="tel" autocomplete="off">
         <div class="row"><label class="file">Logo (opcional)<input id="cLogo" type="file" accept="image/*"></label><button type="button" id="btnCli">Adicionar anúncio</button></div>
       </form>
-      <p class="note">A Padaria e a Auto Peças são exemplos. O anúncio da ECONTEC tem locução profissional; os outros são lidos pela voz do navegador. Durante cada anúncio aparece o botão do WhatsApp do cliente.</p>
+      <p class="note">A Padaria e a Auto Peças são exemplos, com locução profissional. Anúncios novos cadastrados aqui são lidos pela voz do navegador até gravarmos a locução. Durante cada anúncio aparece o botão do WhatsApp do cliente.</p>
     </section>
 
     <section class="card">
@@ -176,6 +176,7 @@ const VINHETAS=['v/vinheta-numeros.mp3','v/vinheta-servicos.mp3'];
 const ZAP_ECONTEC='5564984192320';
 const zapLink=n=>'https://wa.me/'+String(n||'').replace(/\D/g,'').replace(/^(?!55)(\d{10,11})$/,'55$1');
 const zapFmt=n=>{const d=String(n||'').replace(/\D/g,'').replace(/^55/,'');return d.length===11?`(${d.slice(0,2)}) ${d[2]} ${d.slice(3,7)}-${d.slice(7)}`:d};
+const AUDIO_CLI={'Padaria Pão Dourado':'v/f-padaria.mp3','Auto Peças Avenida':'v/f-autopecas.mp3'};
 let clientes=store.get('clientes2',[
  {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'',zap:ZAP_ECONTEC},
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
@@ -231,7 +232,7 @@ function tocarArquivo(tr,onProg){
   const fim=()=>{if(done)return;done=true;clearInterval(fd);a.pause();tocandoArq=false;if(volArq===a)volArq=null;res()};
   const fd=setInterval(()=>{if(a.duration&&a.duration>20){const r=a.duration-a.currentTime;a.volume=volume()*Math.max(0,Math.min(1,r/2.5))}else a.volume=volume()},150);
   a.ontimeupdate=()=>onProg(a.duration?a.currentTime/a.duration:0);a.onended=fim;
-  a.onerror=()=>{bot('Não consegui carregar um arquivo de áudio. Pulando para o próximo.',true);setTimeout(fim,1500)};
+  a.onerror=()=>{if(tr.silencioso){if(tr.txt)falar(tr.txt,onProg).then(fim);else fim()}else{bot('Não consegui carregar um arquivo de áudio. Pulando para o próximo.',true);setTimeout(fim,1500)}};
   cancelar=fim;a.play().catch(()=>setTimeout(fim,1500));
  });
 }
@@ -241,7 +242,10 @@ function fundo(){const a=new Audio('m/chill-wave.mp3');a.loop=true;a.volume=0;
  let v=0;const up=setInterval(()=>{v=Math.min(.18,v+.02);a.volume=v*volume()},100);
  return()=>{clearInterval(up);const dn=setInterval(()=>{v=Math.max(0,v-.02);a.volume=v*volume();if(v<=0){clearInterval(dn);a.pause()}},100)}}
 let voz=null;
-function pegaVoz(){try{const v=speechSynthesis.getVoices();voz=v.find(x=>/pt[-_]BR/i.test(x.lang))||v.find(x=>/^pt/i.test(x.lang))||null}catch(e){}}
+function pegaVoz(){try{const v=speechSynthesis.getVoices().filter(x=>/^pt/i.test(x.lang));const br=v.filter(x=>/BR/i.test(x.lang));
+ const fem=/francisca|thalita|leila|yara|brenda|giovanna|elza|manuela|leticia|luciana|fernanda|joana|maria|vitoria|camila|raquel|google portugu/i,masc=/antonio|daniel|fabio|julio|donato|humberto|nicolau|valerio|felipe|ricardo/i;
+ const nat=x=>/natural|online|neural|premium|enhanced/i.test(x.name);
+ voz=br.find(x=>fem.test(x.name)&&nat(x))||br.find(x=>fem.test(x.name))||br.find(x=>!masc.test(x.name)&&nat(x))||br.find(x=>!masc.test(x.name))||br[0]||v[0]||null}catch(e){}}
 try{pegaVoz();speechSynthesis.onvoiceschanged=pegaVoz}catch(e){}
 function falar(txt,onProg){
  return new Promise(res=>{
@@ -249,7 +253,7 @@ function falar(txt,onProg){
   const fim=()=>{if(done)return;done=true;clearInterval(iv);clearTimeout(to);try{speechSynthesis.cancel()}catch(e){}res()};
   const iv=setInterval(()=>onProg(Math.min(1,(performance.now()-t0)/1000/dur)),200);
   const to=setTimeout(fim,(temVoz?dur+6:dur)*1000);cancelar=fim;
-  try{const u=new SpeechSynthesisUtterance(txt);u.lang='pt-BR';if(voz)u.voice=voz;u.rate=1.12;u.volume=Math.min(1,+$('vol').value+.1);u.onend=()=>setTimeout(fim,400);u.onerror=()=>{};speechSynthesis.speak(u)}catch(e){}
+  try{const u=new SpeechSynthesisUtterance(txt);u.lang='pt-BR';if(voz)u.voice=voz;u.rate=1.05;u.pitch=1.08;u.volume=Math.min(1,+$('vol').value+.1);u.onend=()=>setTimeout(fim,400);u.onerror=()=>{};speechSynthesis.speak(u)}catch(e){}
  });
 }
 
@@ -274,11 +278,11 @@ async function intervalo(){
  intervalos++;await vinheta();if(!ligado)return;
  const stop=fundo();
  const d=new Date(),m=d.getMinutes();
- mostra('Hora certa','Rádio ECONTEC','Oferecimento ECONTEC Contabilidade','');prog(0);
- await falar(`Hora certa ECONTEC: ${d.getHours()} horas${m?' e '+m+(m===1?' minuto':' minutos'):''}. Você está ouvindo a Rádio ECONTEC!`,prog);
+ mostra('Hora certa',`${String(d.getHours()).padStart(2,'0')}:${String(m).padStart(2,'0')}`,'Oferecimento ECONTEC Contabilidade','');prog(0);
+ await tocarArquivo({url:'v/f-hora.mp3',silencioso:true},prog);if(ligado)await falar(`São ${d.getHours()===1?'uma hora':d.getHours()+' horas'}${m?' e '+m+(m===1?' minuto':' minutos'):''}.`,()=>{});
  if(ligado){mostra('Anúncio','ECONTEC Contabilidade','Imposto, folha, abertura de empresa: fale com a ECONTEC','',ZAP_ECONTEC);prog(0);await tocarArquivo({url:'v/anuncio-econtec.mp3'},prog)}
  const outros=clientes.filter(c=>!/econtec/i.test(c.nome));
- if(ligado&&outros.length){const c=outros[iCli++%outros.length];mostra('Anúncio',c.nome,c.txt,c.logo,c.zap);prog(0);await falar(c.txt,prog)}
+ if(ligado&&outros.length){const c=outros[iCli++%outros.length];mostra('Anúncio',c.nome,c.txt,c.logo,c.zap);prog(0);if(AUDIO_CLI[c.nome])await tocarArquivo({url:AUDIO_CLI[c.nome],silencioso:true,txt:c.txt},prog);else await falar(c.txt,prog)}
  stop();
 }
 async function loop(){
@@ -290,7 +294,8 @@ async function loop(){
   mostra(ped?`Pedido de ${ped.nome}`:'Tocando agora · '+atual.estilo,atual.titulo,atual.artista,'');prog(0);
   if(ped){mostra(`Obrigado, ${ped.nome}!`,atual.titulo,'Em nome da ECONTEC Contabilidade e de todos os nossos clientes','');
    const pn=ped.nome==='Ouvinte'?'nosso ouvinte':ped.nome;
-   await falar(`Pediu, tocou! Esse pedido é de ${pn}. Muito obrigado, ${pn}, por ouvir a Rádio ECONTEC! Um abraço em nome da ECONTEC Contabilidade e de todos os nossos clientes. ${atual.parecida?'Você pediu '+ped.q+', e pra você vai uma no mesmo clima: ':'Agora: '}${atual.titulo}!`,()=>{});
+   await falar(`Esse pedido é de ${pn}!`,()=>{});
+   if(ligado)await tocarArquivo({url:atual.parecida?'v/f-parecida.mp3':'v/f-obrigada.mp3',silencioso:true},()=>{});
    if(ligado)mostra(`Pedido de ${ped.nome}`,atual.titulo,atual.artista,'')}
   if(!ligado)break;
   let ok=true;
