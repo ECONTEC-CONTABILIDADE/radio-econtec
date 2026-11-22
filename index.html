@@ -350,7 +350,7 @@ const _q=location.search+location.hash;
 /* Administrador só pelo link de admin (?admin). O link de ouvinte é sempre ouvinte. */
 try{localStorage.removeItem('radioEcontec.admin')}catch(e){}
 const ADMIN=/[?&#]admin\b/.test(_q);
-if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 11</span>')}
+if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 12</span>')}
 const CLI_PADRAO=[
  {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'img/logo-econtec.png',zap:ZAP_ECONTEC},
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
@@ -358,7 +358,7 @@ const CLI_PADRAO=[
 ];
 let cacheGrade={};
 /* Anúncios: valem para todos. Fonte = clientes.json do site + publicação assinada do administrador (ntfy.sh) */
-const AN_PUB={kty:'EC',crv:'P-256',x:'83KNQSu8a4zECPdkidjk0ppSrPZBUR12BiuAZJku3ZY',y:'JsLvhXpu4P6q_mDpH2Cb0vDJlE6L8i1TFoV1XhG0Zrk'},AN_TOP='radio-econtec-anuncios-q7k2m9x4';
+let AN_PUBS=[];const AN_EC={name:'ECDSA',namedCurve:'P-256'},AN_TOP='radio-econtec-anuncios-q7k2m9x4';
 const normA=c=>{const o={nome:String(c.nome||''),txt:String(c.txt||''),logo:String(c.logo||''),zap:String(c.zap||'').replace(/\D/g,''),audio:String(c.audio||'')};if(c.cancelado)o.cancelado=true;return o};
 let anuncios=CLI_PADRAO.map(normA),anTs=-1;
 {const c=store.get('anuncios',null);if(c&&Array.isArray(c.lista)&&c.lista.length){anuncios=c.lista.map(normA);anTs=c.ts||0}}
@@ -577,9 +577,10 @@ bot('Olá! Sou o robô da Rádio ECONTEC. Peça uma música pelo nome, artista o
 const b64e=buf=>btoa(String.fromCharCode(...new Uint8Array(buf))),b64d=t=>Uint8Array.from(atob(t),c=>c.charCodeAt(0));
 let anPubKey=null,anChave=null,editando=null,publicando=false;
 function aplicaAn(lista,ts){anuncios=lista.map(normA);anTs=ts;clientes=anuncios.filter(c=>!c.cancelado);cacheGrade={};store.set('anuncios',{ts,lista:anuncios});renderCli()}
+async function carregaChaves(){try{const l=await fetch('chaves-admin.json',{cache:'no-store'}).then(r=>r.json());if(Array.isArray(l)){AN_PUBS=l;anPubKey=null}}catch(e){}}
 async function verificaAn(env){try{if(!env||typeof env.p!=='string'||typeof env.s!=='string')return null;
- anPubKey=anPubKey||await crypto.subtle.importKey('jwk',AN_PUB,{name:'ECDSA',namedCurve:'P-256'},false,['verify']);
- const ok=await crypto.subtle.verify({name:'ECDSA',hash:'SHA-256'},anPubKey,b64d(env.s),new TextEncoder().encode(env.p));if(!ok)return null;
+ anPubKey=anPubKey||await Promise.all(AN_PUBS.map(k=>crypto.subtle.importKey('jwk',{kty:'EC',crv:'P-256',x:k.x,y:k.y},AN_EC,false,['verify'])));
+ let ok=false;for(const k of anPubKey){if(await crypto.subtle.verify({name:'ECDSA',hash:'SHA-256'},k,b64d(env.s),new TextEncoder().encode(env.p))){ok=true;break}}if(!ok)return null;
  const o=JSON.parse(env.p);return o&&Array.isArray(o.lista)&&o.ts?o:null}catch(e){return null}}
 async function buscaSite(){try{const [l,m]=await Promise.all([fetch('clientes.json',{cache:'no-store'}).then(r=>r.json()),fetch('clientes-meta.json',{cache:'no-store'}).then(r=>r.ok?r.json():{ts:0}).catch(()=>({ts:0}))]);
  if(Array.isArray(l)&&(m.ts||0)>=anTs)aplicaAn(l,m.ts||0)}catch(e){}}
@@ -588,13 +589,19 @@ async function buscaNtfy(){try{const t=await fetch('https://ntfy.sh/'+AN_TOP+'/j
   let env;try{env=m.attachment?await fetch(m.attachment.url).then(r=>r.json()):JSON.parse(m.message)}catch(e){continue}
   const o=await verificaAn(env);if(o&&(!melhor||o.ts>melhor.ts))melhor=o;if(melhor)break}
  if(melhor&&melhor.ts>anTs)aplicaAn(melhor.lista,melhor.ts)}catch(e){}}
-async function sincroniza(){await buscaSite();await buscaNtfy()}
-/* chave do administrador: vem no link de administrador (#k=...) e fica só neste aparelho */
-{const m=location.hash.match(/k=([\w-]{20,})/);if(m){store.set('chaveAdm',m[1]);history.replaceState(null,'',location.pathname+location.search)}}
-async function pegaChave(){if(anChave)return anChave;const d=store.get('chaveAdm','');if(!d)return null;try{anChave=await crypto.subtle.importKey('jwk',Object.assign({},AN_PUB,{d,ext:true}),{name:'ECDSA',namedCurve:'P-256'},false,['sign'])}catch(e){return null}return anChave}
+async function sincroniza(){await carregaChaves();await buscaSite();await buscaNtfy()}
+/* chave do administrador: criada no próprio aparelho; só publica depois que o Claude libera o código do aparelho */
+async function codigoDe(x,y){const h=new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(x+'.'+y)));return [...h.slice(0,3)].map(v=>v.toString(16).padStart(2,'0')).join('').toUpperCase()}
+async function minhaChave(){let j=store.get('chaveAdmJwk',null);
+ if(!j){const k=await crypto.subtle.generateKey(AN_EC,true,['sign','verify']);j=await crypto.subtle.exportKey('jwk',k.privateKey);store.set('chaveAdmJwk',j)}
+ const cod=await codigoDe(j.x,j.y);if(!store.get('chaveAdmReg',false)){try{const r=await fetch('https://ntfy.sh/'+AN_TOP+'-registro',{method:'POST',body:JSON.stringify({x:j.x,y:j.y,cod})});if(r.ok)store.set('chaveAdmReg',true)}catch(e){}}
+ return {j,cod,liberada:AN_PUBS.some(k=>k.x===j.x&&k.y===j.y)}}
+async function pegaChave(){if(anChave)return anChave;const m=await minhaChave();if(!m.liberada)return null;
+ anChave=await crypto.subtle.importKey('jwk',{kty:'EC',crv:'P-256',x:m.j.x,y:m.j.y,d:m.j.d,ext:true},AN_EC,false,['sign']);return anChave}
+async function mostraCodigo(){if(!ADMIN)return;const m=await minhaChave();if(!m.liberada)avisoAdm('Código deste aparelho: '+m.cod+'. Mande esse código para o Claude no chat. Depois que ele liberar, o que você mudar aqui vale para todos os ouvintes.',true)}
 function avisoAdm(t,erro){const el=$('admAviso');if(!el)return;el.textContent=t;el.className='admAviso'+(erro?' erro':'');el.hidden=!t}
 async function publica(lista,msg){if(publicando)return false;const k=await pegaChave();
- if(!k){avisoAdm('Este aparelho ainda não tem a chave de administrador. Abra pelo link de administrador que o Claude mandou.',true);return false}
+ if(!k){await mostraCodigo();return false}
  publicando=true;document.body.classList.add('publicando');avisoAdm('Publicando para todos os ouvintes…');
  try{const ts=Math.max(Date.now(),anTs+1),L=lista.map(normA),p=JSON.stringify({ts,lista:L});
   const sig=await crypto.subtle.sign({name:'ECDSA',hash:'SHA-256'},k,new TextEncoder().encode(p));
@@ -631,7 +638,7 @@ async function migraLocal(){if(!ADMIN)return;const ks=['clientes3','editados','c
  if(!Object.keys(ed).length&&!ca.length&&!ex.length&&!lo.length)return;if(!await pegaChave())return;
  const L=anuncios.filter(c=>!ex.includes(c.nome)).map(c=>{const e=ed[c.nome];const o=Object.assign({},c,e||{});if(e&&e.txt!==c.txt)o.audio='';if(ca.includes(c.nome))o.cancelado=true;return o}).concat(lo.map(c=>({nome:c.nome,txt:c.txt,zap:c.zap||'',logo:c.logo||'',cancelado:!!c.cancelado})));
  if(await publica(L,'Suas mudanças nos anúncios foram aplicadas.'))ks.forEach(k=>{try{localStorage.removeItem('radioEcontec.'+k)}catch(e){}})}
-sincroniza().then(migraLocal);setInterval(()=>{if(!document.hidden)buscaNtfy()},60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)buscaNtfy()});
+sincroniza().then(mostraCodigo).then(migraLocal);setInterval(()=>{if(!document.hidden)buscaNtfy()},60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)buscaNtfy()});
 
 /* ---------- Músicas do usuário ---------- */
 $('ytkey').value=store.get('ytkey','');$('ytkey').addEventListener('change',e=>store.set('ytkey',e.target.value.trim()));
@@ -660,7 +667,7 @@ async function auMostra(){const m=Math.floor(Date.now()/60000)-1;const [a,b,c]=a
  $('auOn').textContent=Math.max(a,1);$('auOuv').textContent=b;$('auDia').textContent=Math.max(c,1);
  $('auInfo').textContent='Último minuto completo · atualizado às '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'})}
 if(ADMIN){auMostra();setInterval(auMostra,30000)}
-const VERSAO=11;
+const VERSAO=12;
 function checaVersao(){fetch('index.html?nv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VERSAO=(\d+)/);if(m&&+m[1]>VERSAO&&!ligado)location.reload()}).catch(()=>{})}
 checaVersao();setInterval(checaVersao,5*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checaVersao()});
 
