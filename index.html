@@ -38,6 +38,16 @@ header .zapbtn{margin-left:auto}
 .fig{min-height:clamp(220px,30vw,340px)}#ytwrap{position:absolute;inset:0;visibility:hidden;background:#000}#ytwrap.on{visibility:visible}#ytwrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 .np{display:flex;gap:16px;align-items:center}
 .np .logo{width:76px;height:76px;border-radius:12px;background:#ffffff14;display:grid;place-items:center;flex:none;overflow:hidden;font-family:Outfit;font-weight:700;font-size:28px;color:var(--acc)}
+.e3d{position:relative;display:grid;place-items:center;border-radius:18px;background:radial-gradient(120% 120% at 25% 15%,#2fd6b0 0%,#0f8f78 45%,#06463c 100%);box-shadow:inset 0 2px 0 #ffffff55,inset 0 -6px 12px #00000055,0 10px 22px #00000066,0 3px 0 #04352d;transform:perspective(300px) rotateX(10deg) rotateY(-14deg);animation:e3dflo 6s ease-in-out infinite;overflow:hidden}
+.e3d::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,#ffffff40 45%,transparent 60%);transform:translateX(-120%);animation:e3dbri 4.5s ease-in-out infinite}
+.e3d b{font-family:Outfit,sans-serif;font-weight:800;color:#ffd54a;background:linear-gradient(180deg,#fff3b0 0%,#ffd54a 45%,#e0a100 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(1px 1px 0 #b77900) drop-shadow(1px 1px 0 #9a6500) drop-shadow(1px 1px 0 #7d5200) drop-shadow(2px 3px 2px #0008)}
+@keyframes e3dflo{50%{transform:perspective(300px) rotateX(4deg) rotateY(14deg)}}
+@keyframes e3dbri{0%,55%{transform:translateX(-120%)}85%,100%{transform:translateX(120%)}}
+header .e3d{width:48px;height:48px;border-radius:12px;flex:none}header .e3d b{font-size:32px}
+.np .logo.e3d{background:radial-gradient(120% 120% at 25% 15%,#2fd6b0 0%,#0f8f78 45%,#06463c 100%)}.np .logo.e3d b{font-size:48px}
+@media (prefers-reduced-motion:reduce){.e3d,.e3d::after,.marca{animation:none!important}}
+.np .logo.marca{background:#fff;animation:e3dflo 6s ease-in-out infinite;transform:perspective(300px) rotateX(10deg) rotateY(-14deg);box-shadow:0 10px 22px #00000066}.np .logo.marca img{object-fit:contain;padding:4px}
+header .marcaTopo{height:76px;background:#fff;border-radius:12px;padding:4px 10px;box-shadow:0 4px 14px #0005}
 .np .logo img{width:100%;height:100%;object-fit:contain;background:#fff}
 .np .kind{font-size:13px;color:var(--acc);font-weight:600}
 .np h2{font-size:clamp(24px,3.4vw,34px);margin:2px 0}
@@ -78,8 +88,8 @@ label.file input{display:none}
 </head>
 <body>
 <header class="band"><div class="wrap">
-  <h1>Rádio ECONTEC</h1>
-  <span class="lamp" id="lamp"><i></i><span id="lampTxt">Fora do ar</span></span>
+  <img class="marcaTopo" src="img/logo-econtec.png" alt="ECONTEC Contabilidade"><h1>Rádio ECONTEC</h1>
+  <span class="lamp" id="lamp"><i></i><span id="lampTxt">Ao vivo (toque para ouvir)</span></span>
   <a class="zapbtn" href="https://wa.me/5564984192320" target="_blank" rel="noopener">WhatsApp ECONTEC (64) 9 8419-2320</a>
 </div></header>
 
@@ -88,14 +98,14 @@ label.file input{display:none}
     <section class="deck" aria-label="Aparelho da rádio">
       <div class="fig"><canvas id="viz"></canvas><div id="ytwrap"><div id="yt"></div></div></div>
       <div class="np">
-        <div class="logo" id="npLogo">E</div>
+        <div class="logo marca" id="npLogo"><img src="img/e-econtec.png" alt=""></div>
         <div><div class="kind" id="npKind">Aperte "Ligar a rádio"</div><h2 id="npTitle">Rádio ECONTEC</h2><div class="who" id="npWho">Só sucesso, vinhetas e os nossos clientes, 24 horas</div></div>
       </div>
       <a class="zapbtn" id="npZap" hidden target="_blank" rel="noopener" href="#">Chamar no WhatsApp</a>
       <div class="bar"><b id="prog"></b></div>
       <div class="ctl">
-        <button id="btnPlay">Ligar a rádio</button>
-        <button class="ghost" id="btnSkip" disabled>Pular</button>
+        <button id="btnPlay">Ouvir ao vivo</button>
+        <button class="ghost adm" id="btnSkip" disabled>Pular (só admin)</button>
         <label class="vol">Volume <input id="vol" type="range" min="0" max="1" step="0.05" value="0.8" style="width:110px"></label>
       </div>
     </section>
@@ -114,9 +124,9 @@ label.file input{display:none}
 
   <div class="cols">
     <section class="card">
-      <h3>A seguir</h3>
+      <h3>A seguir no ao vivo</h3>
       <ol class="q" id="fila"></ol>
-      <p class="note">Entre as músicas sempre toca uma vinheta da ECONTEC. A cada 5 músicas entra o intervalo: hora certa, anúncio da ECONTEC e anúncio de um cliente. A rádio já começa pelo intervalo. Pedidos aprovados passam na frente da programação.</p>
+      <p class="note">A rádio é ao vivo: todo mundo ouve a mesma programação, no mesmo momento. Quem entra pega a música que já está tocando. Entre as músicas sempre toca uma vinheta da ECONTEC, e a cada 5 músicas entra o intervalo com hora certa e anúncios. O seu pedido toca logo depois da música atual, só no seu aparelho, e depois você volta para o ao vivo.</p>
     </section>
 
     <section class="card">
@@ -183,13 +193,13 @@ const AUDIO_CLI={'Padaria Pão Dourado':'v/f-padaria.mp3','Auto Peças Avenida':
 const ADMIN=/[?&#]admin\b/.test(location.search+location.hash);
 if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('h1');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador</span>')}
 const CLI_PADRAO=[
- {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'',zap:ZAP_ECONTEC},
+ {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'img/logo-econtec.png',zap:ZAP_ECONTEC},
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
  {nome:'Auto Peças Avenida',txt:'Auto Peças Avenida: peças para todas as marcas, entrega rápida e preço justo. Seu carro em boas mãos.',logo:''}
 ];
 let oficiais=CLI_PADRAO.slice(),locais=ADMIN?store.get('clientes3',[]):[];
 let clientes=oficiais.concat(locais);
-fetch('clientes.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{if(Array.isArray(d)&&d.length){oficiais=d.map(c=>({nome:String(c.nome||''),txt:String(c.txt||''),logo:String(c.logo||''),zap:String(c.zap||''),audio:String(c.audio||'')}));clientes=oficiais.concat(locais);renderCli()}}).catch(()=>{});
+fetch('clientes.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{if(Array.isArray(d)&&d.length){oficiais=d.map(c=>({nome:String(c.nome||''),txt:String(c.txt||''),logo:String(c.logo||''),zap:String(c.zap||''),audio:String(c.audio||'')}));clientes=oficiais.concat(locais);cacheGrade={};renderCli()}}).catch(()=>{});
 const VINH=['Rádio ECONTEC! Só sucesso, o dia inteiro!','Tá no ar: Rádio ECONTEC! A energia que movimenta o seu dia!','Rádio ECONTEC! Pediu, tocou!','Os maiores sucessos, nacionais e internacionais. Rádio ECONTEC!','Enquanto você curte o som, a ECONTEC cuida dos seus números. Rádio ECONTEC!'];
 const BLOQ=['porra','caralh','puta','puto','merda','foda','fode','foder','fdp','bucet','xoxot','piroc','rola','pica','viado','arromb','vagabund','safad','putaria','sexo','sexual','pelad','novinha','proibidao','sacanag','tesao','gostosa','maconha','cocaina','crack','droga','baseado','lanca perfume','bandid','matar','assassin','tiro','faccao','satan','fuck','shit','bitch','pussy','dick','cock','nigg','sex','explicit','weed','cocaine','kill','gun','drunk','cachaca','bebad'];
 const EXATAS=['cu','cus','ass','pau'];
@@ -221,7 +231,7 @@ function volume(){return +$('vol').value}
 let yt=null,ytOk=null;const ytPronto=new Promise(r=>ytOk=r);
 window.onYouTubeIframeAPIReady=()=>{yt=new YT.Player('yt',{width:'100%',height:'100%',playerVars:{playsinline:1,rel:0,modestbranding:1,controls:0,disablekb:1,origin:location.origin},events:{onReady:()=>ytOk(),onStateChange:e=>ytEv&&ytEv('st',e.data),onError:e=>ytEv&&ytEv('err',e.data)}})};
 let ytEv=null;
-function tocarYT(tr,onProg){
+function tocarYT(tr,onProg,ini,ate){
  return new Promise(async res=>{
   let done=false,tocou=false;const fim=()=>{if(done)return;done=true;clearInterval(iv);clearTimeout(to);ytEv=null;try{yt.stopVideo()}catch(e){}$('ytwrap').classList.remove('on');res(tocou)};
   cancelar=fim;
@@ -230,13 +240,13 @@ function tocarYT(tr,onProg){
   if(done)return;if(!yt||!yt.loadVideoById){bot('O player do YouTube não carregou. Verifique a internet.',true);fim();return}
   $('ytwrap').classList.add('on');
   ytEv=(k,v)=>{if(k==='err'){fim()}else if(v===1)tocou=true;else if(v===0)fim()};
-  yt.setVolume(Math.round(volume()*100));yt.loadVideoById(tr.id);
-  const iv=setInterval(()=>{try{const d=yt.getDuration(),c=yt.getCurrentTime();if(d>0){onProg(c/d);const r=d-c;yt.setVolume(Math.round(volume()*100*Math.max(0,Math.min(1,r/3))));if(r<.4&&tocou)fim()}}catch(e){}},300);
+  yt.setVolume(Math.round(volume()*100));yt.loadVideoById(ini>1?{videoId:tr.id,startSeconds:Math.floor(ini)}:tr.id);
+  const iv=setInterval(()=>{try{const d0=yt.getDuration(),c=yt.getCurrentTime(),d=ate?Math.min(d0,ate):d0;if(d>0){onProg(c/d);const r=d-c;yt.setVolume(Math.round(volume()*100*Math.max(0,Math.min(1,r/3))));if(r<.4&&tocou)fim()}}catch(e){}},300);
  });
 }
 function tocarArquivo(tr,onProg){
  return new Promise(res=>{
-  const a=new Audio(tr.url);a.preload='auto';a.volume=volume();let done=false;tocandoArq=true;volArq=a;
+  const a=new Audio(tr.url);a.preload='auto';if(tr.ini>0.3)a.addEventListener('loadedmetadata',()=>{if(tr.ini<a.duration-0.3)a.currentTime=tr.ini;else fim()},{once:true});a.volume=volume();let done=false;tocandoArq=true;volArq=a;
   const fim=()=>{if(done)return;done=true;clearInterval(fd);a.pause();tocandoArq=false;if(volArq===a)volArq=null;res()};
   const fd=setInterval(()=>{if(a.duration&&a.duration>20){const r=a.duration-a.currentTime;a.volume=volume()*Math.max(0,Math.min(1,r/2.5))}else a.volume=volume()},150);
   a.ontimeupdate=()=>onProg(a.duration?a.currentTime/a.duration:0);a.onended=fim;
@@ -265,65 +275,99 @@ function falar(txt,onProg){
  });
 }
 
-/* ---------- Programação ---------- */
-let fila=[],pedidos=[],musicasDesdeIntervalo=0,intervalos=0,iCli=0,iVin=0,ultimos=[];
-function sorteia(){
- const ultEst=ultimos.slice(-2).map(x=>x.estilo);
- const base=modoLivre?LIVRES:acervo;const ops=base.filter(x=>!ultimos.includes(x)&&!ultEst.includes(x.estilo));
- const pool=ops.length?ops:base,hit=['Sertanejo','Pop nacional','Pop internacional','Pagode','Forró','Eletrônica'];const pw=pool.flatMap(x=>hit.includes(x.estilo)?[x,x]:[x]);return pw[Math.floor(Math.random()*pw.length)];
+/* ---------- Programação AO VIVO: a mesma grade para todos, calculada pelo relógio ---------- */
+let pedidos=[],ultimoId=null,itemAtual=null,ajuste=0;
+const agora=()=>Date.now()+ajuste;
+if(/[?&]teste\b/.test(location.search))window.__aj=v=>{ajuste=v};
+const DUR={"Be6ROem9ms8": 207, "rJnEBfvbUTg": 255, "uWX0O8ATY3k": 159, "oTREAvZbmME": 218, "v4k6JgC7UVA": 233, "UNNOHk60ojk": 205, "OPf0YbXqDm0": 270, "ZbZSe6N_BXs": 241, "hT_nvWreIhg": 283, "DUT5rEU6pqM": 218, "vx2u5uUu3DE": 267, "1w7OgIMMRc4": 303, "xFrGuyw1V8s": 233, "Gs069dndIYk": 215, "nqAvFx3NxUM": 229},DV={'v/vinheta-numeros.mp3':10.5,'v/vinheta-servicos.mp3':11.4,'v/anuncio-econtec.mp3':19.3,'v/f-padaria.mp3':10.3,'v/f-autopecas.mp3':9.9},HORA=16,PADRAO=230;
+const GRADE=acervo.filter(x=>x.tipo==='yt');
+const DIA=864e5,FUSO=3*36e5; /* horário de Brasília */
+function rng(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+let cacheGrade={};
+function grade(d){
+ if(cacheGrade[d])return cacheGrade[d];
+ const r=rng(d*7919+13),it=[],fim=(d+1)*DIA+FUSO,ult=[],hit=['Sertanejo','Pop nacional','Pop internacional','Pagode','Forró','Eletrônica'];
+ const outros=oficiais.filter(c=>!/econtec/i.test(c.nome));
+ let t=d*DIA+FUSO,b=0,iv=0;
+ const add=(k,dur,x)=>{it.push(Object.assign({k,t0:t,dur,id:d+':'+it.length},x));t+=dur*1000};
+ const vin=()=>{const u=VINHETAS[iv++%VINHETAS.length];add('vin',DV[u]||11,{url:u})};
+ const musica=()=>{const ue=ult.slice(-2).map(x=>x.estilo);let ops=GRADE.filter(x=>!ult.includes(x)&&!ue.includes(x.estilo));if(!ops.length)ops=GRADE;const pw=ops.flatMap(x=>hit.includes(x.estilo)?[x,x]:[x]);const tr=pw[Math.floor(r()*pw.length)];ult.push(tr);if(ult.length>12)ult.shift();add('musica',DUR[tr.id]||PADRAO,{tr})};
+ while(t<fim){
+  vin();add('hora',HORA);add('adE',DV['v/anuncio-econtec.mp3']);
+  if(outros.length){const c=outros[(d*31+b)%outros.length];const au=c.audio||AUDIO_CLI[c.nome];add('adC',au?(DV[au]||12):Math.max(6,c.txt.length*.075+1.5),{c,au})}
+  for(let m=0;m<5;m++){musica();if(m<4)vin()}
+  b++;
+ }
+ return cacheGrade[d]=it;
 }
-function completaFila(){while(fila.length<4)fila.push({tipo:'musica',tr:sorteia()})}
+function noAr(ms){const d=Math.floor((ms-FUSO)/DIA),g=grade(d);let lo=0,hi=g.length-1;while(lo<hi){const m=(lo+hi+1)>>1;if(g[m].t0<=ms)lo=m;else hi=m-1}const it=g[lo];return{it,off:(ms-it.t0)/1000,g,i:lo}}
+const hhmm=ms=>{const x=new Date(ms-FUSO);return String(x.getUTCHours()).padStart(2,'0')+':'+String(x.getUTCMinutes()).padStart(2,'0')};
+function descreve(it){
+ if(it.k==='vin')return['Vinheta','Rádio ECONTEC','ECONTEC Contabilidade: sua empresa em dia','img/e-econtec.png',''];
+ if(it.k==='hora')return['Hora certa',hhmm(it.t0+11000),'Oferecimento ECONTEC Contabilidade','img/e-econtec.png',''];
+ if(it.k==='adE')return['Anúncio','ECONTEC Contabilidade','Imposto, folha, abertura de empresa: fale com a ECONTEC','img/e-econtec.png',ZAP_ECONTEC];
+ if(it.k==='adC')return['Anúncio',it.c.nome,it.c.txt,it.c.logo,it.c.zap];
+ return['Ao vivo · '+it.tr.estilo,it.tr.titulo,it.tr.artista,'',''];
+}
 function renderFila(){
- const prox=[...pedidos.map(p=>({tipo:'musica',tr:p.tr,ped:p.nome})),...fila].slice(0,5);
- $('fila').innerHTML=prox.map(x=>`<li><b>${esc(x.tr.titulo)}</b> · ${esc(x.tr.artista)} <span class="tag">${x.ped?'pedido de '+esc(x.ped):esc(x.tr.estilo)}</span></li>`).join('');
+ const {g,i}=noAr(agora()),prox=[];
+ for(let j=i+1;j<g.length&&prox.length<5;j++)if(g[j].k==='musica')prox.push(g[j]);
+ $('fila').innerHTML=[...pedidos.map(p=>`<li><b>${esc(p.tr.titulo)}</b> · ${esc(p.tr.artista)} <span class="tag">pedido de ${esc(p.nome)}</span></li>`),
+  ...prox.map(x=>`<li><b>${esc(x.tr.titulo)}</b> · ${esc(x.tr.artista)} <span class="tag">${hhmm(x.t0)} · ${esc(x.tr.estilo)}</span></li>`)].slice(0,6).join('');
 }
 function mostra(kind,title,who,logo,zap){const z=$('npZap');if(zap){z.hidden=false;z.href=zapLink(zap);z.textContent='Chamar '+title.replace(/ Contabilidade$/,'')+' no WhatsApp: '+zapFmt(zap)}else z.hidden=true;$('npKind').textContent=kind;$('npTitle').textContent=title;$('npWho').textContent=who;
- $('npLogo').innerHTML=logo?`<img src="${esc(logo)}" alt="">`:esc((title||'E').replace(/^Rádio\s+/,'').trim()[0]||'E')}
-const prog=p=>$('prog').style.width=(p*100).toFixed(1)+'%';
-const ECONTEC_AD='ECONTEC Contabilidade: imposto, folha de pagamento, abertura de empresa e tudo o que a sua empresa precisa. Contabilidade séria, atendimento de verdade. ECONTEC: sua empresa em dia, você tranquilo!';
-async function vinheta(){mostra('Vinheta','Rádio ECONTEC','ECONTEC Contabilidade: sua empresa em dia','');prog(0);await tocarArquivo({url:VINHETAS[iVin++%VINHETAS.length]},prog)}
-async function intervalo(){
- intervalos++;await vinheta();if(!ligado)return;
- const stop=fundo();
- const d=new Date(),m=d.getMinutes();
- mostra('Hora certa',`${String(d.getHours()).padStart(2,'0')}:${String(m).padStart(2,'0')}`,'Oferecimento ECONTEC Contabilidade','');prog(0);
- await tocarArquivo({url:'v/f-hora.mp3',silencioso:true},prog);if(ligado)await falar(`São ${d.getHours()===1?'uma hora':d.getHours()+' horas'}${m?' e '+m+(m===1?' minuto':' minutos'):''}.`,()=>{});
- if(ligado){mostra('Anúncio','ECONTEC Contabilidade','Imposto, folha, abertura de empresa: fale com a ECONTEC','',ZAP_ECONTEC);prog(0);await tocarArquivo({url:'v/anuncio-econtec.mp3'},prog)}
- const outros=clientes.filter(c=>!/econtec/i.test(c.nome));
- if(ligado&&outros.length){const c=outros[iCli++%outros.length];mostra('Anúncio',c.nome,c.txt,c.logo,c.zap);prog(0);const au=c.audio||AUDIO_CLI[c.nome];if(au)await tocarArquivo({url:au,silencioso:true,txt:c.txt},prog);else await falar(c.txt,prog)}
- stop();
+ const L=$('npLogo');L.classList.toggle('e3d',!logo);L.classList.toggle('marca',/e-econtec/.test(logo||''));L.innerHTML=logo?`<img src="${esc(logo)}" alt="">`:`<b>${esc((title||'E').replace(/^Rádio\s+/,'').replace(/^Obrigad[oa],?\s*/,'').trim()[0]||'E')}</b>`}
+const prog=p=>$('prog').style.width=(Math.max(0,Math.min(1,p))*100).toFixed(1)+'%';
+function espera(ms,bed){return new Promise(res=>{const stop=bed&&ms>2500?fundo():null;let done=false;const fim=()=>{if(done)return;done=true;clearTimeout(t);if(stop)stop();res()};const t=setTimeout(fim,Math.max(0,ms));cancelar=fim})}
+function horaFalada(ms){const x=new Date(ms-FUSO);return['v/h/'+String(x.getUTCHours()).padStart(2,'0')+'.mp3','v/m/'+String(x.getUTCMinutes()).padStart(2,'0')+'.mp3']}
+async function tocaItem(it,off){
+ const [k,t,w,l,z]=descreve(it);mostra(k,t,w,l,z);const pr=x=>prog(x);prog(off/it.dur);
+ const resto=()=>it.t0+it.dur*1000-agora();
+ if(it.k==='vin'||it.k==='adE'){await tocarArquivo({url:it.k==='adE'?'v/anuncio-econtec.mp3':it.url,ini:off},pr);return}
+ if(it.k==='hora'){const stop=fundo();const [h,m]=horaFalada(it.t0+11000);
+  if(off<10.5)await tocarArquivo({url:'v/f-hora.mp3',ini:off,silencioso:true},pr);
+  if(ligado&&resto()>1500){await tocarArquivo({url:h,silencioso:true},()=>{});if(ligado)await tocarArquivo({url:m,silencioso:true},()=>{})}
+  stop();return}
+ if(it.k==='adC'){const stop=fundo();if(it.au)await tocarArquivo({url:it.au,ini:off,silencioso:true,txt:off<1?it.c.txt:''},pr);else if(off<1)await falar(it.c.txt,pr);stop();return}
+ /* música */
+ const ate=DUR[it.tr.id]?0:it.dur;
+ if(modoLivre){const lv=LIVRES[Math.abs(it.t0/1000|0)%LIVRES.length];mostra('Ao vivo · '+lv.estilo,lv.titulo,lv.artista,'','');await tocarArquivo(Object.assign({},lv,{ini:off}),pr);return}
+ const ok=await tocarYT(it.tr,pr,off,ate);
+ if(ok)falhasYT=0;else if(ligado){falhasYT++;
+  if(falhasYT>=3&&!modoLivre){modoLivre=true;if(!avisouLivre){avisouLivre=true;bot('O YouTube não está tocando neste aparelho agora. Para a rádio não parar, entram as músicas livres da ECONTEC.',true)}setTimeout(()=>{modoLivre=false;falhasYT=0},10*60*1000)}
+  if(ligado&&resto()>15000){const lv=LIVRES[Math.abs(it.t0/1000|0)%LIVRES.length];mostra('Ao vivo · '+lv.estilo,lv.titulo,lv.artista,'','');await tocarArquivo(lv,pr)}}
+}
+const NOMES=["Maria", "José", "Ana", "João", "Antônio", "Francisco", "Carlos", "Paulo", "Pedro", "Lucas", "Luiz", "Marcos", "Luis", "Gabriel", "Rafael", "Daniel", "Marcelo", "Bruno", "Eduardo", "Felipe", "Raimundo", "Rodrigo", "Manoel", "Mateus", "André", "Fernando", "Fábio", "Leonardo", "Gustavo", "Guilherme", "Leandro", "Tiago", "Anderson", "Ricardo", "Márcio", "Jorge", "Sebastião", "Alexandre", "Roberto", "Edson", "Diego", "Vitor", "Sérgio", "Cláudio", "Matheus", "Thiago", "Geraldo", "Adriano", "Luciano", "Júlio", "Renato", "Alex", "Vinícius", "Rogério", "Samuel", "Ronaldo", "Mário", "Flávio", "Igor", "Douglas", "Davi", "Enzo", "Miguel", "Arthur", "Heitor", "Bernardo", "Benício", "Wellington", "Juliana", "Adriana", "Márcia", "Fernanda", "Patrícia", "Aline", "Sandra", "Camila", "Amanda", "Bruna", "Jéssica", "Letícia", "Júlia", "Luciana", "Vanessa", "Mariana", "Gabriela", "Vera", "Vitória", "Larissa", "Cláudia", "Beatriz", "Luana", "Rita", "Sônia", "Renata", "Eliane", "Débora", "Simone", "Cristina", "Daniela", "Tatiana", "Carla", "Paula", "Raquel", "Natália", "Andréia", "Isabela", "Laura", "Alice", "Valentina", "Helena", "Sophia", "Heloísa", "Lorena", "Lívia", "Manuela", "Cecília", "Eduarda", "Rafaela", "Priscila", "Kelly", "Rosa", "Lúcia", "Regina", "Aparecida", "Fátima", "Dalila", "Joana", "Luzia", "Antônia", "Francisca", "Edna", "Célia", "Silvia", "Tereza", "Marta", "Cleide", "Rosângela", "Elaine"];
+const NOMES_IDX={};NOMES.forEach((n,i)=>{const k=norm(n);if(!(k in NOMES_IDX))NOMES_IDX[k]=i});
+async function tocaPedido(ped){
+ const tr=ped.tr;renderFila();
+ mostra(`Obrigado, ${ped.nome}!`,tr.titulo,'Em nome da ECONTEC Contabilidade e de todos os nossos clientes','img/e-econtec.png');prog(0);
+ const ni=NOMES_IDX[norm(String(ped.nome).trim().split(/\s+/)[0])];
+ if(ni!==undefined){await tocarArquivo({url:'v/n/_pedido-de.mp3',silencioso:true},()=>{});if(ligado)await tocarArquivo({url:'v/n/'+String(ni).padStart(3,'0')+'.mp3',silencioso:true},()=>{})}
+ else await tocarArquivo({url:'v/n/_especial.mp3',silencioso:true},()=>{});
+ if(ligado)await tocarArquivo({url:tr.parecida?'v/f-parecida.mp3':'v/f-obrigada.mp3',silencioso:true},()=>{});
+ if(!ligado)return;mostra(`Pedido de ${ped.nome}`,tr.titulo,tr.artista,'');
+ if(tr.tipo==='yt'){const ok=await tocarYT(tr,prog);if(!ok&&ligado)bot(`O YouTube não deixou tocar "${esc(tr.titulo)}" neste aparelho. Desculpe, ${esc(ped.nome)}!`,true)}
+ else await tocarArquivo(tr,prog);
+ if(ligado&&!pedidos.length){mostra('Ao vivo','Rádio ECONTEC','Voltando para a programação ao vivo','img/e-econtec.png');await tocarArquivo({url:VINHETAS[0]},prog)}
 }
 async function loop(){
  while(ligado){
-  if(musicasDesdeIntervalo>=5){musicasDesdeIntervalo=0;await intervalo();continue}
-  let item,ped=null;
-  if(pedidos.length){ped=pedidos.shift();item={tr:ped.tr}}else{completaFila();item=fila.shift()}
-  renderFila();atual=item.tr;ultimos.push(atual);if(ultimos.length>6)ultimos.shift();
-  mostra(ped?`Pedido de ${ped.nome}`:'Tocando agora · '+atual.estilo,atual.titulo,atual.artista,'');prog(0);
-  if(ped){mostra(`Obrigado, ${ped.nome}!`,atual.titulo,'Em nome da ECONTEC Contabilidade e de todos os nossos clientes','');
-   const pn=ped.nome==='Ouvinte'?'nosso ouvinte':ped.nome;
-   await falar(`Esse pedido é de ${pn}!`,()=>{});
-   if(ligado)await tocarArquivo({url:atual.parecida?'v/f-parecida.mp3':'v/f-obrigada.mp3',silencioso:true},()=>{});
-   if(ligado)mostra(`Pedido de ${ped.nome}`,atual.titulo,atual.artista,'')}
-  if(!ligado)break;
-  let ok=true;
-  if(atual.tipo==='yt'){ok=await tocarYT(atual,prog);
-   if(ok){falhasYT=0}else if(ligado){falhasYT++;
-    if(ped){bot(`O YouTube não deixou tocar "${esc(atual.titulo)}" neste aparelho. Desculpe, ${esc(ped.nome)}!`,true)}
-    if(falhasYT>=3&&!modoLivre){modoLivre=true;fila=[];if(!avisouLivre){avisouLivre=true;bot('O YouTube não está tocando neste aparelho agora. Para a rádio não parar, entram as músicas livres da ECONTEC. Os pedidos continuam tentando o YouTube.',true)}setTimeout(()=>{modoLivre=false;falhasYT=0;fila=[]},10*60*1000)}
-    continue}}
-  else await tocarArquivo(atual,prog);
-  musicasDesdeIntervalo++;
-  if(ligado&&musicasDesdeIntervalo<5)await vinheta();
+  if(pedidos.length){await tocaPedido(pedidos.shift());continue}
+  const {it,off}=noAr(agora());itemAtual=it;
+  if(it.id===ultimoId){await espera(it.t0+it.dur*1000-agora()+50,true);continue}
+  ultimoId=it.id;renderFila();await tocaItem(it,Math.max(0,off));
  }
 }
+/* antes de ligar, a tela já mostra o que está no ar agora */
+setInterval(()=>{if(ligado)return;const {it,off}=noAr(agora());const [k,t,w,l,z]=descreve(it);mostra(k.replace(/^Ao vivo/,'No ar agora'),t,w,l,z);prog(off/it.dur)},1000);
+setInterval(renderFila,15000);
 $('btnPlay').addEventListener('click',async()=>{
  if(!ctx)initAudio();
- if(!ligado){ligado=true;await ctx.resume();$('btnPlay').textContent='Desligar';$('btnSkip').disabled=false;$('lamp').classList.add('live');$('lampTxt').textContent='No ar';
-  musicasDesdeIntervalo=5;intervalos=1;loop()}
- else{ligado=false;if(cancelar)cancelar();$('btnPlay').textContent='Ligar a rádio';$('btnSkip').disabled=true;$('lamp').classList.remove('live');$('lampTxt').textContent='Fora do ar';mostra('Rádio desligada','Rádio ECONTEC','Aperte "Ligar a rádio" para voltar','');prog(0)}
+ if(!ligado){ligado=true;await ctx.resume();ultimoId=null;$('btnPlay').textContent='Desligar';$('btnSkip').disabled=false;$('lamp').classList.add('live');$('lampTxt').textContent='Ao vivo';loop()}
+ else{ligado=false;if(cancelar)cancelar();$('btnPlay').textContent='Ouvir ao vivo';$('btnSkip').disabled=true;$('lamp').classList.remove('live');$('lampTxt').textContent='Ao vivo (toque para ouvir)'}
 });
-$('btnSkip').addEventListener('click',()=>{if(cancelar)cancelar()});
+$('btnSkip').addEventListener('click',()=>{if(!ADMIN)return;if(itemAtual&&!pedidos.length){const r=itemAtual.t0+itemAtual.dur*1000-agora();if(r>0)ajuste+=r+100}if(cancelar)cancelar()});
 $('vol').addEventListener('input',e=>{try{yt&&yt.setVolume(Math.round(+e.target.value*100))}catch(x){}if(volArq)volArq.volume=+e.target.value;if(master)master.gain.setTargetAtTime(+e.target.value,ctx.currentTime,.05)});
 
 /* ---------- Robô de pedidos ---------- */
@@ -388,7 +432,7 @@ $('mp3').addEventListener('change',e=>{
   acervo.push({id:'f'+acervo.length,tipo:'arquivo',titulo:t.trim(),artista:a.trim(),estilo:'Minhas músicas',url:URL.createObjectURL(f)})}
  info();if(rec)bot(`${rec} arquivo(s) foram recusados pelo filtro de conteúdo.`,true);e.target.value='';
 });
-info();completaFila();renderFila();
+info();renderFila();
 
 /* ---------- Visualizador ---------- */
 const cv=$('viz'),g2=cv.getContext('2d');
