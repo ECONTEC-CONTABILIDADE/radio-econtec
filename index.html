@@ -185,6 +185,11 @@ main{padding-bottom:90px}
 .pedCard{position:relative;z-index:6}
 @media(max-width:640px){.fig{min-height:120px!important}}
 #sug{position:static;margin-top:6px;max-height:300px}
+.btnCanc{min-height:40px;padding:0 16px;font-size:14px;font-weight:700;background:transparent;color:#ff8a98;border:1.5px solid #e5223f}
+.btnCanc.conf{background:#e5223f;color:#fff}
+.cl.cancelado>div:not(:last-child){opacity:.45}
+.tagCanc{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:99px;background:#e5223f33;color:#ff8a98;font-size:12px;font-weight:700}
+#btnCliCanc[hidden]{display:none}
 </style>
 </head>
 <body>
@@ -243,7 +248,7 @@ main{padding-bottom:90px}
         <textarea id="cTxt" placeholder="Texto do anúncio" maxlength="400" required></textarea>
         <label for="cZap">WhatsApp do cliente (com DDD)</label>
         <input id="cZap" placeholder="ex.: 64 9 8419-2320" maxlength="20" inputmode="tel" autocomplete="off">
-        <div class="row"><label class="file">Logo (opcional)<input id="cLogo" type="file" accept="image/*"></label><button type="button" id="btnCli">Adicionar anúncio</button></div>
+        <div class="row"><label class="file">Logo (opcional)<input id="cLogo" type="file" accept="image/*"></label><button type="button" id="btnCli">Adicionar anúncio</button><button type="button" class="lite" id="btnCliCanc" hidden>Cancelar edição</button></div>
       </form>
       <p class="note">Toque no WhatsApp para falar direto com o anunciante. Durante cada anúncio também aparece o botão do WhatsApp na tela.</p>
       <p class="note adm">Área do administrador. Anúncios cadastrados aqui tocam só neste aparelho, como teste. Para entrarem na rádio de todos os ouvintes, peça ao Claude no chat do projeto, que ele publica e grava a locução.</p>
@@ -395,7 +400,7 @@ function rng(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t
 function grade(d){
  if(cacheGrade[d])return cacheGrade[d];
  const r=rng(d*7919+13),it=[],fim=(d+1)*DIA+FUSO,ult=[],hit=['Sertanejo','Pop nacional','Pop internacional','Pagode','Forró','Eletrônica'];
- const outros=(ADMIN?listaAdmin():oficiais).filter(c=>!/econtec/i.test(c.nome));
+ const outros=(ADMIN?listaAdmin().filter(c=>!c._cancel):oficiais).filter(c=>!/econtec/i.test(c.nome));
  let t=d*DIA+FUSO,b=0,iv=0;
  const add=(k,dur,x)=>{it.push(Object.assign({k,t0:t,dur,id:d+':'+it.length},x));t+=dur*1000};
  const vin=()=>{const u=VINHETAS[iv++%VINHETAS.length];add('vin',DV[u]||11,{url:u})};
@@ -520,23 +525,28 @@ $('btnPed').addEventListener('click',enviarPedido);$('fPed').addEventListener('s
 bot('Olá! Sou o robô da Rádio ECONTEC. Peça uma música pelo nome, artista ou estilo, e eu coloco na fila.');
 
 /* ---------- Clientes ---------- */
-let editados=ADMIN?store.get('editados',{}):{},editando=null;
-function listaAdmin(){return oficiais.map((c,i)=>{const e=editados[c.nome];const o=Object.assign({},c,e||{},{_t:'of',_i:i});if(e&&e.txt!==c.txt)o.audio='';return o}).concat(locais.map((c,i)=>Object.assign({},c,{_t:'lo',_i:i})))}
+let editados=ADMIN?store.get('editados',{}):{},cancelados=ADMIN?store.get('cancelados',[]):[],editando=null;
+function listaAdmin(){return oficiais.map((c,i)=>{const e=editados[c.nome];const o=Object.assign({},c,e||{},{_t:'of',_i:i});if(e&&e.txt!==c.txt)o.audio='';o._cancel=cancelados.includes(c.nome);return o}).concat(locais.map((c,i)=>Object.assign({},c,{_t:'lo',_i:i})))}
 function renderCli(){
  const L=ADMIN?listaAdmin():oficiais;
- $('clientes').innerHTML=L.map(c=>`<div class="cl"><div class="lg">${c.logo?`<img src="${esc(c.logo)}" alt="">`:esc(c.nome[0]||'?')}</div><div><b>${esc(c.nome)}</b><p>${esc(c.txt)}</p>${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.2c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.9s.7-2.1 1-2.4c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .5l-.4.6-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l2 .9c.3.1.5.2.5.3.1.1.1.7-.1 1.3z"/></svg>Chamar no WhatsApp <span>${esc(zapFmt(c.zap))}</span></a>`:''}${ADMIN&&(c._t==='lo'||editados[oficiais[c._i]&&oficiais[c._i].nome])?'<p class="note">Alterado só neste aparelho. Peça ao Claude para publicar para todos.</p>':''}</div>${ADMIN?`<div style="display:grid;gap:6px"><button type="button" class="btnEd" data-ed="${c._t}:${c._i}">Editar</button>${c._t==='lo'?`<button type="button" class="lite" data-del="${c._i}">Remover</button>`:''}</div>`:''}</div>`).join('')||'<p class="note">Nenhum anúncio cadastrado.</p>';
+ $('clientes').innerHTML=L.map(c=>`<div class="cl${c._cancel?' cancelado':''}"><div class="lg">${c.logo?`<img src="${esc(c.logo)}" alt="">`:esc(c.nome[0]||'?')}</div><div><b>${esc(c.nome)}</b>${c._cancel?' <span class="tagCanc">Cancelado</span>':''}<p>${esc(c.txt)}</p>${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.2c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.9s.7-2.1 1-2.4c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .5l-.4.6-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l2 .9c.3.1.5.2.5.3.1.1.1.7-.1 1.3z"/></svg>Chamar no WhatsApp <span>${esc(zapFmt(c.zap))}</span></a>`:''}${ADMIN&&(c._t==='lo'||editados[oficiais[c._i]&&oficiais[c._i].nome])?'<p class="note">Alterado só neste aparelho. Peça ao Claude para publicar para todos.</p>':''}</div>${ADMIN?`<div style="display:grid;gap:6px">${c._cancel?`<button type="button" class="btnEd" data-reat="${c._i}">Reativar</button>`:`<button type="button" class="btnEd" data-ed="${c._t}:${c._i}">Editar</button><button type="button" class="btnCanc" data-canc="${c._t}:${c._i}">Cancelar anúncio</button>`}</div>`:''}</div>`).join('')||'<p class="note">Nenhum anúncio cadastrado.</p>';
 }
-function salvaCli(){store.set('clientes3',locais);store.set('editados',editados);clientes=oficiais.concat(locais);cacheGrade={};renderCli()}
+function salvaCli(){store.set('clientes3',locais);store.set('editados',editados);store.set('cancelados',cancelados);clientes=oficiais.concat(locais);cacheGrade={};renderCli()}
 $('clientes').addEventListener('click',e=>{if(!ADMIN)return;const d=e.target.dataset;
- if(d.del!==undefined){locais.splice(+d.del,1);salvaCli();return}
+ if(d.reat!==undefined){const n=oficiais[+d.reat].nome;cancelados=cancelados.filter(x=>x!==n);salvaCli();bot('Anúncio de '+esc(n)+' reativado neste aparelho.');return}
+ if(d.canc){const b=e.target;if(!b.classList.contains('conf')){b.classList.add('conf');b.textContent='Toque de novo para confirmar';setTimeout(()=>{if(b.isConnected){b.classList.remove('conf');b.textContent='Cancelar anúncio'}},4000);return}
+  const [t,k]=d.canc.split(':');let n;if(t==='lo'){n=locais[+k].nome;locais.splice(+k,1)}else{n=oficiais[+k].nome;if(!cancelados.includes(n))cancelados.push(n)}
+  if(editando&&editando.t===t&&editando.i===+k)fechaEdicao();salvaCli();bot('Anúncio de '+esc(n)+' cancelado neste aparelho. Para tirar da rádio de todos, peça ao Claude no chat.');return}
  if(d.ed){const [t,k]=d.ed.split(':'),c=listaAdmin().find(x=>x._t===t&&x._i===+k);if(!c)return;
   editando={t,i:+k,orig:t==='of'?oficiais[+k].nome:c.nome,logo:c.logo||''};
-  $('cNome').value=c.nome;$('cTxt').value=c.txt;$('cZap').value=c.zap?zapFmt(c.zap):'';$('btnCli').textContent='Salvar alterações';$('fCliTit').textContent='Editando: '+c.nome;
+  $('cNome').value=c.nome;$('cTxt').value=c.txt;$('cZap').value=c.zap?zapFmt(c.zap):'';$('btnCli').textContent='Salvar alterações';$('fCliTit').textContent='Editando: '+c.nome;$('btnCliCanc').hidden=false;
   $('fCli').scrollIntoView({behavior:'smooth',block:'center'});$('cTxt').focus()}});
+function fechaEdicao(){editando=null;$('fCli').reset();$('btnCli').textContent='Adicionar anúncio';$('fCliTit').textContent='Novo anúncio';$('btnCliCanc').hidden=true}
+$('btnCliCanc').addEventListener('click',fechaEdicao);
 function enviarCli(){if(!ADMIN)return;const nome=$('cNome').value.trim(),txt=$('cTxt').value.trim();if(!nome||!txt){bot('Para salvar um anúncio, preencha o nome do cliente e o texto.',true);return}const zap=$('cZap').value.replace(/\D/g,''),f=$('cLogo').files[0];
  if(ofensivo(txt)){alertMsg('O texto do anúncio tem palavras bloqueadas pelo filtro.');return}
  const add=logo=>{
-  if(editando){const o={nome,txt,zap,logo:logo||editando.logo};if(editando.t==='of')editados[editando.orig]=o;else locais[editando.i]=o;editando=null;$('btnCli').textContent='Adicionar anúncio';$('fCliTit').textContent='Novo anúncio'}
+  if(editando){const o={nome,txt,zap,logo:logo||editando.logo};if(editando.t==='of')editados[editando.orig]=o;else locais[editando.i]=o;fechaEdicao()}
   else locais.push({nome,txt,logo,zap});
   salvaCli();$('fCli').reset();bot('Anúncio salvo neste aparelho. Para entrar na rádio de todos, peça ao Claude no chat.')};
  if(f){const r=new FileReader();r.onload=()=>add(r.result);r.readAsDataURL(f)}else add('');
