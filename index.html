@@ -4,6 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Rádio ECONTEC</title>
+<meta name="theme-color" content="#7a0c1c">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="img/icon-192.png">
+<link rel="apple-touch-icon" href="img/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Rádio ECONTEC">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -84,11 +92,54 @@ ol.q{margin:0;padding-left:22px}ol.q li{padding:4px 0;border-bottom:1px solid va
 label.file{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:10px;border:1px dashed var(--mute);cursor:pointer;font-weight:600}
 label.file input{display:none}
 @media(prefers-reduced-motion:reduce){.lamp.live i{box-shadow:none}}
+
+/* ===== Visual de app: vermelho e dourado da ECONTEC ===== */
+:root,:root[data-theme]{color-scheme:dark;--bg:#0f0a0b;--card:#1b1214;--ink:#f7eeee;--mute:#bfaeae;--deck:#8e0f1f;--deck2:#3a060d;--on:#ff3b3b;--acc:#f0c14b;--gold2:#c9971c;--line:#3a2729}
+body{background:radial-gradient(1200px 600px at 10% -10%,#5a0b16 0%,transparent 60%),radial-gradient(900px 500px at 110% 10%,#3d2a05 0%,transparent 55%),var(--bg);background-attachment:fixed;-webkit-tap-highlight-color:transparent}
+header.band{position:sticky;top:0;z-index:20;background:#140b0dcc;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid #ffffff14;padding-block:10px}
+header h1{font-size:clamp(20px,4vw,28px);background:linear-gradient(180deg,#fff 0%,#ffe6a6 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+header .marcaTopo{height:52px;border-radius:14px;padding:3px 8px}
+header .zapbtn{min-height:40px;font-size:14px;border-radius:99px}
+@media(max-width:640px){header .zapbtn{display:none}header .marcaTopo{height:44px}.band{padding-inline:12px}}
+.deck{background:linear-gradient(155deg,#b3122a 0%,#7a0c1c 45%,#2b0509 100%);border:1px solid #ffffff1a;border-radius:28px;box-shadow:0 30px 60px #0008,inset 0 1px 0 #ffffff26;position:relative;overflow:hidden}
+.deck::before{content:"";position:absolute;inset:-40% -20% auto auto;width:70%;aspect-ratio:1;background:radial-gradient(circle,#f0c14b33 0%,transparent 60%);pointer-events:none}
+.fig{border-radius:20px;background:#1a0306;box-shadow:inset 0 0 0 1px #ffffff12}
+.np .kind{color:#ffd978;text-transform:uppercase;letter-spacing:.08em;font-size:12px}
+.np h2{text-shadow:0 2px 12px #0006}
+.np .who{color:#f3d6d6}
+.np .logo{border-radius:18px}
+.bar{height:8px;background:#ffffff26}.bar b{background:linear-gradient(90deg,#ffe38a,var(--acc),var(--gold2));box-shadow:0 0 12px #f0c14b88}
+#btnPlay{min-height:60px;padding:0 30px;border-radius:99px;font-size:18px;background:linear-gradient(180deg,#ffe08a,#f0c14b 50%,#c9971c);color:#3a0610;box-shadow:0 10px 24px #f0c14b55,inset 0 1px 0 #fff8;display:inline-flex;align-items:center;gap:10px}
+#btnPlay::before{content:"";width:0;height:0;border-left:16px solid #3a0610;border-top:10px solid transparent;border-bottom:10px solid transparent}
+body.tocando #btnPlay::before{border:0;width:14px;height:18px;background:linear-gradient(90deg,#3a0610 0 35%,transparent 35% 65%,#3a0610 65%)}
+body:not(.tocando) #btnPlay{animation:pulso 2.2s ease-in-out infinite}
+@keyframes pulso{50%{box-shadow:0 10px 34px #f0c14bbb,0 0 0 8px #f0c14b22,inset 0 1px 0 #fff8}}
+button{border-radius:99px}button.lite{border-radius:12px}
+.vol input{accent-color:var(--acc)}
+.card{background:linear-gradient(180deg,#22161899,#170f1099);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid #ffffff14;border-radius:24px;box-shadow:0 16px 40px #0006}
+.card h3{background:linear-gradient(180deg,#fff,#ffd978);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+input,textarea{background:#0f0a0b;border-color:#3a2729;border-radius:14px}
+input::placeholder,textarea::placeholder{color:#8d7b7b}
+#btnPed{min-height:52px;font-size:17px;background:linear-gradient(180deg,#e5223f,#a50f26);color:#fff;box-shadow:0 8px 20px #c8102e55}
+.msg.bot{background:#2a1a1c}.msg.no{background:#4a1a1f}.msg.me{background:#3a2a12}
+ol.q{list-style:none;padding:0;counter-reset:q}ol.q li{counter-increment:q;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:10px 0;border-color:#ffffff12}
+ol.q li::before{content:counter(q);flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:700;background:linear-gradient(180deg,#ffe08a,#c9971c);color:#3a0610}
+.cl{border-color:#ffffff12}.cl .lg{background:#fff;color:#a50f26;border-radius:14px}
+.cl a{color:#6ee7a0;font-weight:600}
+.tag{color:#d9b56a}
+.lamp{background:#ffffff14;border:1px solid #ffffff1f}
+#instalar{display:none;min-height:40px;font-size:14px;background:#ffffff1a;color:#fff;border:1px solid #ffffff2a}
+#instalar.on{display:inline-flex;align-items:center}
+@media(max-width:860px){.deck{border-radius:24px;padding:16px}.fig{min-height:170px}.ctl{justify-content:center}.vol{margin-left:0}}
+.e3d,.np .logo.e3d{background:radial-gradient(120% 120% at 25% 15%,#ff5a6e 0%,#c8102e 45%,#4a0610 100%)!important;box-shadow:inset 0 2px 0 #ffffff55,inset 0 -6px 12px #00000055,0 10px 22px #00000066,0 3px 0 #3a0610}
+ol.q li{display:grid;grid-template-columns:26px minmax(0,1fr);gap:2px 10px}ol.q li::before{grid-row:span 2}
+ol.q li .tag{grid-column:2}
 </style>
 </head>
 <body>
 <header class="band"><div class="wrap">
   <img class="marcaTopo" src="img/logo-econtec.png" alt="ECONTEC Contabilidade"><h1>Rádio ECONTEC</h1>
+  <button type="button" id="instalar">Instalar app</button>
   <span class="lamp" id="lamp"><i></i><span id="lampTxt">Ao vivo (toque para ouvir)</span></span>
   <a class="zapbtn" href="https://wa.me/5564984192320" target="_blank" rel="noopener">WhatsApp ECONTEC (64) 9 8419-2320</a>
 </div></header>
@@ -197,6 +248,7 @@ const CLI_PADRAO=[
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
  {nome:'Auto Peças Avenida',txt:'Auto Peças Avenida: peças para todas as marcas, entrega rápida e preço justo. Seu carro em boas mãos.',logo:''}
 ];
+let cacheGrade={};
 let oficiais=CLI_PADRAO.slice(),locais=ADMIN?store.get('clientes3',[]):[];
 let clientes=oficiais.concat(locais);
 fetch('clientes.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{if(Array.isArray(d)&&d.length){oficiais=d.map(c=>({nome:String(c.nome||''),txt:String(c.txt||''),logo:String(c.logo||''),zap:String(c.zap||''),audio:String(c.audio||'')}));clientes=oficiais.concat(locais);cacheGrade={};renderCli()}}).catch(()=>{});
@@ -276,18 +328,17 @@ function falar(txt,onProg){
 }
 
 /* ---------- Programação AO VIVO: a mesma grade para todos, calculada pelo relógio ---------- */
-let pedidos=[],ultimoId=null,itemAtual=null,ajuste=0;
+let pedidos=[],vezDoSistema=false,ultimoId=null,itemAtual=null,ajuste=0;
 const agora=()=>Date.now()+ajuste;
 if(/[?&]teste\b/.test(location.search))window.__aj=v=>{ajuste=v};
 const DUR={"Be6ROem9ms8": 207, "rJnEBfvbUTg": 255, "uWX0O8ATY3k": 159, "oTREAvZbmME": 218, "v4k6JgC7UVA": 233, "UNNOHk60ojk": 205, "OPf0YbXqDm0": 270, "ZbZSe6N_BXs": 241, "hT_nvWreIhg": 283, "DUT5rEU6pqM": 218, "vx2u5uUu3DE": 267, "1w7OgIMMRc4": 303, "xFrGuyw1V8s": 233, "Gs069dndIYk": 215, "nqAvFx3NxUM": 229},DV={'v/vinheta-numeros.mp3':10.5,'v/vinheta-servicos.mp3':11.4,'v/anuncio-econtec.mp3':19.3,'v/f-padaria.mp3':10.3,'v/f-autopecas.mp3':9.9},HORA=16,PADRAO=230;
 const GRADE=acervo.filter(x=>x.tipo==='yt');
 const DIA=864e5,FUSO=3*36e5; /* horário de Brasília */
 function rng(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
-let cacheGrade={};
 function grade(d){
  if(cacheGrade[d])return cacheGrade[d];
  const r=rng(d*7919+13),it=[],fim=(d+1)*DIA+FUSO,ult=[],hit=['Sertanejo','Pop nacional','Pop internacional','Pagode','Forró','Eletrônica'];
- const outros=oficiais.filter(c=>!/econtec/i.test(c.nome));
+ const outros=(ADMIN?listaAdmin():oficiais).filter(c=>!/econtec/i.test(c.nome));
  let t=d*DIA+FUSO,b=0,iv=0;
  const add=(k,dur,x)=>{it.push(Object.assign({k,t0:t,dur,id:d+':'+it.length},x));t+=dur*1000};
  const vin=()=>{const u=VINHETAS[iv++%VINHETAS.length];add('vin',DV[u]||11,{url:u})};
@@ -312,8 +363,8 @@ function descreve(it){
 function renderFila(){
  const {g,i}=noAr(agora()),prox=[];
  for(let j=i+1;j<g.length&&prox.length<5;j++)if(g[j].k==='musica')prox.push(g[j]);
- $('fila').innerHTML=[...pedidos.map(p=>`<li><b>${esc(p.tr.titulo)}</b> · ${esc(p.tr.artista)} <span class="tag">pedido de ${esc(p.nome)}</span></li>`),
-  ...prox.map(x=>`<li><b>${esc(x.tr.titulo)}</b> · ${esc(x.tr.artista)} <span class="tag">${hhmm(x.t0)} · ${esc(x.tr.estilo)}</span></li>`)].slice(0,6).join('');
+ $('fila').innerHTML=[...pedidos.map(p=>`<li><span><b>${esc(p.tr.titulo)}</b> · ${esc(p.tr.artista)}</span><span class="tag">pedido de ${esc(p.nome)}</span></li>`),
+  ...prox.map(x=>`<li><span><b>${esc(x.tr.titulo)}</b> · ${esc(x.tr.artista)}</span><span class="tag">${hhmm(x.t0)} · ${esc(x.tr.estilo)}</span></li>`)].slice(0,6).join('');
 }
 function mostra(kind,title,who,logo,zap){const z=$('npZap');if(zap){z.hidden=false;z.href=zapLink(zap);z.textContent='Chamar '+title.replace(/ Contabilidade$/,'')+' no WhatsApp: '+zapFmt(zap)}else z.hidden=true;$('npKind').textContent=kind;$('npTitle').textContent=title;$('npWho').textContent=who;
  const L=$('npLogo');L.classList.toggle('e3d',!logo);L.classList.toggle('marca',/e-econtec/.test(logo||''));L.innerHTML=logo?`<img src="${esc(logo)}" alt="">`:`<b>${esc((title||'E').replace(/^Rádio\s+/,'').replace(/^Obrigad[oa],?\s*/,'').trim()[0]||'E')}</b>`}
@@ -349,14 +400,15 @@ async function tocaPedido(ped){
  if(!ligado)return;mostra(`Pedido de ${ped.nome}`,tr.titulo,tr.artista,'');
  if(tr.tipo==='yt'){const ok=await tocarYT(tr,prog);if(!ok&&ligado)bot(`O YouTube não deixou tocar "${esc(tr.titulo)}" neste aparelho. Desculpe, ${esc(ped.nome)}!`,true)}
  else await tocarArquivo(tr,prog);
- if(ligado&&!pedidos.length){mostra('Ao vivo','Rádio ECONTEC','Voltando para a programação ao vivo','img/e-econtec.png');await tocarArquivo({url:VINHETAS[0]},prog)}
+ if(ligado){mostra('Ao vivo','Rádio ECONTEC','Voltando para a programação ao vivo','img/e-econtec.png');await tocarArquivo({url:VINHETAS[0]},prog)}
 }
 async function loop(){
  while(ligado){
-  if(pedidos.length){await tocaPedido(pedidos.shift());continue}
+  if(pedidos.length&&!vezDoSistema){await tocaPedido(pedidos.shift());vezDoSistema=true;continue}
   const {it,off}=noAr(agora());itemAtual=it;
   if(it.id===ultimoId){await espera(it.t0+it.dur*1000-agora()+50,true);continue}
   ultimoId=it.id;renderFila();await tocaItem(it,Math.max(0,off));
+  if(it.k==='musica')vezDoSistema=false;
  }
 }
 /* antes de ligar, a tela já mostra o que está no ar agora */
@@ -364,8 +416,8 @@ setInterval(()=>{if(ligado)return;const {it,off}=noAr(agora());const [k,t,w,l,z]
 setInterval(renderFila,15000);
 $('btnPlay').addEventListener('click',async()=>{
  if(!ctx)initAudio();
- if(!ligado){ligado=true;await ctx.resume();ultimoId=null;$('btnPlay').textContent='Desligar';$('btnSkip').disabled=false;$('lamp').classList.add('live');$('lampTxt').textContent='Ao vivo';loop()}
- else{ligado=false;if(cancelar)cancelar();$('btnPlay').textContent='Ouvir ao vivo';$('btnSkip').disabled=true;$('lamp').classList.remove('live');$('lampTxt').textContent='Ao vivo (toque para ouvir)'}
+ if(!ligado){ligado=true;document.body.classList.add('tocando');await ctx.resume();ultimoId=null;$('btnPlay').textContent='Desligar';$('btnSkip').disabled=false;$('lamp').classList.add('live');$('lampTxt').textContent='Ao vivo';loop()}
+ else{ligado=false;document.body.classList.remove('tocando');if(cancelar)cancelar();$('btnPlay').textContent='Ouvir ao vivo';$('btnSkip').disabled=true;$('lamp').classList.remove('live');$('lampTxt').textContent='Ao vivo (toque para ouvir)'}
 });
 $('btnSkip').addEventListener('click',()=>{if(!ADMIN)return;if(itemAtual&&!pedidos.length){const r=itemAtual.t0+itemAtual.dur*1000-agora();if(r>0)ajuste+=r+100}if(cancelar)cancelar()});
 $('vol').addEventListener('input',e=>{try{yt&&yt.setVolume(Math.round(+e.target.value*100))}catch(x){}if(volArq)volArq.volume=+e.target.value;if(master)master.gain.setTargetAtTime(+e.target.value,ctx.currentTime,.05)});
@@ -409,13 +461,25 @@ $('btnPed').addEventListener('click',enviarPedido);$('fPed').addEventListener('s
 bot('Olá! Sou o robô da Rádio ECONTEC. Peça uma música pelo nome, artista ou estilo, e eu coloco na fila.');
 
 /* ---------- Clientes ---------- */
+let editados=ADMIN?store.get('editados',{}):{},editando=null;
+function listaAdmin(){return oficiais.map((c,i)=>{const e=editados[c.nome];const o=Object.assign({},c,e||{},{_t:'of',_i:i});if(e&&e.txt!==c.txt)o.audio='';return o}).concat(locais.map((c,i)=>Object.assign({},c,{_t:'lo',_i:i})))}
 function renderCli(){
- $('clientes').innerHTML=clientes.map((c,i)=>`<div class="cl"><div class="lg">${c.logo?`<img src="${esc(c.logo)}" alt="">`:esc(c.nome[0]||'?')}</div><div><b>${esc(c.nome)}</b><p>${esc(c.txt)}</p>${c.zap?`<p><a href="${esc(zapLink(c.zap))}" target="_blank" rel="noopener">WhatsApp ${esc(zapFmt(c.zap))}</a></p>`:''}</div>${ADMIN&&i>=oficiais.length?`<button class="lite" data-del="${i-oficiais.length}">Remover</button>`:''}</div>`).join('')||'<p class="note">Nenhum anúncio cadastrado.</p>';
+ const L=ADMIN?listaAdmin():oficiais;
+ $('clientes').innerHTML=L.map(c=>`<div class="cl"><div class="lg">${c.logo?`<img src="${esc(c.logo)}" alt="">`:esc(c.nome[0]||'?')}</div><div><b>${esc(c.nome)}</b><p>${esc(c.txt)}</p>${c.zap?`<p><a href="${esc(zapLink(c.zap))}" target="_blank" rel="noopener">WhatsApp ${esc(zapFmt(c.zap))}</a></p>`:''}${ADMIN&&(c._t==='lo'||editados[oficiais[c._i]&&oficiais[c._i].nome])?'<p class="note">Alterado só neste aparelho. Peça ao Claude para publicar para todos.</p>':''}</div>${ADMIN?`<div style="display:grid;gap:6px"><button type="button" class="lite" data-ed="${c._t}:${c._i}">Editar</button>${c._t==='lo'?`<button type="button" class="lite" data-del="${c._i}">Remover</button>`:''}</div>`:''}</div>`).join('')||'<p class="note">Nenhum anúncio cadastrado.</p>';
 }
-$('clientes').addEventListener('click',e=>{const i=e.target.dataset.del;if(i!==undefined&&ADMIN){locais.splice(+i,1);store.set('clientes3',locais);clientes=oficiais.concat(locais);renderCli()}});
-function enviarCli(){if(!ADMIN)return;const nome=$('cNome').value.trim(),txt=$('cTxt').value.trim();if(!nome||!txt){bot('Para adicionar um anúncio, preencha o nome do cliente e o texto.',true);return}const zap=$('cZap').value.replace(/\D/g,''),f=$('cLogo').files[0];
+function salvaCli(){store.set('clientes3',locais);store.set('editados',editados);clientes=oficiais.concat(locais);cacheGrade={};renderCli()}
+$('clientes').addEventListener('click',e=>{if(!ADMIN)return;const d=e.target.dataset;
+ if(d.del!==undefined){locais.splice(+d.del,1);salvaCli();return}
+ if(d.ed){const [t,k]=d.ed.split(':'),c=listaAdmin().find(x=>x._t===t&&x._i===+k);if(!c)return;
+  editando={t,i:+k,orig:t==='of'?oficiais[+k].nome:c.nome,logo:c.logo||''};
+  $('cNome').value=c.nome;$('cTxt').value=c.txt;$('cZap').value=c.zap?zapFmt(c.zap):'';$('btnCli').textContent='Salvar alterações';
+  $('fCli').scrollIntoView({behavior:'smooth',block:'center'});$('cTxt').focus()}});
+function enviarCli(){if(!ADMIN)return;const nome=$('cNome').value.trim(),txt=$('cTxt').value.trim();if(!nome||!txt){bot('Para salvar um anúncio, preencha o nome do cliente e o texto.',true);return}const zap=$('cZap').value.replace(/\D/g,''),f=$('cLogo').files[0];
  if(ofensivo(txt)){alertMsg('O texto do anúncio tem palavras bloqueadas pelo filtro.');return}
- const add=logo=>{locais.push({nome,txt,logo,zap});store.set('clientes3',locais);clientes=oficiais.concat(locais);renderCli();$('fCli').reset()};
+ const add=logo=>{
+  if(editando){const o={nome,txt,zap,logo:logo||editando.logo};if(editando.t==='of')editados[editando.orig]=o;else locais[editando.i]=o;editando=null;$('btnCli').textContent='Adicionar anúncio'}
+  else locais.push({nome,txt,logo,zap});
+  salvaCli();$('fCli').reset();bot('Anúncio salvo neste aparelho. Para entrar na rádio de todos, peça ao Claude no chat.')};
  if(f){const r=new FileReader();r.onload=()=>add(r.result);r.readAsDataURL(f)}else add('');
 }
 $('btnCli').addEventListener('click',enviarCli);$('fCli').addEventListener('submit',e=>{e.preventDefault();enviarCli()});
@@ -433,6 +497,13 @@ $('mp3').addEventListener('change',e=>{
  info();if(rec)bot(`${rec} arquivo(s) foram recusados pelo filtro de conteúdo.`,true);e.target.value='';
 });
 info();renderFila();
+/* ---------- App instalável ---------- */
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+let pedeInstalar=null;
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();pedeInstalar=e;$('instalar').classList.add('on')});
+$('instalar').addEventListener('click',async()=>{if(pedeInstalar){pedeInstalar.prompt();await pedeInstalar.userChoice;pedeInstalar=null;$('instalar').classList.remove('on')}});
+if(/iphone|ipad/i.test(navigator.userAgent)&&!navigator.standalone){$('instalar').classList.add('on');$('instalar').addEventListener('click',()=>{if(!pedeInstalar)bot('No iPhone: toque em Compartilhar e depois em "Adicionar à Tela de Início" para ter a Rádio ECONTEC como app.')})}
+
 
 /* ---------- Visualizador ---------- */
 const cv=$('viz'),g2=cv.getContext('2d');
@@ -442,7 +513,7 @@ function draw(){
  const n=Math.max(16,Math.floor(W/14)),data=new Uint8Array(128);if(analyser&&ligado)analyser.getByteFrequencyData(data);
  if(tocandoArq){const t=performance.now()/1000;for(let i=0;i<90;i++)data[i]=Math.max(data[i],(.35+.3*Math.sin(t*6+i*.7)*Math.sin(t*2.3+i*.13)+.25*Math.random())*255*(1-i/140))}
  for(let i=0;i<n;i++){const v=data[Math.floor(i/n*90)]/255,h=Math.max(4,v*(H-24)),x=i*(W/n)+2,w=W/n-4;
-  g2.fillStyle=v>.75?'#e5383b':v>.45?'#f2c14e':'#3fb8a8';g2.fillRect(x,H-12-h,w,h);g2.fillStyle='#ffffff10';g2.fillRect(x,12,w,H-24-h)}
+  g2.fillStyle=v>.75?'#fff1c2':v>.45?'#f0c14b':'#e5223f';g2.fillRect(x,H-12-h,w,h);g2.fillStyle='#ffffff10';g2.fillRect(x,12,w,H-24-h)}
  requestAnimationFrame(draw);
 }
 const ro=new ResizeObserver(()=>{});ro.observe(cv);draw();
