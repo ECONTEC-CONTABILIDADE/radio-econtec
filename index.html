@@ -338,7 +338,7 @@ const _q=location.search+location.hash;
 if(/[?&#]admin\b/.test(_q))store.set('admin',true);
 if(/[?&#](ouvinte|sair)\b/.test(_q))store.set('admin',false);
 const ADMIN=!!store.get('admin',false);
-if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 7</span>')}
+if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 8</span>')}
 const CLI_PADRAO=[
  {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'img/logo-econtec.png',zap:ZAP_ECONTEC},
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
@@ -601,6 +601,11 @@ $('mp3').addEventListener('change',e=>{
  info();if(rec)bot(`${rec} arquivo(s) foram recusados pelo filtro de conteúdo.`,true);e.target.value='';
 });
 info();renderFila();
+/* Atualização automática: se houver versão nova no site, recarrega sozinho */
+const VERSAO=8;
+function checaVersao(){fetch('index.html?nv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VERSAO=(\d+)/);if(m&&+m[1]>VERSAO&&!ligado)location.reload()}).catch(()=>{})}
+checaVersao();setInterval(checaVersao,5*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checaVersao()});
+
 /* 5 toques na logo: liga/desliga o modo administrador neste aparelho (útil no app instalado) */
 {let n=0,t;document.querySelector('.marcaTopo').addEventListener('click',()=>{n++;clearTimeout(t);t=setTimeout(()=>n=0,1500);if(n>=5){n=0;store.set('admin',!ADMIN);location.reload()}})}
 
