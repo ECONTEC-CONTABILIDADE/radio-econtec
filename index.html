@@ -71,6 +71,11 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px soli
 .card h3{font-size:22px}
 .note{font-size:13px;color:var(--mute)}
 body:not(.admin) .adm{display:none!important}
+.audi{display:grid;gap:10px}.audi h3{margin:0;font-family:Outfit,sans-serif;color:#ffd978;font-size:18px}
+.audiNums{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.audiNums div{background:#120c0d;border:1px solid #f0c14b33;border-radius:16px;padding:12px 8px;text-align:center}
+.audiNums b{display:block;font-family:Outfit,sans-serif;font-size:32px;color:#fff;line-height:1.1}
+.audiNums span{font-size:12px;color:#e3cccc}.audi small{color:#bfa9a9;font-size:12px}
 .admtag{display:inline-block;background:#c0392b;color:#fff;border-radius:6px;padding:2px 8px;font-size:12px;margin-left:8px}
 input,textarea{font:16px Inter,sans-serif;width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
 textarea{min-height:90px;resize:vertical}
@@ -232,6 +237,11 @@ header .marcaTopo{animation:brilhaLogo 4s ease-in-out infinite}
       <a class="zapCli heroZap" href="https://wa.me/5564984192320" target="_blank" rel="noopener">Falar com a ECONTEC <span>(64) 9 8419-2320</span></a>
     </div>
   </section>
+  <section class="card adm audi" aria-label="Audiência">
+    <h3>📊 Audiência agora</h3>
+    <div class="audiNums"><div><b id="auOn">–</b><span>aparelhos conectados</span></div><div><b id="auOuv">–</b><span>ouvindo a rádio</span></div><div><b id="auDia">–</b><span>aparelhos hoje</span></div></div>
+    <small id="auInfo">Atualiza sozinho a cada 30 segundos.</small>
+  </section>
   <div class="grid">
     <section class="deck" aria-label="Aparelho da rádio">
       <div class="fig"><canvas id="viz"></canvas><div id="ytwrap"><div id="yt"></div></div></div>
@@ -338,7 +348,7 @@ const _q=location.search+location.hash;
 if(/[?&#]admin\b/.test(_q))store.set('admin',true);
 if(/[?&#](ouvinte|sair)\b/.test(_q))store.set('admin',false);
 const ADMIN=!!store.get('admin',false);
-if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 8</span>')}
+if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 9</span>')}
 const CLI_PADRAO=[
  {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'img/logo-econtec.png',zap:ZAP_ECONTEC},
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
@@ -602,7 +612,22 @@ $('mp3').addEventListener('change',e=>{
 });
 info();renderFila();
 /* Atualização automática: se houver versão nova no site, recarrega sozinho */
-const VERSAO=8;
+
+/* Audiência: cada aparelho marca presença 1x por minuto (contador público grátis) */
+const AU='https://abacus.jasoncameron.dev',AUNS='radio-econtec-ao-vivo';
+let auMin=-1;
+function auHit(k){return fetch(AU+'/hit/'+AUNS+'/'+k,{cache:'no-store'}).catch(()=>{})}
+function auGet(k){return fetch(AU+'/get/'+AUNS+'/'+k,{cache:'no-store'}).then(r=>r.ok?r.json():{value:0}).then(j=>j.value||0).catch(()=>null)}
+function auDiaKey(){const d=new Date(Date.now()-3*3600e3);return 'dia-'+d.toISOString().slice(0,10)}
+function auPresenca(){const m=Math.floor(Date.now()/60000);if(m===auMin)return;auMin=m;auHit('on-'+m);if(ligado)auHit('ouv-'+m);
+ const dk=auDiaKey();if(store.get('auDia')!==dk){store.set('auDia',dk);auHit(dk)}}
+auPresenca();setInterval(auPresenca,10000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)auPresenca()});
+async function auMostra(){const m=Math.floor(Date.now()/60000)-1;const [a,b,c]=await Promise.all([auGet('on-'+m),auGet('ouv-'+m),auGet(auDiaKey())]);
+ if(a===null){$('auInfo').textContent='Não consegui ler agora, tento de novo em 30 segundos.';return}
+ $('auOn').textContent=Math.max(a,1);$('auOuv').textContent=b;$('auDia').textContent=Math.max(c,1);
+ $('auInfo').textContent='Último minuto completo · atualizado às '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'})}
+if(ADMIN){auMostra();setInterval(auMostra,30000)}
+const VERSAO=9;
 function checaVersao(){fetch('index.html?nv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VERSAO=(\d+)/);if(m&&+m[1]>VERSAO&&!ligado)location.reload()}).catch(()=>{})}
 checaVersao();setInterval(checaVersao,5*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checaVersao()});
 
