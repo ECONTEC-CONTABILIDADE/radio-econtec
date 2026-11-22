@@ -210,6 +210,8 @@ main{padding-bottom:90px}
 @media(max-width:640px){.hero{grid-template-columns:1fr;text-align:center;justify-items:center}.heroTag{align-self:center}.heroZap{margin:0 auto}.heroLogo{width:170px}}
 header .marcaTopo{animation:brilhaLogo 4s ease-in-out infinite}
 @media(prefers-reduced-motion:reduce){.heroLogo,.heroLogo::after,.heroTag i,header .marcaTopo{animation:none!important}}
+.btnPausa{min-height:40px;padding:0 16px;font-size:14px;font-weight:700;background:#ffffff14;color:#fff;border:1.5px solid #ffffff40;flex:1 1 100px}
+.cl .btnEd,.cl .btnCanc{flex:1 1 100px}
 </style>
 </head>
 <body>
@@ -336,7 +338,7 @@ const _q=location.search+location.hash;
 if(/[?&#]admin\b/.test(_q))store.set('admin',true);
 if(/[?&#](ouvinte|sair)\b/.test(_q))store.set('admin',false);
 const ADMIN=!!store.get('admin',false);
-if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 6</span>')}
+if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 7</span>')}
 const CLI_PADRAO=[
  {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'img/logo-econtec.png',zap:ZAP_ECONTEC},
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
@@ -557,18 +559,19 @@ $('btnPed').addEventListener('click',enviarPedido);$('fPed').addEventListener('s
 bot('Olá! Sou o robô da Rádio ECONTEC. Peça uma música pelo nome, artista ou estilo, e eu coloco na fila.');
 
 /* ---------- Clientes ---------- */
-let editados=ADMIN?store.get('editados',{}):{},cancelados=ADMIN?store.get('cancelados',[]):[],editando=null;
-function listaAdmin(){return oficiais.map((c,i)=>{const e=editados[c.nome];const o=Object.assign({},c,e||{},{_t:'of',_i:i});if(e&&e.txt!==c.txt)o.audio='';o._cancel=cancelados.includes(c.nome);return o}).concat(locais.map((c,i)=>Object.assign({},c,{_t:'lo',_i:i})))}
+let editados=ADMIN?store.get('editados',{}):{},cancelados=ADMIN?store.get('cancelados',[]):[],excluidos=ADMIN?store.get('excluidos',[]):[],editando=null;
+function listaAdmin(){return oficiais.map((c,i)=>{const e=editados[c.nome];const o=Object.assign({},c,e||{},{_t:'of',_i:i});if(e&&e.txt!==c.txt)o.audio='';o._cancel=cancelados.includes(c.nome);return o}).filter(o=>!excluidos.includes(oficiais[o._i].nome)).concat(locais.map((c,i)=>Object.assign({},c,{_t:'lo',_i:i,_cancel:!!c.cancelado})))}
 function renderCli(){
  const L=ADMIN?listaAdmin():oficiais;
- $('clientes').innerHTML=L.map(c=>`<div class="cl${c._cancel?' cancelado':''}"><div class="lg">${c.logo?`<img src="${esc(c.logo)}" alt="">`:esc(c.nome[0]||'?')}</div><div><b>${esc(c.nome)}</b>${c._cancel?' <span class="tagCanc">Excluído</span>':''}<p>${esc(c.txt)}</p>${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.2c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.9s.7-2.1 1-2.4c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .5l-.4.6-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l2 .9c.3.1.5.2.5.3.1.1.1.7-.1 1.3z"/></svg>Chamar no WhatsApp <span>${esc(zapFmt(c.zap))}</span></a>`:''}${ADMIN&&(c._t==='lo'||editados[oficiais[c._i]&&oficiais[c._i].nome])?'<p class="note">Alterado só neste aparelho. Peça ao Claude para publicar para todos.</p>':''}</div>${ADMIN?`<div style="display:grid;gap:6px">${c._cancel?`<button type="button" class="btnEd" data-reat="${c._i}">Reativar</button>`:`<button type="button" class="btnEd" data-ed="${c._t}:${c._i}">Editar</button><button type="button" class="btnCanc" data-canc="${c._t}:${c._i}">Excluir</button>`}</div>`:''}</div>`).join('')||'<p class="note">Nenhum anúncio cadastrado.</p>';
+ $('clientes').innerHTML=L.map(c=>`<div class="cl${c._cancel?' cancelado':''}"><div class="lg">${c.logo?`<img src="${esc(c.logo)}" alt="">`:esc(c.nome[0]||'?')}</div><div><b>${esc(c.nome)}</b>${c._cancel?' <span class="tagCanc">Cancelado</span>':''}<p>${esc(c.txt)}</p>${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.2c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.9s.7-2.1 1-2.4c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .5l-.4.6-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l2 .9c.3.1.5.2.5.3.1.1.1.7-.1 1.3z"/></svg>Chamar no WhatsApp <span>${esc(zapFmt(c.zap))}</span></a>`:''}${ADMIN&&(c._t==='lo'||editados[oficiais[c._i]&&oficiais[c._i].nome])?'<p class="note">Alterado só neste aparelho. Peça ao Claude para publicar para todos.</p>':''}</div>${ADMIN?`<div style="display:grid;gap:6px">${c._cancel?`<button type="button" class="btnEd" data-reat="${c._t}:${c._i}">Reativar</button>`:`<button type="button" class="btnEd" data-ed="${c._t}:${c._i}">Editar</button><button type="button" class="btnPausa" data-pausa="${c._t}:${c._i}">Cancelar</button>`}<button type="button" class="btnCanc" data-exc="${c._t}:${c._i}">Excluir</button></div>`:''}</div>`).join('')||'<p class="note">Nenhum anúncio cadastrado.</p>';
 }
-function salvaCli(){store.set('clientes3',locais);store.set('editados',editados);store.set('cancelados',cancelados);clientes=oficiais.concat(locais);cacheGrade={};renderCli()}
+function salvaCli(){store.set('clientes3',locais);store.set('editados',editados);store.set('cancelados',cancelados);store.set('excluidos',excluidos);clientes=oficiais.concat(locais);cacheGrade={};renderCli()}
 $('clientes').addEventListener('click',e=>{if(!ADMIN)return;const d=e.target.dataset;
- if(d.reat!==undefined){const n=oficiais[+d.reat].nome;cancelados=cancelados.filter(x=>x!==n);salvaCli();bot('Anúncio de '+esc(n)+' reativado neste aparelho.');return}
- if(d.canc){const b=e.target;if(!b.classList.contains('conf')){b.classList.add('conf');b.textContent='Confirmar exclusão?';setTimeout(()=>{if(b.isConnected){b.classList.remove('conf');b.textContent='Excluir'}},4000);return}
-  const [t,k]=d.canc.split(':');let n;if(t==='lo'){n=locais[+k].nome;locais.splice(+k,1)}else{n=oficiais[+k].nome;if(!cancelados.includes(n))cancelados.push(n)}
-  if(editando&&editando.t===t&&editando.i===+k)fechaEdicao();salvaCli();bot('Anúncio de '+esc(n)+' excluído neste aparelho. Para tirar da rádio de todos, peça ao Claude no chat.');return}
+ const alvo=k=>{const [t,x]=k.split(':');return{t,i:+x,nome:t==='lo'?locais[+x].nome:oficiais[+x].nome}};
+ if(d.reat){const a=alvo(d.reat);if(a.t==='lo')delete locais[a.i].cancelado;else cancelados=cancelados.filter(x=>x!==a.nome);salvaCli();bot('Anúncio de '+esc(a.nome)+' reativado neste aparelho.');return}
+ if(d.pausa){const a=alvo(d.pausa);if(a.t==='lo')locais[a.i].cancelado=true;else if(!cancelados.includes(a.nome))cancelados.push(a.nome);if(editando&&editando.t===a.t&&editando.i===a.i)fechaEdicao();salvaCli();bot('Anúncio de '+esc(a.nome)+' cancelado (pausado). Para voltar, toque em Reativar.');return}
+ if(d.exc){const b=e.target;if(!b.classList.contains('conf')){b.classList.add('conf');b.textContent='Confirmar exclusão?';setTimeout(()=>{if(b.isConnected){b.classList.remove('conf');b.textContent='Excluir'}},4000);return}
+  const a=alvo(d.exc);if(editando&&editando.t===a.t&&editando.i===a.i)fechaEdicao();if(a.t==='lo')locais.splice(a.i,1);else{excluidos.push(a.nome);cancelados=cancelados.filter(x=>x!==a.nome)}salvaCli();bot('Anúncio de '+esc(a.nome)+' excluído. Para tirar da rádio de todos, peça ao Claude no chat.');return}
  if(d.ed){const [t,k]=d.ed.split(':'),c=listaAdmin().find(x=>x._t===t&&x._i===+k);if(!c)return;
   editando={t,i:+k,orig:t==='of'?oficiais[+k].nome:c.nome,logo:c.logo||''};
   $('cNome').value=c.nome;$('cTxt').value=c.txt;$('cZap').value=c.zap?zapFmt(c.zap):'';$('btnCli').textContent='Salvar alterações';$('fCliTit').textContent='Editando: '+c.nome;$('btnCliCanc').hidden=false;
