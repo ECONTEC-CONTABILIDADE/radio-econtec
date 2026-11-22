@@ -1,0 +1,25 @@
+name: Anúncios do administrador
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: anuncios
+jobs:
+  copiar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/anuncios.mjs
+      - name: Publicar no site
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name "Rádio ECONTEC"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "Anúncios atualizados pelo administrador"
+          git push origin HEAD:Econtec_Radio
+          git push origin HEAD:main
