@@ -140,7 +140,7 @@ label.file input{display:none}
       <p style="margin:0">Você também pode adicionar arquivos de música seus. Eles tocam só neste aparelho.</p>
       <label class="file">Adicionar arquivos de música<input id="mp3" type="file" accept="audio/*" multiple></label>
       <p class="note" id="acervoInfo"></p>
-      <p class="note">Versão de teste, para uso interno da ECONTEC. As músicas tocam pelo player oficial do YouTube. Para abrir a rádio ao público é preciso a licença de web rádio do ECAD. Vinhetas com voz gerada no ElevenLabs.</p>
+      <p class="note">Versão de teste, para uso interno da ECONTEC. As músicas tocam pelo player oficial do YouTube; se ele falhar, entram músicas livres de Kevin MacLeod (incompetech.com, CC BY 4.0). Para abrir a rádio ao público é preciso a licença de web rádio do ECAD. Vinhetas com voz gerada no ElevenLabs.</p>
     </section>
   </div>
 </div></main>
@@ -156,6 +156,18 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 /* ---------- Acervo: músicas reais, livres de direitos ----------
    Todas de Kevin MacLeod (incompetech.com), licença Creative Commons Atribuição 4.0. */
 const CAT=[["Be6ROem9ms8", "Zezé Di Camargo e Luciano", "É o Amor", "Sertanejo"], ["ICS6uKC93w0", "Jorge e Mateus", "Os Anjos Cantam", "Sertanejo"], ["ff3r10rCKFs", "Henrique e Juliano", "Liberdade Provisória", "Sertanejo"], ["7fMttPxpcmg", "Marília Mendonça", "Supera", "Sertanejo"], ["rTJSWmgbVwA", "Gusttavo Lima", "Termina Comigo Antes", "Sertanejo"], ["Jzl_nrTkfIM", "Maiara e Maraisa", "Medo Bobo", "Sertanejo"], ["A8iwQscRxDY", "Luan Santana", "Meteoro", "Sertanejo"], ["WcTRQXtXJPs", "Zé Neto e Cristiano", "Largado às Traças", "Sertanejo"], ["69JAoslGYI8", "Ana Castela", "Pipoco", "Sertanejo"], ["rJnEBfvbUTg", "Leonardo", "Entre Tapas e Beijos", "Sertanejo"], ["uWX0O8ATY3k", "Bruno e Marrone", "Dormi na Praça", "Sertanejo"], ["DURGfr1oh30", "Victor e Leo", "Borboletas", "Sertanejo"], ["mr09lDl_Tfk", "Simone Mendes", "Erro Gostoso", "Sertanejo"], ["9l8ghAxFCb8", "Paula Fernandes", "Pássaro de Fogo", "Sertanejo"], ["DxqyyNHFN8Y", "Xand Avião", "Volta Comigo BB", "Forró"], ["NRXBue4J50s", "Calcinha Preta", "Você Não Vale Nada", "Forró"], ["zsFSHg2hxbc", "Luiz Gonzaga", "Asa Branca", "Forró"], ["TPm6YnDNyj0", "Dominguinhos", "Eu Só Quero Um Xodó", "Forró"], ["H1DEczvTjgE", "João Gomes", "Meu Pedaço de Pecado", "Forró"], ["XXO8a0465Bc", "Thiaguinho", "Buquê de Flores", "Pagode"], ["l205wwjGzz8", "Ferrugem", "Pirata e Tesouro", "Pagode"], ["saalFn025fU", "Péricles", "Melhor Eu Ir", "Pagode"], ["VbJhN-3AVl0", "Sorriso Maroto", "Sinais", "Pagode"], ["cDVR_Tf56pE", "Exaltasamba", "Tá Vendo Aquela Lua", "Pagode"], ["cOchidcyv9Q", "Raça Negra", "Cheia de Manias", "Pagode"], ["fd3PJfv7SaY", "Grupo Menos é Mais", "Lapada Dela", "Pagode"], ["S_SXl-ETXRI", "Turma do Pagode", "Lancinho", "Pagode"], ["oTREAvZbmME", "Zeca Pagodinho", "Deixa a Vida Me Levar", "Samba"], ["6d6fIM54Vkk", "Alcione", "Não Deixe o Samba Morrer", "Samba"], ["h8PQQvNn6aI", "Diogo Nogueira", "Pé na Areia", "Samba"], ["1eWZ88eRFQs", "Beth Carvalho", "Coisinha do Pai", "Samba"], ["MYk1vpmLyoY", "Tim Maia", "Gostava Tanto de Você", "MPB"], ["MWh78SM5G7k", "Djavan", "Oceano", "MPB"], ["j9UbE1slI-Q", "Caetano Veloso", "Sozinho", "MPB"], ["Pmt01TGsGGA", "Marisa Monte", "Ainda Bem", "MPB"], ["JzByVhWju88", "Jorge Ben Jor", "País Tropical", "MPB"], ["JC63-PQ-O1w", "Gilberto Gil", "Andar com Fé", "MPB"], ["z4j9BhlmSSU", "Ana Carolina", "Quem de Nós Dois", "MPB"], ["v4k6JgC7UVA", "Vanessa da Mata", "Boa Sorte", "MPB"], ["W62-ZG9tPpI", "Tiago Iorc", "Amei Te Ver", "MPB"], ["F1yNwxLW1Cw", "Anavitória", "Trevo", "MPB"], ["xzL7K7HD5tw", "Lulu Santos", "Como Uma Onda", "MPB"], ["LfCDkut_j9M", "Elis Regina", "Como Nossos Pais", "MPB"], ["dDQZrIb4kFw", "Ivete Sangalo", "Sorte Grande", "Pop nacional"], ["kQnqwXY4VYQ", "Claudia Leitte", "Largadinho", "Pop nacional"], ["CuyTC8FLICY", "Anitta", "Girl From Rio", "Pop nacional"], ["7CzE8hUfVTY", "Ludmilla", "Maldivas", "Pop nacional"], ["g8psa0UBZKA", "Iza", "Pesadão", "Pop nacional"], ["4zJ4i6Az2Ck", "Pabllo Vittar", "Amor de Que", "Pop nacional"], ["gUpGTRR4Tt4", "Melim", "Meu Abrigo", "Pop nacional"], ["PcBgfuB64yA", "Jota Quest", "Na Moral", "Pop nacional"], ["DjPtwYunRq4", "Skank", "Garota Nacional", "Pop nacional"], ["tI9kSZgMLsc", "Legião Urbana", "Tempo Perdido", "Rock nacional"], ["trFdRPqjwyk", "Os Paralamas do Sucesso", "Lanterna dos Afogados", "Rock nacional"], ["cvznde5nc_s", "Titãs", "Epitáfio", "Rock nacional"], ["8Pilhg_dIQs", "Charlie Brown Jr", "Céu Azul", "Rock nacional"], ["sQzT4VObtZs", "Barão Vermelho", "Pro Dia Nascer Feliz", "Rock nacional"], ["nXLyy2ALJE4", "Capital Inicial", "À Sua Maneira", "Rock nacional"], ["xNo2kP7HJyw", "Chiclete com Banana", "Voa Voa", "Axé"], ["8cS9Zmm5FiU", "Banda Eva", "Eva", "Axé"], ["CgMC2VELSK0", "Asa de Águia", "Dança da Manivela", "Axé"], ["UNNOHk60ojk", "Natiruts", "Natiruts Reggae Power", "Reggae nacional"], ["6BaCNYU2YR0", "Armandinho", "Outra Vida", "Reggae nacional"], ["2wF9mHPb21Y", "Maneva", "Lenha", "Reggae nacional"], ["JGwWNGJdvx8", "Ed Sheeran", "Shape of You", "Pop internacional"], ["TUVcZfQe-Kw", "Dua Lipa", "Levitating", "Pop internacional"], ["OPf0YbXqDm0", "Bruno Mars", "Uptown Funk", "Pop internacional"], ["nfWlot6h_JM", "Taylor Swift", "Shake It Off", "Pop internacional"], ["rYEDA3JcQqw", "Adele", "Rolling in the Deep", "Pop internacional"], ["dvgZkm1xWPE", "Coldplay", "Viva La Vida", "Pop internacional"], ["H5v3kku4y6Q", "Harry Styles", "As It Was", "Pop internacional"], ["4NRXx6U8ABQ", "The Weeknd", "Blinding Lights", "Pop internacional"], ["Zi_XLOBDo_Y", "Michael Jackson", "Billie Jean", "Pop internacional"], ["CevxZvSJLk8", "Katy Perry", "Roar", "Pop internacional"], ["ZbZSe6N_BXs", "Pharrell Williams", "Happy", "Pop internacional"], ["bo_efYhYU2A", "Lady Gaga", "Shallow", "Pop internacional"], ["G7KNmW9a75Y", "Miley Cyrus", "Flowers", "Pop internacional"], ["7wtfhZwyrcc", "Imagine Dragons", "Believer", "Pop internacional"], ["hT_nvWreIhg", "OneRepublic", "Counting Stars", "Pop internacional"], ["DUT5rEU6pqM", "Shakira", "Hips Don't Lie", "Pop internacional"], ["fJ9rUzIMcZQ", "Queen", "Bohemian Rhapsody", "Rock internacional"], ["vx2u5uUu3DE", "Bon Jovi", "It's My Life", "Rock internacional"], ["1w7OgIMMRc4", "Guns N' Roses", "Sweet Child O' Mine", "Rock internacional"], ["YlUKcNNmywk", "Red Hot Chili Peppers", "Californication", "Rock internacional"], ["6hzrDeceEKc", "Oasis", "Wonderwall", "Rock internacional"], ["E54UIjXTw2E", "U2", "With or Without You", "Rock internacional"], ["kXYiU_JCYtU", "Linkin Park", "Numb", "Rock internacional"], ["IcrbM1l_BoI", "Avicii", "Wake Me Up", "Eletrônica"], ["JVpTp8IHdEg", "Alok", "Hear Me Now", "Eletrônica"], ["ebXbLfLACGM", "Calvin Harris", "Summer", "Eletrônica"], ["JRfuAukYTKg", "David Guetta", "Titanium", "Eletrônica"], ["9Sc-ir2UwGU", "Kygo", "Firestone", "Eletrônica"], ["5NV6Rdv1a3I", "Daft Punk", "Get Lucky", "Eletrônica"], ["xFrGuyw1V8s", "ABBA", "Dancing Queen", "Clássicos"], ["eH3giaIzONA", "Whitney Houston", "I Wanna Dance with Somebody", "Clássicos"], ["fNFzfwLM72c", "Bee Gees", "Stayin' Alive", "Clássicos"], ["Gs069dndIYk", "Earth Wind & Fire", "September", "Clássicos"], ["HNBCVM4KbUM", "Bob Marley", "Three Little Birds", "Clássicos"], ["djV11Xbc914", "a-ha", "Take On Me", "Clássicos"], ["nqAvFx3NxUM", "Lionel Richie", "All Night Long", "Clássicos"]];
+/* Músicas livres (Kevin MacLeod, incompetech.com, CC BY 4.0): tocam se o YouTube falhar neste aparelho. */
+const MUS=[
+ ['funkorama','Funkorama','Funk'],['carefree','Carefree','Pop'],['daily-beetle','Daily Beetle','Pop'],
+ ['bossa-antigua','Bossa Antigua','Bossa Nova'],['samba-isobel','Samba Isobel','Samba'],['latin-industries','Latin Industries','Latina'],
+ ['gonna-start','Gonna Start','Rock'],['volatile-reaction','Volatile Reaction','Rock'],['malt-shop-bop','Malt Shop Bop','Rock anos 50'],
+ ['electrodoodle','Electrodoodle','Eletrônica'],['werq','Werq','Eletrônica'],['raving-energy','Raving Energy','Eletrônica'],
+ ['disco-medusae','Disco Medusae','Disco'],['rollin-at-5','Rollin at 5','Groove'],['groove-grove','Groove Grove','Groove'],
+ ['island-meet-and-greet','Island Meet and Greet','Caribe'],['hep-cats','Hep Cats','Swing'],
+ ['local-forecast','Local Forecast','Jazz'],['night-on-the-docks','Night on the Docks','Jazz'],['chill-wave','Chill Wave','Chill']
+];
+const LIVRES=MUS.map(([f,t,e])=>({id:f,tipo:'livre',titulo:t,artista:'Kevin MacLeod',estilo:e,url:'m/'+f+'.mp3'}));
+let falhasYT=0,modoLivre=false,avisouLivre=false;
 const acervo=CAT.map(([id,a,t,e])=>({id,tipo:'yt',titulo:t,artista:a,estilo:e}));
 const ESTILOS=[...new Set(acervo.map(x=>x.estilo))];
 const VINHETAS=['v/vinheta-numeros.mp3','v/vinheta-servicos.mp3'];
@@ -202,13 +214,13 @@ window.onYouTubeIframeAPIReady=()=>{yt=new YT.Player('yt',{width:'100%',height:'
 let ytEv=null;
 function tocarYT(tr,onProg){
  return new Promise(async res=>{
-  let done=false,tocou=false;const fim=()=>{if(done)return;done=true;clearInterval(iv);clearTimeout(to);ytEv=null;try{yt.stopVideo()}catch(e){}$('ytwrap').classList.remove('on');res()};
+  let done=false,tocou=false;const fim=()=>{if(done)return;done=true;clearInterval(iv);clearTimeout(to);ytEv=null;try{yt.stopVideo()}catch(e){}$('ytwrap').classList.remove('on');res(tocou)};
   cancelar=fim;
-  const to=setTimeout(()=>{if(!tocou){bot(`Não consegui tocar "${esc(tr.titulo)}" agora. Pulando para a próxima.`,true);fim()}},20000);
+  const to=setTimeout(()=>{if(!tocou)fim()},20000);
   await Promise.race([ytPronto,new Promise(r=>setTimeout(r,12000))]);
   if(done)return;if(!yt||!yt.loadVideoById){bot('O player do YouTube não carregou. Verifique a internet.',true);fim();return}
   $('ytwrap').classList.add('on');
-  ytEv=(k,v)=>{if(k==='err'){bot(`O YouTube não liberou "${esc(tr.titulo)}" aqui. Pulando para a próxima.`,true);fim()}else if(v===1)tocou=true;else if(v===0)fim()};
+  ytEv=(k,v)=>{if(k==='err'){fim()}else if(v===1)tocou=true;else if(v===0)fim()};
   yt.setVolume(Math.round(volume()*100));yt.loadVideoById(tr.id);
   const iv=setInterval(()=>{try{const d=yt.getDuration(),c=yt.getCurrentTime();if(d>0){onProg(c/d);const r=d-c;yt.setVolume(Math.round(volume()*100*Math.max(0,Math.min(1,r/3))));if(r<.4&&tocou)fim()}}catch(e){}},300);
  });
@@ -245,8 +257,8 @@ function falar(txt,onProg){
 let fila=[],pedidos=[],musicasDesdeIntervalo=0,intervalos=0,iCli=0,iVin=0,ultimos=[];
 function sorteia(){
  const ultEst=ultimos.slice(-2).map(x=>x.estilo);
- const ops=acervo.filter(x=>!ultimos.includes(x)&&!ultEst.includes(x.estilo));
- const pool=ops.length?ops:acervo,hit=['Sertanejo','Pop nacional','Pop internacional','Pagode','Forró','Eletrônica'];const pw=pool.flatMap(x=>hit.includes(x.estilo)?[x,x]:[x]);return pw[Math.floor(Math.random()*pw.length)];
+ const base=modoLivre?LIVRES:acervo;const ops=base.filter(x=>!ultimos.includes(x)&&!ultEst.includes(x.estilo));
+ const pool=ops.length?ops:base,hit=['Sertanejo','Pop nacional','Pop internacional','Pagode','Forró','Eletrônica'];const pw=pool.flatMap(x=>hit.includes(x.estilo)?[x,x]:[x]);return pw[Math.floor(Math.random()*pw.length)];
 }
 function completaFila(){while(fila.length<4)fila.push({tipo:'musica',tr:sorteia()})}
 function renderFila(){
@@ -281,7 +293,13 @@ async function loop(){
    await falar(`Pediu, tocou! Esse pedido é de ${pn}. Muito obrigado, ${pn}, por ouvir a Rádio ECONTEC! Um abraço em nome da ECONTEC Contabilidade e de todos os nossos clientes. ${atual.parecida?'Você pediu '+ped.q+', e pra você vai uma no mesmo clima: ':'Agora: '}${atual.titulo}!`,()=>{});
    if(ligado)mostra(`Pedido de ${ped.nome}`,atual.titulo,atual.artista,'')}
   if(!ligado)break;
-  await(atual.tipo==='yt'?tocarYT(atual,prog):tocarArquivo(atual,prog));
+  let ok=true;
+  if(atual.tipo==='yt'){ok=await tocarYT(atual,prog);
+   if(ok){falhasYT=0}else if(ligado){falhasYT++;
+    if(ped){bot(`O YouTube não deixou tocar "${esc(atual.titulo)}" neste aparelho. Desculpe, ${esc(ped.nome)}!`,true)}
+    if(falhasYT>=3&&!modoLivre){modoLivre=true;fila=[];if(!avisouLivre){avisouLivre=true;bot('O YouTube não está tocando neste aparelho agora. Para a rádio não parar, entram as músicas livres da ECONTEC. Os pedidos continuam tentando o YouTube.',true)}setTimeout(()=>{modoLivre=false;falhasYT=0;fila=[]},10*60*1000)}
+    continue}}
+  else await tocarArquivo(atual,prog);
   musicasDesdeIntervalo++;
   if(ligado&&musicasDesdeIntervalo<5)await vinheta();
  }
