@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rádio ECONTEC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE: estúdio de rádio pequeno, simpático e sério; frases curtas de locutor.
+   IDEA: a mesa do estúdio: painel "no ar", medidor de som, fila de pedidos do ouvinte.
+   PICTURE: painel do aparelho com o visualizador de som ao vivo e o que está tocando.
+   COLOUR and TYPE: verde-petróleo profundo, branco, lâmpada vermelha de "no ar"; Outfit + Inter.
+   LAYOUT: aparelho grande à esquerda, robô de pedidos à direita; abaixo a fila e os ajustes. */
+:root{color-scheme:light dark;--bg:light-dark(#f4f6f5,#0b1313);--card:light-dark(#fff,#132020);--ink:light-dark(#122020,#e8efee);--mute:light-dark(#566664,#9db0ad);--deck:#0d4a4a;--deck2:#0a3939;--on:#e5383b;--acc:#f2c14e;--line:light-dark(#dde4e2,#223535)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Inter,system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:Outfit,Inter,sans-serif;line-height:1.05;margin:0;text-wrap:balance}
+.band{padding:clamp(20px,3vw,40px) max(4vw,16px)}
+.wrap{max-width:1240px;margin:0 auto}
+header.band{background:var(--deck2);color:#fff;padding-block:18px}
+header .wrap{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+header h1{font-size:30px}
+.lamp{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:99px;background:#ffffff1a;font-weight:600;font-size:14px}
+.lamp i{width:11px;height:11px;border-radius:50%;background:#6b7b7a}
+.lamp.live i{background:var(--on);box-shadow:0 0 10px var(--on)}
+header .sub{margin-left:auto;color:#cfe3e0;font-size:14px}
+.zapbtn{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:10px;background:#25d366;color:#08311a;font-weight:700;text-decoration:none;white-space:nowrap}
+header .zapbtn{margin-left:auto}
+.zapbtn:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+#npZap[hidden]{display:none}
+.grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:20px;align-items:stretch}
+@media(max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+.deck{background:linear-gradient(160deg,var(--deck),var(--deck2));color:#fff;border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:16px;box-shadow:0 12px 30px #0003}
+.fig{position:relative;flex:1;min-height:190px;border-radius:12px;background:#062a2a;overflow:hidden}
+.fig>canvas{position:absolute;inset:0;width:100%;height:100%}
+.fig{min-height:clamp(220px,30vw,340px)}#ytwrap{position:absolute;inset:0;visibility:hidden;background:#000}#ytwrap.on{visibility:visible}#ytwrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.np{display:flex;gap:16px;align-items:center}
+.np .logo{width:76px;height:76px;border-radius:12px;background:#ffffff14;display:grid;place-items:center;flex:none;overflow:hidden;font-family:Outfit;font-weight:700;font-size:28px;color:var(--acc)}
+.np .logo img{width:100%;height:100%;object-fit:contain;background:#fff}
+.np .kind{font-size:13px;color:var(--acc);font-weight:600}
+.np h2{font-size:clamp(24px,3.4vw,34px);margin:2px 0}
+.np .who{color:#cfe3e0}
+.bar{height:6px;border-radius:9px;background:#ffffff22;overflow:hidden}.bar b{display:block;height:100%;width:0;background:var(--acc)}
+.ctl{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+button{font:600 16px Inter,sans-serif;min-height:44px;padding:0 18px;border-radius:10px;border:0;cursor:pointer;background:var(--acc);color:#1a1a1a}
+button.ghost{background:#ffffff1f;color:#fff}
+button.lite{background:transparent;color:var(--ink);border:1px solid var(--line)}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.vol{display:flex;align-items:center;gap:8px;margin-left:auto;color:#cfe3e0;font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.card h3{font-size:22px}
+.note{font-size:13px;color:var(--mute)}
+input,textarea{font:16px Inter,sans-serif;width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+textarea{min-height:90px;resize:vertical}
+form{display:grid;gap:8px}
+.chat{display:flex;flex-direction:column;gap:8px;max-height:300px;overflow:auto;padding-right:4px}
+.msg{padding:8px 12px;border-radius:12px;font-size:15px;max-width:92%}
+.msg.me{background:var(--bg);align-self:flex-end}
+.msg.bot{background:light-dark(#e3f1ef,#1a3131);align-self:flex-start}
+.msg.no{background:light-dark(#fde8e8,#3a1d1e)}
+.msg small{display:block;font-weight:600;font-size:13px;color:var(--mute)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:20px}
+ol.q{margin:0;padding-left:22px}ol.q li{padding:4px 0;border-bottom:1px solid var(--line)}
+.tag{font-size:13px;color:var(--mute);white-space:nowrap}
+.cl{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.cl .lg{width:52px;height:52px;border-radius:10px;background:var(--bg);display:grid;place-items:center;overflow:hidden;font-weight:700;font-family:Outfit}
+.cl .lg img{width:100%;height:100%;object-fit:contain}
+.cl p{margin:0;font-size:14px;color:var(--mute)}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+label.file{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:10px;border:1px dashed var(--mute);cursor:pointer;font-weight:600}
+label.file input{display:none}
+@media(prefers-reduced-motion:reduce){.lamp.live i{box-shadow:none}}
+</style>
+</head>
+<body>
+<header class="band"><div class="wrap">
+  <h1>Rádio ECONTEC</h1>
+  <span class="lamp" id="lamp"><i></i><span id="lampTxt">Fora do ar</span></span>
+  <a class="zapbtn" href="https://wa.me/5564984192320" target="_blank" rel="noopener">WhatsApp ECONTEC (64) 9 8419-2320</a>
+</div></header>
+
+<main class="band"><div class="wrap" style="display:grid;gap:20px">
+  <div class="grid">
+    <section class="deck" aria-label="Aparelho da rádio">
+      <div class="fig"><canvas id="viz"></canvas><div id="ytwrap"><div id="yt"></div></div></div>
+      <div class="np">
+        <div class="logo" id="npLogo">E</div>
+        <div><div class="kind" id="npKind">Aperte "Ligar a rádio"</div><h2 id="npTitle">Rádio ECONTEC</h2><div class="who" id="npWho">Só sucesso, vinhetas e os nossos clientes, 24 horas</div></div>
+      </div>
+      <a class="zapbtn" id="npZap" hidden target="_blank" rel="noopener" href="#">Chamar no WhatsApp</a>
+      <div class="bar"><b id="prog"></b></div>
+      <div class="ctl">
+        <button id="btnPlay">Ligar a rádio</button>
+        <button class="ghost" id="btnSkip" disabled>Pular</button>
+        <label class="vol">Volume <input id="vol" type="range" min="0" max="1" step="0.05" value="0.8" style="width:110px"></label>
+      </div>
+    </section>
+
+    <section class="card" aria-label="Pedidos">
+      <h3>Peça sua música</h3>
+      <form id="fPed">
+        <input id="pNome" placeholder="Seu nome" maxlength="40" autocomplete="off">
+        <input id="pMus" placeholder="Música, artista ou estilo (ex.: samba)" maxlength="80" autocomplete="off">
+        <label class="file" style="min-height:40px;font-size:14px">Tem a música no aparelho? Anexe o arquivo<input id="pArq" type="file" accept="audio/*"></label>
+        <button type="button" id="btnPed">Enviar pedido ao robô</button>
+      </form>
+      <div class="chat" id="chat" aria-live="polite"></div>
+    </section>
+  </div>
+
+  <div class="cols">
+    <section class="card">
+      <h3>A seguir</h3>
+      <ol class="q" id="fila"></ol>
+      <p class="note">Entre as músicas sempre toca uma vinheta da ECONTEC. A cada 5 músicas entra o intervalo: hora certa, anúncio da ECONTEC e anúncio de um cliente. A rádio já começa pelo intervalo. Pedidos aprovados passam na frente da programação.</p>
+    </section>
+
+    <section class="card">
+      <h3>Anúncios dos clientes</h3>
+      <div id="clientes"></div>
+      <form id="fCli">
+        <input id="cNome" placeholder="Nome do cliente" maxlength="60" required>
+        <textarea id="cTxt" placeholder="Texto que o locutor vai ler" maxlength="400" required></textarea>
+        <input id="cZap" placeholder="WhatsApp do cliente com DDD, ex.: 64 9 8419-2320" maxlength="20" inputmode="tel" autocomplete="off">
+        <div class="row"><label class="file">Logo (opcional)<input id="cLogo" type="file" accept="image/*"></label><button type="button" id="btnCli">Adicionar anúncio</button></div>
+      </form>
+      <p class="note">A Padaria e a Auto Peças são exemplos. O anúncio da ECONTEC tem locução profissional; os outros são lidos pela voz do navegador. Durante cada anúncio aparece o botão do WhatsApp do cliente.</p>
+    </section>
+
+    <section class="card">
+      <h3>Filtro de conteúdo</h3>
+      <p style="margin:0">O robô recusa pedidos com palavrões, conteúdo sexual, drogas ou violência. Acrescente aqui outras palavras proibidas, separadas por vírgula.</p>
+      <textarea id="extraBlock" placeholder="ex.: palavra1, palavra2"></textarea>
+      <h3 style="margin-top:8px">Suas músicas</h3>
+      <p style="margin:0">A rádio toca sucessos nacionais e internacionais pelo player oficial do YouTube. Os pedidos que não estão na lista entram no mesmo estilo e ficam anotados. O ouvinte também pode colar o link de um vídeo do YouTube no pedido.</p>
+      <label for="ytkey" style="font-weight:600">Chave da busca do YouTube (opcional)</label>
+      <input id="ytkey" placeholder="Com a chave, o robô acha qualquer música pedida" autocomplete="off">
+      <p style="margin:0">Você também pode adicionar arquivos de música seus. Eles tocam só neste aparelho.</p>
+      <label class="file">Adicionar arquivos de música<input id="mp3" type="file" accept="audio/*" multiple></label>
+      <p class="note" id="acervoInfo"></p>
+      <p class="note">Versão de teste, para uso interno da ECONTEC. As músicas tocam pelo player oficial do YouTube. Para abrir a rádio ao público é preciso a licença de web rádio do ECAD. Vinhetas com voz gerada no ElevenLabs.</p>
+    </section>
+  </div>
+</div></main>
+
+<script src="https://www.youtube.com/iframe_api"></script>
+<script>
+{
+const $=id=>document.getElementById(id);
+const store={get(k,d){try{const v=localStorage.getItem('radioEcontec.'+k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem('radioEcontec.'+k,JSON.stringify(v))}catch(e){}}};
+const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------- Acervo: músicas reais, livres de direitos ----------
+   Todas de Kevin MacLeod (incompetech.com), licença Creative Commons Atribuição 4.0. */
+const CAT=[["Be6ROem9ms8", "Zezé Di Camargo e Luciano", "É o Amor", "Sertanejo"], ["ICS6uKC93w0", "Jorge e Mateus", "Os Anjos Cantam", "Sertanejo"], ["ff3r10rCKFs", "Henrique e Juliano", "Liberdade Provisória", "Sertanejo"], ["7fMttPxpcmg", "Marília Mendonça", "Supera", "Sertanejo"], ["rTJSWmgbVwA", "Gusttavo Lima", "Termina Comigo Antes", "Sertanejo"], ["Jzl_nrTkfIM", "Maiara e Maraisa", "Medo Bobo", "Sertanejo"], ["A8iwQscRxDY", "Luan Santana", "Meteoro", "Sertanejo"], ["WcTRQXtXJPs", "Zé Neto e Cristiano", "Largado às Traças", "Sertanejo"], ["69JAoslGYI8", "Ana Castela", "Pipoco", "Sertanejo"], ["rJnEBfvbUTg", "Leonardo", "Entre Tapas e Beijos", "Sertanejo"], ["uWX0O8ATY3k", "Bruno e Marrone", "Dormi na Praça", "Sertanejo"], ["DURGfr1oh30", "Victor e Leo", "Borboletas", "Sertanejo"], ["mr09lDl_Tfk", "Simone Mendes", "Erro Gostoso", "Sertanejo"], ["9l8ghAxFCb8", "Paula Fernandes", "Pássaro de Fogo", "Sertanejo"], ["DxqyyNHFN8Y", "Xand Avião", "Volta Comigo BB", "Forró"], ["NRXBue4J50s", "Calcinha Preta", "Você Não Vale Nada", "Forró"], ["zsFSHg2hxbc", "Luiz Gonzaga", "Asa Branca", "Forró"], ["TPm6YnDNyj0", "Dominguinhos", "Eu Só Quero Um Xodó", "Forró"], ["H1DEczvTjgE", "João Gomes", "Meu Pedaço de Pecado", "Forró"], ["XXO8a0465Bc", "Thiaguinho", "Buquê de Flores", "Pagode"], ["l205wwjGzz8", "Ferrugem", "Pirata e Tesouro", "Pagode"], ["saalFn025fU", "Péricles", "Melhor Eu Ir", "Pagode"], ["VbJhN-3AVl0", "Sorriso Maroto", "Sinais", "Pagode"], ["cDVR_Tf56pE", "Exaltasamba", "Tá Vendo Aquela Lua", "Pagode"], ["cOchidcyv9Q", "Raça Negra", "Cheia de Manias", "Pagode"], ["fd3PJfv7SaY", "Grupo Menos é Mais", "Lapada Dela", "Pagode"], ["S_SXl-ETXRI", "Turma do Pagode", "Lancinho", "Pagode"], ["oTREAvZbmME", "Zeca Pagodinho", "Deixa a Vida Me Levar", "Samba"], ["6d6fIM54Vkk", "Alcione", "Não Deixe o Samba Morrer", "Samba"], ["h8PQQvNn6aI", "Diogo Nogueira", "Pé na Areia", "Samba"], ["1eWZ88eRFQs", "Beth Carvalho", "Coisinha do Pai", "Samba"], ["MYk1vpmLyoY", "Tim Maia", "Gostava Tanto de Você", "MPB"], ["MWh78SM5G7k", "Djavan", "Oceano", "MPB"], ["j9UbE1slI-Q", "Caetano Veloso", "Sozinho", "MPB"], ["Pmt01TGsGGA", "Marisa Monte", "Ainda Bem", "MPB"], ["JzByVhWju88", "Jorge Ben Jor", "País Tropical", "MPB"], ["JC63-PQ-O1w", "Gilberto Gil", "Andar com Fé", "MPB"], ["z4j9BhlmSSU", "Ana Carolina", "Quem de Nós Dois", "MPB"], ["v4k6JgC7UVA", "Vanessa da Mata", "Boa Sorte", "MPB"], ["W62-ZG9tPpI", "Tiago Iorc", "Amei Te Ver", "MPB"], ["F1yNwxLW1Cw", "Anavitória", "Trevo", "MPB"], ["xzL7K7HD5tw", "Lulu Santos", "Como Uma Onda", "MPB"], ["LfCDkut_j9M", "Elis Regina", "Como Nossos Pais", "MPB"], ["dDQZrIb4kFw", "Ivete Sangalo", "Sorte Grande", "Pop nacional"], ["kQnqwXY4VYQ", "Claudia Leitte", "Largadinho", "Pop nacional"], ["CuyTC8FLICY", "Anitta", "Girl From Rio", "Pop nacional"], ["7CzE8hUfVTY", "Ludmilla", "Maldivas", "Pop nacional"], ["g8psa0UBZKA", "Iza", "Pesadão", "Pop nacional"], ["4zJ4i6Az2Ck", "Pabllo Vittar", "Amor de Que", "Pop nacional"], ["gUpGTRR4Tt4", "Melim", "Meu Abrigo", "Pop nacional"], ["PcBgfuB64yA", "Jota Quest", "Na Moral", "Pop nacional"], ["DjPtwYunRq4", "Skank", "Garota Nacional", "Pop nacional"], ["tI9kSZgMLsc", "Legião Urbana", "Tempo Perdido", "Rock nacional"], ["trFdRPqjwyk", "Os Paralamas do Sucesso", "Lanterna dos Afogados", "Rock nacional"], ["cvznde5nc_s", "Titãs", "Epitáfio", "Rock nacional"], ["8Pilhg_dIQs", "Charlie Brown Jr", "Céu Azul", "Rock nacional"], ["sQzT4VObtZs", "Barão Vermelho", "Pro Dia Nascer Feliz", "Rock nacional"], ["nXLyy2ALJE4", "Capital Inicial", "À Sua Maneira", "Rock nacional"], ["xNo2kP7HJyw", "Chiclete com Banana", "Voa Voa", "Axé"], ["8cS9Zmm5FiU", "Banda Eva", "Eva", "Axé"], ["CgMC2VELSK0", "Asa de Águia", "Dança da Manivela", "Axé"], ["UNNOHk60ojk", "Natiruts", "Natiruts Reggae Power", "Reggae nacional"], ["6BaCNYU2YR0", "Armandinho", "Outra Vida", "Reggae nacional"], ["2wF9mHPb21Y", "Maneva", "Lenha", "Reggae nacional"], ["JGwWNGJdvx8", "Ed Sheeran", "Shape of You", "Pop internacional"], ["TUVcZfQe-Kw", "Dua Lipa", "Levitating", "Pop internacional"], ["OPf0YbXqDm0", "Bruno Mars", "Uptown Funk", "Pop internacional"], ["nfWlot6h_JM", "Taylor Swift", "Shake It Off", "Pop internacional"], ["rYEDA3JcQqw", "Adele", "Rolling in the Deep", "Pop internacional"], ["dvgZkm1xWPE", "Coldplay", "Viva La Vida", "Pop internacional"], ["H5v3kku4y6Q", "Harry Styles", "As It Was", "Pop internacional"], ["4NRXx6U8ABQ", "The Weeknd", "Blinding Lights", "Pop internacional"], ["Zi_XLOBDo_Y", "Michael Jackson", "Billie Jean", "Pop internacional"], ["CevxZvSJLk8", "Katy Perry", "Roar", "Pop internacional"], ["ZbZSe6N_BXs", "Pharrell Williams", "Happy", "Pop internacional"], ["bo_efYhYU2A", "Lady Gaga", "Shallow", "Pop internacional"], ["G7KNmW9a75Y", "Miley Cyrus", "Flowers", "Pop internacional"], ["7wtfhZwyrcc", "Imagine Dragons", "Believer", "Pop internacional"], ["hT_nvWreIhg", "OneRepublic", "Counting Stars", "Pop internacional"], ["DUT5rEU6pqM", "Shakira", "Hips Don't Lie", "Pop internacional"], ["fJ9rUzIMcZQ", "Queen", "Bohemian Rhapsody", "Rock internacional"], ["vx2u5uUu3DE", "Bon Jovi", "It's My Life", "Rock internacional"], ["1w7OgIMMRc4", "Guns N' Roses", "Sweet Child O' Mine", "Rock internacional"], ["YlUKcNNmywk", "Red Hot Chili Peppers", "Californication", "Rock internacional"], ["6hzrDeceEKc", "Oasis", "Wonderwall", "Rock internacional"], ["E54UIjXTw2E", "U2", "With or Without You", "Rock internacional"], ["kXYiU_JCYtU", "Linkin Park", "Numb", "Rock internacional"], ["IcrbM1l_BoI", "Avicii", "Wake Me Up", "Eletrônica"], ["JVpTp8IHdEg", "Alok", "Hear Me Now", "Eletrônica"], ["ebXbLfLACGM", "Calvin Harris", "Summer", "Eletrônica"], ["JRfuAukYTKg", "David Guetta", "Titanium", "Eletrônica"], ["9Sc-ir2UwGU", "Kygo", "Firestone", "Eletrônica"], ["5NV6Rdv1a3I", "Daft Punk", "Get Lucky", "Eletrônica"], ["xFrGuyw1V8s", "ABBA", "Dancing Queen", "Clássicos"], ["eH3giaIzONA", "Whitney Houston", "I Wanna Dance with Somebody", "Clássicos"], ["fNFzfwLM72c", "Bee Gees", "Stayin' Alive", "Clássicos"], ["Gs069dndIYk", "Earth Wind & Fire", "September", "Clássicos"], ["HNBCVM4KbUM", "Bob Marley", "Three Little Birds", "Clássicos"], ["djV11Xbc914", "a-ha", "Take On Me", "Clássicos"], ["nqAvFx3NxUM", "Lionel Richie", "All Night Long", "Clássicos"]];
+const acervo=CAT.map(([id,a,t,e])=>({id,tipo:'yt',titulo:t,artista:a,estilo:e}));
+const ESTILOS=[...new Set(acervo.map(x=>x.estilo))];
+const VINHETAS=['v/vinheta-numeros.mp3','v/vinheta-servicos.mp3'];
+
+/* ---------- Clientes / vinhetas ---------- */
+const ZAP_ECONTEC='5564984192320';
+const zapLink=n=>'https://wa.me/'+String(n||'').replace(/\D/g,'').replace(/^(?!55)(\d{10,11})$/,'55$1');
+const zapFmt=n=>{const d=String(n||'').replace(/\D/g,'').replace(/^55/,'');return d.length===11?`(${d.slice(0,2)}) ${d[2]} ${d.slice(3,7)}-${d.slice(7)}`:d};
+let clientes=store.get('clientes2',[
+ {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'',zap:ZAP_ECONTEC},
+ {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
+ {nome:'Auto Peças Avenida',txt:'Auto Peças Avenida: peças para todas as marcas, entrega rápida e preço justo. Seu carro em boas mãos.',logo:''}
+]);
+const VINH=['Rádio ECONTEC! Só sucesso, o dia inteiro!','Tá no ar: Rádio ECONTEC! A energia que movimenta o seu dia!','Rádio ECONTEC! Pediu, tocou!','Os maiores sucessos, nacionais e internacionais. Rádio ECONTEC!','Enquanto você curte o som, a ECONTEC cuida dos seus números. Rádio ECONTEC!'];
+const BLOQ=['porra','caralh','puta','puto','merda','foda','fode','foder','fdp','bucet','xoxot','piroc','rola','pica','viado','arromb','vagabund','safad','putaria','sexo','sexual','pelad','novinha','proibidao','sacanag','tesao','gostosa','maconha','cocaina','crack','droga','baseado','lanca perfume','bandid','matar','assassin','tiro','faccao','satan','fuck','shit','bitch','pussy','dick','cock','nigg','sex','explicit','weed','cocaine','kill','gun','drunk','cachaca','bebad'];
+const EXATAS=['cu','cus','ass','pau'];
+let extra=store.get('extra','');$('extraBlock').value=extra;
+$('extraBlock').addEventListener('input',e=>{extra=e.target.value;store.set('extra',extra)});
+function ofensivo(txt){
+ const w=norm(txt).split(/[^a-z0-9]+/).filter(Boolean),full=' '+w.join(' ')+' ';
+ const lista=BLOQ.concat(norm(extra).split(',').map(s=>s.trim()).filter(Boolean));
+ return lista.some(b=>b.includes(' ')?full.includes(' '+b):w.some(x=>x.startsWith(b)))||w.some(x=>EXATAS.includes(x));
+}
+
+/* ---------- Áudio ---------- */
+let ctx,master,musica,analyser,noise,tocando=false,atual=null,cancelar=null,ligado=false;
+function initAudio(){
+ ctx=new (window.AudioContext||window.webkitAudioContext)();
+ master=ctx.createGain();master.gain.value=+$('vol').value;
+ analyser=ctx.createAnalyser();analyser.fftSize=256;
+ musica=ctx.createGain();musica.connect(master);master.connect(analyser);analyser.connect(ctx.destination);
+ noise=ctx.createBuffer(1,ctx.sampleRate,ctx.sampleRate);const d=noise.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+}
+const mtof=m=>440*2**((m-69)/12);
+function tom(dest,f,t,dur,type,vol){const o=ctx.createOscillator(),g=ctx.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.012);g.gain.exponentialRampToValueAtTime(vol*.5+.0001,t+dur*.6);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g);g.connect(dest);o.start(t);o.stop(t+dur+.05)}
+function bumbo(dest,t){const o=ctx.createOscillator(),g=ctx.createGain();o.frequency.setValueAtTime(140,t);o.frequency.exponentialRampToValueAtTime(42,t+.12);g.gain.setValueAtTime(.9,t);g.gain.exponentialRampToValueAtTime(.001,t+.3);o.connect(g);g.connect(dest);o.start(t);o.stop(t+.32)}
+function ruido(dest,t,hp,vol,dur){const s=ctx.createBufferSource(),f=ctx.createBiquadFilter(),g=ctx.createGain();s.buffer=noise;f.type='highpass';f.frequency.value=hp;g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);s.connect(f);f.connect(g);g.connect(dest);s.start(t,Math.random()*.5);s.stop(t+dur+.02)}
+function rng(s){return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296}}
+
+let tocandoArq=false,volArq=null;
+function volume(){return +$('vol').value}
+let yt=null,ytOk=null;const ytPronto=new Promise(r=>ytOk=r);
+window.onYouTubeIframeAPIReady=()=>{yt=new YT.Player('yt',{width:'100%',height:'100%',playerVars:{playsinline:1,rel:0,modestbranding:1,controls:0,disablekb:1,origin:location.origin},events:{onReady:()=>ytOk(),onStateChange:e=>ytEv&&ytEv('st',e.data),onError:e=>ytEv&&ytEv('err',e.data)}})};
+let ytEv=null;
+function tocarYT(tr,onProg){
+ return new Promise(async res=>{
+  let done=false,tocou=false;const fim=()=>{if(done)return;done=true;clearInterval(iv);clearTimeout(to);ytEv=null;try{yt.stopVideo()}catch(e){}$('ytwrap').classList.remove('on');res()};
+  cancelar=fim;
+  const to=setTimeout(()=>{if(!tocou){bot(`Não consegui tocar "${esc(tr.titulo)}" agora. Pulando para a próxima.`,true);fim()}},20000);
+  await Promise.race([ytPronto,new Promise(r=>setTimeout(r,12000))]);
+  if(done)return;if(!yt||!yt.loadVideoById){bot('O player do YouTube não carregou. Verifique a internet.',true);fim();return}
+  $('ytwrap').classList.add('on');
+  ytEv=(k,v)=>{if(k==='err'){bot(`O YouTube não liberou "${esc(tr.titulo)}" aqui. Pulando para a próxima.`,true);fim()}else if(v===1)tocou=true;else if(v===0)fim()};
+  yt.setVolume(Math.round(volume()*100));yt.loadVideoById(tr.id);
+  const iv=setInterval(()=>{try{const d=yt.getDuration(),c=yt.getCurrentTime();if(d>0){onProg(c/d);const r=d-c;yt.setVolume(Math.round(volume()*100*Math.max(0,Math.min(1,r/3))));if(r<.4&&tocou)fim()}}catch(e){}},300);
+ });
+}
+function tocarArquivo(tr,onProg){
+ return new Promise(res=>{
+  const a=new Audio(tr.url);a.preload='auto';a.volume=volume();let done=false;tocandoArq=true;volArq=a;
+  const fim=()=>{if(done)return;done=true;clearInterval(fd);a.pause();tocandoArq=false;if(volArq===a)volArq=null;res()};
+  const fd=setInterval(()=>{if(a.duration&&a.duration>20){const r=a.duration-a.currentTime;a.volume=volume()*Math.max(0,Math.min(1,r/2.5))}else a.volume=volume()},150);
+  a.ontimeupdate=()=>onProg(a.duration?a.currentTime/a.duration:0);a.onended=fim;
+  a.onerror=()=>{bot('Não consegui carregar um arquivo de áudio. Pulando para o próximo.',true);setTimeout(fim,1500)};
+  cancelar=fim;a.play().catch(()=>setTimeout(fim,1500));
+ });
+}
+function jingle(){const t=ctx.currentTime+.05;{const s=ctx.createBufferSource(),f=ctx.createBiquadFilter(),g=ctx.createGain();s.buffer=noise;f.type='bandpass';f.Q.value=4;f.frequency.setValueAtTime(300,t);f.frequency.exponentialRampToValueAtTime(6000,t+.45);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.5,t+.35);g.gain.linearRampToValueAtTime(0,t+.5);s.connect(f);f.connect(g);g.connect(musica);s.start(t);s.stop(t+.55)}[72,76,79,84].forEach((m,i)=>tom(musica,mtof(m),t+i*.13,.6,'triangle',.18));return new Promise(r=>setTimeout(r,800))}
+function fundo(){const a=new Audio('m/chill-wave.mp3');a.loop=true;a.volume=0;
+ a.addEventListener('loadedmetadata',()=>{a.currentTime=Math.random()*Math.max(0,a.duration-60)},{once:true});a.play().catch(()=>{});
+ let v=0;const up=setInterval(()=>{v=Math.min(.18,v+.02);a.volume=v*volume()},100);
+ return()=>{clearInterval(up);const dn=setInterval(()=>{v=Math.max(0,v-.02);a.volume=v*volume();if(v<=0){clearInterval(dn);a.pause()}},100)}}
+let voz=null;
+function pegaVoz(){try{const v=speechSynthesis.getVoices();voz=v.find(x=>/pt[-_]BR/i.test(x.lang))||v.find(x=>/^pt/i.test(x.lang))||null}catch(e){}}
+try{pegaVoz();speechSynthesis.onvoiceschanged=pegaVoz}catch(e){}
+function falar(txt,onProg){
+ return new Promise(res=>{
+  const temVoz='speechSynthesis' in window&&!!window.SpeechSynthesisUtterance,dur=temVoz?Math.max(4,txt.length*.075):Math.min(7,Math.max(4,txt.length*.04)),t0=performance.now();let done=false;
+  const fim=()=>{if(done)return;done=true;clearInterval(iv);clearTimeout(to);try{speechSynthesis.cancel()}catch(e){}res()};
+  const iv=setInterval(()=>onProg(Math.min(1,(performance.now()-t0)/1000/dur)),200);
+  const to=setTimeout(fim,(temVoz?dur+6:dur)*1000);cancelar=fim;
+  try{const u=new SpeechSynthesisUtterance(txt);u.lang='pt-BR';if(voz)u.voice=voz;u.rate=1.12;u.volume=Math.min(1,+$('vol').value+.1);u.onend=()=>setTimeout(fim,400);u.onerror=()=>{};speechSynthesis.speak(u)}catch(e){}
+ });
+}
+
+/* ---------- Programação ---------- */
+let fila=[],pedidos=[],musicasDesdeIntervalo=0,intervalos=0,iCli=0,iVin=0,ultimos=[];
+function sorteia(){
+ const ultEst=ultimos.slice(-2).map(x=>x.estilo);
+ const ops=acervo.filter(x=>!ultimos.includes(x)&&!ultEst.includes(x.estilo));
+ const pool=ops.length?ops:acervo,hit=['Sertanejo','Pop nacional','Pop internacional','Pagode','Forró','Eletrônica'];const pw=pool.flatMap(x=>hit.includes(x.estilo)?[x,x]:[x]);return pw[Math.floor(Math.random()*pw.length)];
+}
+function completaFila(){while(fila.length<4)fila.push({tipo:'musica',tr:sorteia()})}
+function renderFila(){
+ const prox=[...pedidos.map(p=>({tipo:'musica',tr:p.tr,ped:p.nome})),...fila].slice(0,5);
+ $('fila').innerHTML=prox.map(x=>`<li><b>${esc(x.tr.titulo)}</b> · ${esc(x.tr.artista)} <span class="tag">${x.ped?'pedido de '+esc(x.ped):esc(x.tr.estilo)}</span></li>`).join('');
+}
+function mostra(kind,title,who,logo,zap){const z=$('npZap');if(zap){z.hidden=false;z.href=zapLink(zap);z.textContent='Chamar '+title.replace(/ Contabilidade$/,'')+' no WhatsApp: '+zapFmt(zap)}else z.hidden=true;$('npKind').textContent=kind;$('npTitle').textContent=title;$('npWho').textContent=who;
+ $('npLogo').innerHTML=logo?`<img src="${esc(logo)}" alt="">`:esc((title||'E').replace(/^Rádio\s+/,'').trim()[0]||'E')}
+const prog=p=>$('prog').style.width=(p*100).toFixed(1)+'%';
+const ECONTEC_AD='ECONTEC Contabilidade: imposto, folha de pagamento, abertura de empresa e tudo o que a sua empresa precisa. Contabilidade séria, atendimento de verdade. ECONTEC: sua empresa em dia, você tranquilo!';
+async function vinheta(){mostra('Vinheta','Rádio ECONTEC','ECONTEC Contabilidade: sua empresa em dia','');prog(0);await tocarArquivo({url:VINHETAS[iVin++%VINHETAS.length]},prog)}
+async function intervalo(){
+ intervalos++;await vinheta();if(!ligado)return;
+ const stop=fundo();
+ const d=new Date(),m=d.getMinutes();
+ mostra('Hora certa','Rádio ECONTEC','Oferecimento ECONTEC Contabilidade','');prog(0);
+ await falar(`Hora certa ECONTEC: ${d.getHours()} horas${m?' e '+m+(m===1?' minuto':' minutos'):''}. Você está ouvindo a Rádio ECONTEC!`,prog);
+ if(ligado){mostra('Anúncio','ECONTEC Contabilidade','Imposto, folha, abertura de empresa: fale com a ECONTEC','',ZAP_ECONTEC);prog(0);await tocarArquivo({url:'v/anuncio-econtec.mp3'},prog)}
+ const outros=clientes.filter(c=>!/econtec/i.test(c.nome));
+ if(ligado&&outros.length){const c=outros[iCli++%outros.length];mostra('Anúncio',c.nome,c.txt,c.logo,c.zap);prog(0);await falar(c.txt,prog)}
+ stop();
+}
+async function loop(){
+ while(ligado){
+  if(musicasDesdeIntervalo>=5){musicasDesdeIntervalo=0;await intervalo();continue}
+  let item,ped=null;
+  if(pedidos.length){ped=pedidos.shift();item={tr:ped.tr}}else{completaFila();item=fila.shift()}
+  renderFila();atual=item.tr;ultimos.push(atual);if(ultimos.length>6)ultimos.shift();
+  mostra(ped?`Pedido de ${ped.nome}`:'Tocando agora · '+atual.estilo,atual.titulo,atual.artista,'');prog(0);
+  if(ped){mostra(`Obrigado, ${ped.nome}!`,atual.titulo,'Em nome da ECONTEC Contabilidade e de todos os nossos clientes','');
+   const pn=ped.nome==='Ouvinte'?'nosso ouvinte':ped.nome;
+   await falar(`Pediu, tocou! Esse pedido é de ${pn}. Muito obrigado, ${pn}, por ouvir a Rádio ECONTEC! Um abraço em nome da ECONTEC Contabilidade e de todos os nossos clientes. ${atual.parecida?'Você pediu '+ped.q+', e pra você vai uma no mesmo clima: ':'Agora: '}${atual.titulo}!`,()=>{});
+   if(ligado)mostra(`Pedido de ${ped.nome}`,atual.titulo,atual.artista,'')}
+  if(!ligado)break;
+  await(atual.tipo==='yt'?tocarYT(atual,prog):tocarArquivo(atual,prog));
+  musicasDesdeIntervalo++;
+  if(ligado&&musicasDesdeIntervalo<5)await vinheta();
+ }
+}
+$('btnPlay').addEventListener('click',async()=>{
+ if(!ctx)initAudio();
+ if(!ligado){ligado=true;await ctx.resume();$('btnPlay').textContent='Desligar';$('btnSkip').disabled=false;$('lamp').classList.add('live');$('lampTxt').textContent='No ar';
+  musicasDesdeIntervalo=5;intervalos=1;loop()}
+ else{ligado=false;if(cancelar)cancelar();$('btnPlay').textContent='Ligar a rádio';$('btnSkip').disabled=true;$('lamp').classList.remove('live');$('lampTxt').textContent='Fora do ar';mostra('Rádio desligada','Rádio ECONTEC','Aperte "Ligar a rádio" para voltar','');prog(0)}
+});
+$('btnSkip').addEventListener('click',()=>{if(cancelar)cancelar()});
+$('vol').addEventListener('input',e=>{try{yt&&yt.setVolume(Math.round(+e.target.value*100))}catch(x){}if(volArq)volArq.volume=+e.target.value;if(master)master.gain.setTargetAtTime(+e.target.value,ctx.currentTime,.05)});
+
+/* ---------- Robô de pedidos ---------- */
+function bot(txt,no){const c=$('chat');c.insertAdjacentHTML('beforeend',`<div class="msg bot${no?' no':''}"><small>Robô da rádio</small>${txt}</div>`);c.scrollTop=c.scrollHeight}
+function anotar(q){const a=store.get('anotados',[]);a.push(q);store.set('anotados',a.slice(-200))}
+function busca(q,exato){
+ const n=norm(q),pal=n.split(/[^a-z0-9]+/).filter(w=>w.length>2);
+ const est=ESTILOS.find(s=>n.includes(norm(s)))||ESTILOS.find(s=>n.includes(norm(s).split(' ')[0])&&norm(s).split(' ')[0].length>3);
+ let best=null,bs=0;
+ for(const tr of acervo){const h=norm(tr.titulo+' '+tr.artista+' '+tr.estilo);const sc=pal.filter(w=>h.includes(w)).length/(pal.length||1);if(sc>bs){bs=sc;best=tr}}
+ if(best&&bs>=.5)return best;
+ if(est){const ops=acervo.filter(x=>x.estilo===est);return ops[Math.floor(Math.random()*ops.length)]}
+ if(exato)return null;
+ const PARECE=[[/sertanej|modao|viola|chitaozinho|xororo|leonardo|marilia|henrique|gusttavo|matheus|ze neto|luan|zeze|bruno e|maiara|simone|barioni|ana castela/,['Sertanejo']],[/forro|xote|baiao|piseiro|arrocha|safadao|xand|gonzaga|joao gomes/,['Forró']],[/pagode|thiaguinho|ferrugem|pericles/,['Pagode']],[/samba|zeca/,['Samba']],[/mpb|bossa|djavan|caetano|tim maia/,['MPB']],[/axe|ivete|carnaval/,['Axé','Pop nacional']],[/funk|anitta|ludmilla|rap|trap/,['Pop nacional']],[/rock|metal|punk/,['Rock nacional','Rock internacional']],[/eletr|house|techno|dance|dj|balada|alok/,['Eletrônica']],[/reggae/,['Reggae nacional']],[/gospel|louvor/,['MPB']],[/internacional|ingles|english|pop/,['Pop internacional']],[/antig|anos 80|anos 70|flashback|classic/,['Clássicos']]];
+ const m=PARECE.find(([r])=>r.test(n)),pool=acervo.filter(x=>m?m[1].includes(x.estilo):['Pop nacional','Pop internacional','Sertanejo'].includes(x.estilo));
+ const tr=pool[Math.floor(Math.random()*pool.length)]||acervo[0];return {...tr,parecida:true};
+}
+function idDoLink(q){const m=String(q).match(/(?:youtu\.be\/|v=|shorts\/|embed\/)([\w-]{11})/);return m?m[1]:null}
+async function buscaYT(q){const k=(store.get('ytkey','')||'').trim();if(!k)return null;
+ try{const r=await fetch('https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoEmbeddable=true&safeSearch=strict&maxResults=1&q='+encodeURIComponent(q)+'&key='+encodeURIComponent(k));const j=await r.json();const it=j.items&&j.items[0];if(!it)return null;
+ const t=it.snippet.title.replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"');if(ofensivo(t))return null;return {id:it.id.videoId,tipo:'yt',titulo:t,artista:it.snippet.channelTitle,estilo:'Pedido'}}catch(e){return null}}
+function enviarPedido(){const nome=$('pNome').value.trim()||'Ouvinte',f=$('pArq').files[0];let q=$('pMus').value.trim();if(!q&&f)q=f.name.replace(/\.[^.]+$/,'').replace(/_/g,' ');if(!q)return;$('pArq').value='';
+ const c=$('chat');c.insertAdjacentHTML('beforeend',`<div class="msg me"><small>${esc(nome)}</small>${esc(q)}</div>`);
+ $('pMus').value='';
+ setTimeout(()=>{
+  if(ofensivo(q)||ofensivo(nome)){bot('Desculpe, esse pedido não pode tocar: a Rádio ECONTEC tem uma programação para toda a família. Que tal outra música?',true);return}
+  if(f){const base=q;const [a,t]=base.includes(' - ')?base.split(' - ',2):['',base];const tr={id:'p'+Date.now(),tipo:'arquivo',titulo:t.trim(),artista:a.trim()||'pedido do ouvinte',estilo:'Pedido',url:URL.createObjectURL(f)};pedidos.push({nome,tr,q});renderFila();bot(`Pedido aceito, ${esc(nome)}! Vou tocar <b>${esc(tr.titulo)}</b> do arquivo que você mandou, ${pedidos.length===1?'logo em seguida':'daqui a '+pedidos.length+' músicas'}. A responsabilidade pelos direitos dessa música é de quem enviou.`);return}
+  const lk=idDoLink(q);if(lk){const tr={id:lk,tipo:'yt',titulo:'Música do link',artista:'pedido de '+nome,estilo:'Pedido'};pedidos.push({nome,tr,q});renderFila();bot(`Pedido aceito, ${esc(nome)}! Vou tocar o vídeo do link ${pedidos.length===1?'logo em seguida':'daqui a '+pedidos.length+' músicas'}.`);return}
+  let tr=busca(q,true);
+  if(!tr)(async()=>{let t=await buscaYT(q);if(t){pedidos.push({nome,tr:t,q});renderFila();bot(`Pedido aceito, ${esc(nome)}! Achei <b>${esc(t.titulo)}</b> no YouTube. Toca ${pedidos.length===1?'logo em seguida':'daqui a '+pedidos.length+' músicas'}.`);return}t=busca(q);pedidos.push({nome,tr:t,q});renderFila();bot(`${esc(nome)}, ainda não tenho "${esc(q)}" na lista da rádio. Já coloquei uma no mesmo clima: <b>${esc(t.titulo)}</b>, com ${esc(t.artista)}. E anotei o seu pedido para a próxima atualização.`);anotar(q)})();
+  if(!tr)return;
+  if(!tr){bot(`Ainda não tenho "${esc(q)}" no acervo de teste. Anotei o pedido para a próxima atualização do acervo. Enquanto isso, peça por estilo: ${ESTILOS.join(', ')}.`);return}
+  pedidos.push({nome,tr,q});renderFila();
+  if(tr.parecida){bot(`${esc(nome)}, "${esc(q)}" não está no acervo, porque aqui só tocam músicas liberadas para rádio. Mas já coloquei uma no mesmo clima: <b>${esc(tr.titulo)}</b> (${esc(tr.estilo)}), ${pedidos.length===1?'logo em seguida':'daqui a '+pedidos.length+' músicas'}.`);return}
+  bot(`Pedido aceito, ${esc(nome)}! Vou tocar <b>${esc(tr.titulo)}</b> (${esc(tr.artista)}, ${esc(tr.estilo)}) ${pedidos.length===1?'logo em seguida':'daqui a '+pedidos.length+' músicas'}.${ligado?'':' Ligue a rádio para ouvir.'}`);
+ },500);
+}
+$('btnPed').addEventListener('click',enviarPedido);$('fPed').addEventListener('submit',e=>{e.preventDefault();enviarPedido()});$('fPed').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.tagName==='INPUT'&&e.target.type!=='file'){e.preventDefault();enviarPedido()}});
+bot('Olá! Sou o robô da Rádio ECONTEC. Peça uma música pelo nome, artista ou estilo, e eu coloco na fila.');
+
+/* ---------- Clientes ---------- */
+function renderCli(){
+ $('clientes').innerHTML=clientes.map((c,i)=>`<div class="cl"><div class="lg">${c.logo?`<img src="${esc(c.logo)}" alt="">`:esc(c.nome[0]||'?')}</div><div><b>${esc(c.nome)}</b><p>${esc(c.txt)}</p>${c.zap?`<p><a href="${esc(zapLink(c.zap))}" target="_blank" rel="noopener">WhatsApp ${esc(zapFmt(c.zap))}</a></p>`:''}</div><button class="lite" data-del="${i}">Remover</button></div>`).join('')||'<p class="note">Nenhum anúncio cadastrado.</p>';
+}
+$('clientes').addEventListener('click',e=>{const i=e.target.dataset.del;if(i!==undefined){clientes.splice(+i,1);store.set('clientes2',clientes);renderCli()}});
+function enviarCli(){const nome=$('cNome').value.trim(),txt=$('cTxt').value.trim();if(!nome||!txt){bot('Para adicionar um anúncio, preencha o nome do cliente e o texto.',true);return}const zap=$('cZap').value.replace(/\D/g,''),f=$('cLogo').files[0];
+ if(ofensivo(txt)){alertMsg('O texto do anúncio tem palavras bloqueadas pelo filtro.');return}
+ const add=logo=>{clientes.push({nome,txt,logo,zap});store.set('clientes2',clientes);renderCli();$('fCli').reset()};
+ if(f){const r=new FileReader();r.onload=()=>add(r.result);r.readAsDataURL(f)}else add('');
+}
+$('btnCli').addEventListener('click',enviarCli);$('fCli').addEventListener('submit',e=>{e.preventDefault();enviarCli()});
+function alertMsg(t){bot(t,true)}
+renderCli();
+
+/* ---------- Músicas do usuário ---------- */
+$('ytkey').value=store.get('ytkey','');$('ytkey').addEventListener('change',e=>store.set('ytkey',e.target.value.trim()));
+function info(){const n=acervo.filter(x=>x.tipo==='arquivo').length;$('acervoInfo').textContent=`Lista da rádio: ${acervo.length-n} sucessos em ${ESTILOS.length} estilos${n?', mais '+n+' arquivos seus':''}.`}
+$('mp3').addEventListener('change',e=>{
+ let rec=0;
+ for(const f of e.target.files){const base=f.name.replace(/\.[^.]+$/,'').replace(/_/g,' ');if(ofensivo(base)){rec++;continue}
+  const [a,t]=base.includes(' - ')?base.split(' - ',2):['Minhas músicas',base];
+  acervo.push({id:'f'+acervo.length,tipo:'arquivo',titulo:t.trim(),artista:a.trim(),estilo:'Minhas músicas',url:URL.createObjectURL(f)})}
+ info();if(rec)bot(`${rec} arquivo(s) foram recusados pelo filtro de conteúdo.`,true);e.target.value='';
+});
+info();completaFila();renderFila();
+
+/* ---------- Visualizador ---------- */
+const cv=$('viz'),g2=cv.getContext('2d');
+function draw(){
+ const W=cv.clientWidth,H=cv.clientHeight,dpr=devicePixelRatio||1;if(cv.width!==W*dpr){cv.width=W*dpr;cv.height=H*dpr}
+ g2.setTransform(dpr,0,0,dpr,0,0);g2.clearRect(0,0,W,H);
+ const n=Math.max(16,Math.floor(W/14)),data=new Uint8Array(128);if(analyser&&ligado)analyser.getByteFrequencyData(data);
+ if(tocandoArq){const t=performance.now()/1000;for(let i=0;i<90;i++)data[i]=Math.max(data[i],(.35+.3*Math.sin(t*6+i*.7)*Math.sin(t*2.3+i*.13)+.25*Math.random())*255*(1-i/140))}
+ for(let i=0;i<n;i++){const v=data[Math.floor(i/n*90)]/255,h=Math.max(4,v*(H-24)),x=i*(W/n)+2,w=W/n-4;
+  g2.fillStyle=v>.75?'#e5383b':v>.45?'#f2c14e':'#3fb8a8';g2.fillRect(x,H-12-h,w,h);g2.fillStyle='#ffffff10';g2.fillRect(x,12,w,H-24-h)}
+ requestAnimationFrame(draw);
+}
+const ro=new ResizeObserver(()=>{});ro.observe(cv);draw();
+}
+</script>
+</body>
+</html>
