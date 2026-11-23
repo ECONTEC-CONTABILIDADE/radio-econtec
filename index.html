@@ -376,7 +376,7 @@ const _q=location.search+location.hash;
 /* Administrador só pelo link de admin (?admin). O link de ouvinte é sempre ouvinte. */
 try{localStorage.removeItem('radioEcontec.admin')}catch(e){}
 const ADMIN=/[?&#]admin\b/.test(_q);
-if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 23</span>')}
+if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 24</span>')}
 const CLI_PADRAO=[
  {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'img/logo-econtec.png',zap:ZAP_ECONTEC},
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
@@ -533,7 +533,7 @@ async function duracaoYT(id){if(DUR[id])return DUR[id];const k=(store.get('ytkey
  try{const j=await fetch('https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id='+id+'&key='+encodeURIComponent(k)).then(r=>r.json());const iso=j.items[0].contentDetails.duration;const m=iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);const s=(+m[1]||0)*3600+(+m[2]||0)*60+(+m[3]||0);return s>=30?Math.min(s,420):240}catch(e){return 240}}
 async function publicaPedido(nome,tr){const dur=await duracaoYT(tr.id);const corpo={nome,dur,tr:{id:tr.id,tipo:'yt',titulo:tr.titulo,artista:tr.artista,estilo:tr.estilo,parecida:!!tr.parecida}};
  try{const r=await fetch('https://ntfy.sh/'+PED_TOP,{method:'POST',body:JSON.stringify(corpo)});const m=await r.json();corpo.id=m.id;corpo.ts=m.time*1000;addPed(corpo);renderFila();return pedList[m.id]?m.id:null}catch(e){return null}}
-function quandoToca(id){const ms=agora(),d=Math.floor((ms-FUSO)/DIA);for(const x of [d,d+1]){const it=gradeViva(x).g.find(i=>i.k==='pedido'&&i.p.id===id);if(it)return it.t0}return null}
+function quandoToca(id){const ms=agora(),d=Math.floor((ms-FUSO)/DIA);for(const x of [d-1,d,d+1]){const it=gradeViva(x).g.find(i=>i.k==='pedido'&&i.p.id===id);if(it)return it.t0}return null}
 async function carregaHomenagem(){const d=Math.floor((Date.now()-FUSO)/DIA);const nome=new Date(d*DIA).toISOString().slice(0,10);
  try{const h=await fetch('homenagem/'+nome+'.json',{cache:'no-store'}).then(r=>r.ok?r.json():null);if(h&&JSON.stringify(h)!==JSON.stringify(homs[d])){homs[d]=h;renderFila()}}catch(e){}avisoHom()}
 function avisoHom(){const el=$('homAviso');if(!el)return;const ms=agora(),d=Math.floor((ms-FUSO)/DIA),h=homs[d],ini=d*DIA+FUSO+HOM_HORA*36e5;
@@ -642,8 +642,8 @@ let enviando=false;
 function avisaPedido(nome,tr,id,extraTxt){if(!id){bot(`Desculpe, ${esc(nome)}, não consegui enviar o pedido agora (sem internet?). Tente de novo.`,true);return}
  const t=quandoToca(id);const q=t?` por volta das <b>${hhmm(t)}</b>`:' assim que chegar a vez dele na fila';
  bot(`${extraTxt||`Pedido aceito, ${esc(nome)}!`} <b>${esc(tr.titulo)}</b>${tr.artista?' ('+esc(tr.artista)+')':''} vai tocar ao vivo para todos os ouvintes${q}, depois da música que está tocando. A Betina vai falar o seu nome e agradecer!${ligado?'':' Ligue a rádio para ouvir.'}`)}
-function atualizaMeuPed(){const el=$('meuPed');if(!el)return;const ids=store.get('meusPed',[]).filter(id=>pedList[id]);const ms=agora();let html='';
- for(const id of ids){const p=pedList[id],t=quandoToca(id);if(t&&ms>t+(PED_INTRO+p.dur)*1000)continue;
+function atualizaMeuPed(){const el=$('meuPed');if(!el)return;const ms=agora();const todos=store.get('meusPed',[]),keep=todos.filter(id=>!pedList[id]||ms-pedList[id].ts<6*36e5),ids=keep.filter(id=>pedList[id]);if(keep.length!==todos.length)store.set('meusPed',keep);let html='';
+ for(const id of ids){const p=pedList[id],t=quandoToca(id);if(t?ms>t+(PED_INTRO+p.dur)*1000:ms-p.ts>15*6e4)continue;
   if(t&&ms>=t)html+=`🎶 Tocando agora o pedido de <b>${esc(p.nome)}</b>: ${esc(p.tr.titulo)}<br>`;
   else{const min=t?Math.max(1,Math.round((t-ms)/6e4)):null;html+=`⏳ Pedido de <b>${esc(p.nome)}</b>: ${esc(p.tr.titulo)} ${t?`toca às <b>${hhmm(t)}</b> (em ${min} min), depois da música que está tocando${ids.length>1?' e dos pedidos anteriores':''}.`:'está na fila.'}<br>`}}
  el.innerHTML=html;el.hidden=!html}
@@ -774,7 +774,7 @@ async function geraRelatorio(){const n=+$('relDia').value,out=$('relOut');out.in
   return `<div class="relCli"><b>${esc(k)}</b><div class="relNums"><span><strong>${L.length}</strong>vezes no ar</span><span><strong>${on}</strong>aparelhos conectados</span><span><strong>${ouv}</strong>ouvindo na hora</span><span><strong>${pico}</strong>pico de ouvintes</span></div>${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório no WhatsApp do cliente</a>`:`<a class="zapCli" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório pelo WhatsApp</a>`}</div>`}).join('')+'<p class="note">Os números de audiência contam aparelhos com a rádio aberta no minuto do anúncio.</p>'}
 if(ADMIN)$('btnRel').addEventListener('click',geraRelatorio);
 
-const VERSAO=23;
+const VERSAO=24;
 function checaVersao(){fetch('index.html?nv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VERSAO=(\d+)/);if(m&&+m[1]>VERSAO&&!ligado)location.reload()}).catch(()=>{})}
 checaVersao();setInterval(checaVersao,5*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checaVersao()});
 
