@@ -77,6 +77,8 @@ body:not(.admin) .adm{display:none!important}
 .audiNums b{display:block;font-family:Outfit,sans-serif;font-size:32px;color:#fff;line-height:1.1}
 .audiNums span{font-size:12px;color:#e3cccc}.audi small{color:#bfa9a9;font-size:12px}
 .admAviso{margin:10px 0 0;padding:10px 12px;border-radius:12px;background:#0f2a17;border:1px solid #2ecc7155;color:#bff5cf;font-weight:600;font-size:14px}.admAviso.erro{background:#2a0f12;border-color:#ff6b6b66;color:#ffd0d0}.publicando #clientes button,.publicando #btnCli{opacity:.5;pointer-events:none}
+.btnNovoAn{width:100%;margin:6px 0 12px;padding:14px;border-radius:14px;font-size:16px;font-weight:800;background:linear-gradient(180deg,#ffd978,#e0a62b);color:#2a1a00;border:0}
+#vouAdm{position:fixed;right:12px;top:12px;z-index:60;padding:9px 14px;border-radius:999px;border:1px solid #f0c14b88;background:#1a0f10ee;color:#ffd978;font-weight:700;font-size:13px}
 .admtag{display:inline-block;background:#c0392b;color:#fff;border-radius:6px;padding:2px 8px;font-size:12px;margin-left:8px}
 input,textarea{font:16px Inter,sans-serif;width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
 textarea{min-height:90px;resize:vertical}
@@ -281,6 +283,7 @@ header .marcaTopo{animation:brilhaLogo 4s ease-in-out infinite}
 
     <section class="card">
       <h3>Anúncios dos clientes</h3>
+      <button type="button" class="adm btnNovoAn" id="btnNovoAn">➕ Adicionar anúncio de cliente</button>
       <div id="clientes"></div>
       <form id="fCli" class="adm admForm">
         <h4 id="fCliTit">Novo anúncio</h4>
@@ -350,7 +353,7 @@ const _q=location.search+location.hash;
 /* Administrador só pelo link de admin (?admin). O link de ouvinte é sempre ouvinte. */
 try{localStorage.removeItem('radioEcontec.admin')}catch(e){}
 const ADMIN=/[?&#]admin\b/.test(_q);
-if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 13</span>')}
+if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 14</span>')}
 const CLI_PADRAO=[
  {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'img/logo-econtec.png',zap:ZAP_ECONTEC},
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
@@ -638,7 +641,9 @@ async function migraLocal(){if(!ADMIN)return;const ks=['clientes3','editados','c
  if(!Object.keys(ed).length&&!ca.length&&!ex.length&&!lo.length)return;if(!await pegaChave())return;
  const L=anuncios.filter(c=>!ex.includes(c.nome)).map(c=>{const e=ed[c.nome];const o=Object.assign({},c,e||{});if(e&&e.txt!==c.txt)o.audio='';if(ca.includes(c.nome))o.cancelado=true;return o}).concat(lo.map(c=>({nome:c.nome,txt:c.txt,zap:c.zap||'',logo:c.logo||'',cancelado:!!c.cancelado})));
  if(await publica(L,'Suas mudanças nos anúncios foram aplicadas.'))ks.forEach(k=>{try{localStorage.removeItem('radioEcontec.'+k)}catch(e){}})}
-sincroniza().then(mostraCodigo).then(migraLocal);setInterval(()=>{if(!document.hidden)buscaNtfy()},60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)buscaNtfy()});
+sincroniza().then(mostraCodigo).then(migraLocal).then(()=>{const j=store.get('chaveAdmJwk',null);
+ if(!ADMIN&&j&&AN_PUBS.some(k=>k.x===j.x&&k.y===j.y)){const b=document.createElement('button');b.id='vouAdm';b.type='button';b.textContent='⚙ Administrador';b.onclick=()=>location.href=location.pathname+'?admin';document.body.appendChild(b)}});
+$('btnNovoAn').addEventListener('click',()=>{fechaEdicao();$('fCli').scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>$('cNome').focus(),400)});setInterval(()=>{if(!document.hidden)buscaNtfy()},60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)buscaNtfy()});
 
 /* ---------- Músicas do usuário ---------- */
 $('ytkey').value=store.get('ytkey','');$('ytkey').addEventListener('change',e=>store.set('ytkey',e.target.value.trim()));
@@ -667,7 +672,7 @@ async function auMostra(){const m=Math.floor(Date.now()/60000)-1;const [a,b,c]=a
  $('auOn').textContent=Math.max(a,1);$('auOuv').textContent=b;$('auDia').textContent=Math.max(c,1);
  $('auInfo').textContent='Último minuto completo · atualizado às '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'})}
 if(ADMIN){auMostra();setInterval(auMostra,30000)}
-const VERSAO=13;
+const VERSAO=14;
 function checaVersao(){fetch('index.html?nv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VERSAO=(\d+)/);if(m&&+m[1]>VERSAO&&!ligado)location.reload()}).catch(()=>{})}
 checaVersao();setInterval(checaVersao,5*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checaVersao()});
 
