@@ -355,7 +355,7 @@ const _q=location.search+location.hash;
 /* Administrador só pelo link de admin (?admin). O link de ouvinte é sempre ouvinte. */
 try{localStorage.removeItem('radioEcontec.admin')}catch(e){}
 const ADMIN=/[?&#]admin\b/.test(_q);
-if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 18</span>')}
+if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 19</span>')}
 const CLI_PADRAO=[
  {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'img/logo-econtec.png',zap:ZAP_ECONTEC},
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
@@ -412,6 +412,16 @@ function tocarYT(tr,onProg,ini,ate){
   const iv=setInterval(()=>{try{const d0=yt.getDuration(),c=yt.getCurrentTime(),d=ate?Math.min(d0,ate):d0;if(d>0){onProg(c/d);const r=d-c;yt.setVolume(Math.round(volume()*100*Math.max(0,Math.min(1,r/3))));if(r<.4&&tocou)fim()}}catch(e){}},300);
  });
 }
+/* fala sem emendas: junta os trechos (frase + nome + agradecimento) num áudio só, sem silêncios nem atraso de carregamento */
+const bufCache={};
+async function bufDe(url){if(bufCache[url])return bufCache[url];const ab=await fetch(url).then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()});const b=await new Promise((ok,er)=>ctx.decodeAudioData(ab,ok,er));return bufCache[url]=b}
+function apara(b){const d=b.getChannelData(0),lim=0.012;let i=0,j=d.length-1;while(i<j&&Math.abs(d[i])<lim)i++;while(j>i&&Math.abs(d[j])<lim)j--;i=Math.max(0,i-Math.round(.02*b.sampleRate));j=Math.min(d.length-1,j+Math.round(.06*b.sampleRate));return[i,j]}
+async function falaEmendada(urls,gaps){try{if(!ctx)return false;const bs=await Promise.all(urls.map(bufDe));const sr=bs[0].sampleRate,parts=bs.map(apara);
+ let tot=0;parts.forEach(([i,j],k)=>{tot+=j-i+1+(k<parts.length-1?Math.round((gaps[k]||.1)*sr):0)});
+ const out=ctx.createBuffer(1,tot,sr),o=out.getChannelData(0);let pos=0;
+ bs.forEach((b,k)=>{const [i,j]=parts[k],d=b.getChannelData(0),n=j-i+1,f=Math.round(.008*sr);for(let x=0;x<n;x++){let v=d[i+x];if(x<f)v*=x/f;if(n-x<f)v*=(n-x)/f;o[pos+x]=v}pos+=n+(k<bs.length-1?Math.round((gaps[k]||.1)*sr):0)});
+ await new Promise(res=>{const src=ctx.createBufferSource();src.buffer=out;const g=ctx.createGain();g.gain.value=1.15;src.connect(g);g.connect(master);let done=false;const fim=()=>{if(done)return;done=true;try{src.stop()}catch(e){}res()};src.onended=fim;cancelar=fim;src.start()});return true}catch(e){return false}}
+function preCarregaNome(p){try{if(!ctx)return;const ni=idxNome(p.nome);if(ni===undefined)return;['v/n/_pedido-de.mp3','v/n/'+String(ni).padStart(3,'0')+'.mp3',p.tr.parecida?'v/f-parecida.mp3':'v/f-obrigada.mp3'].forEach(u=>bufDe(u).catch(()=>{}))}catch(e){}}
 function tocarArquivo(tr,onProg){
  return new Promise(res=>{
   const a=new Audio(tr.url);a.preload='auto';if(tr.ini>0.3)a.addEventListener('loadedmetadata',()=>{if(tr.ini<a.duration-0.3)a.currentTime=tr.ini;else fim()},{once:true});a.volume=volume();let done=false;tocandoArq=true;volArq=a;
@@ -447,6 +457,7 @@ function falar(txt,onProg){
 let ultimoId=null,itemAtual=null,ajuste=0;
 const agora=()=>Date.now()+ajuste;
 if(/[?&]teste\b/.test(location.search))window.__aj=v=>{ajuste=v;if(cancelar)cancelar()};
+if(/[?&]teste\b/.test(location.search))setTimeout(()=>{window.__fe=falaEmendada},0);
 const DUR={"Be6ROem9ms8": 207, "rJnEBfvbUTg": 255, "uWX0O8ATY3k": 159, "oTREAvZbmME": 218, "v4k6JgC7UVA": 233, "UNNOHk60ojk": 205, "OPf0YbXqDm0": 270, "ZbZSe6N_BXs": 241, "hT_nvWreIhg": 283, "DUT5rEU6pqM": 218, "vx2u5uUu3DE": 267, "1w7OgIMMRc4": 303, "xFrGuyw1V8s": 233, "Gs069dndIYk": 215, "nqAvFx3NxUM": 229, "eCyMh-mZ1B0": 210, "ILADw1aretk": 159, "CKtHg1jBREY": 174, "2_xBCeBmaS8": 154, "2Q6eFRuYa2w": 210, "mQr7XemLs8s": 140, "l0SDN7W5lZg": 178, "14C28JSO-sg": 175, "Z1ZKaR-9Kt4": 204, "mvWXaz0Gtbo": 247, "MxwZ66L9RQI": 239, "rYKOuKaWEjg": 189, "VfjFppJSvD4": 152, "JybMBMTHWP8": 174, "KY_6FYsX6wo": 178, "vzEIwc0rG8Y": 180, "DyQ3McP4Two": 179, "cApl782ciSU": 177},DV={'v/vinheta-numeros.mp3':10.5,'v/vinheta-servicos.mp3':11.4,'v/anuncio-econtec.mp3':19.3,'v/f-padaria.mp3':10.3,'v/f-autopecas.mp3':9.9},HORA=16,PADRAO=230;
 const GRADE=acervo.filter(x=>x.tipo==='yt');
 const DIA=864e5,FUSO=3*36e5; /* horário de Brasília */
@@ -510,7 +521,7 @@ function descreve(it){
 function renderFila(){
  const ms=agora(),{g,i}=noAr(ms),prox=[];
  for(let j=i+1;j<g.length&&prox.length<6;j++)if(g[j].k==='musica'||g[j].k==='pedido')prox.push(g[j]);
- const d=Math.floor((ms-FUSO)/DIA),pend=gradeViva(d).pendentes||[];
+ const d=Math.floor((ms-FUSO)/DIA),pend=gradeViva(d).pendentes||[];prox.filter(x=>x.k==='pedido'&&x.t0-ms<3e5).forEach(x=>preCarregaNome(x.p));
  $('fila').innerHTML=prox.map(x=>x.k==='pedido'?`<li class="ped"><span><b>${esc(x.p.tr.titulo)}</b> · ${esc(x.p.tr.artista)}</span><span class="tag">${hhmm(x.t0)} · pedido de ${esc(x.p.nome)}</span></li>`:`<li><span><b>${esc(x.tr.titulo)}</b> · ${esc(x.tr.artista)}</span><span class="tag">${hhmm(x.t0)} · ${esc(x.tr.estilo)}</span></li>`).concat(pend.slice(0,3).map(p=>`<li class="ped"><span><b>${esc(p.tr.titulo)}</b> · ${esc(p.tr.artista)}</span><span class="tag">na fila · pedido de ${esc(p.nome)}</span></li>`)).slice(0,7).join('');
 }
 function mostra(kind,title,who,logo,zap){const z=$('npZap');if(zap){z.hidden=false;z.href=zapLink(zap);z.textContent='Chamar '+title.replace(/ Contabilidade$/,'')+' no WhatsApp: '+zapFmt(zap)}else z.hidden=true;$('npKind').textContent=kind;$('npTitle').textContent=title;$('npWho').textContent=who;
@@ -530,9 +541,9 @@ async function tocaItem(it,off){
  if(it.k==='pedido'){const p=it.p,tr=p.tr;
   if(off<PED_INTRO-1){mostra(`Obrigado, ${p.nome}!`,tr.titulo,'Em nome da ECONTEC Contabilidade e de todos os nossos clientes','img/e-econtec.png','');const stop=fundo();
    if(off<2){const ni=idxNome(p.nome);
-    if(ni!==undefined){await tocarArquivo({url:'v/n/_pedido-de.mp3',silencioso:true},()=>{});if(ligado)await tocarArquivo({url:'v/n/'+String(ni).padStart(3,'0')+'.mp3',silencioso:true},()=>{})}
-    else{await tocarArquivo({url:'v/n/_pedido-de.mp3',silencioso:true},()=>{});if(ligado)await falar(p.nome.split(/\s+/).slice(0,2).join(' ')+'!',()=>{})}
-    if(ligado)await tocarArquivo({url:tr.parecida?'v/f-parecida.mp3':'v/f-obrigada.mp3',silencioso:true},()=>{})}
+    const fim=tr.parecida?'v/f-parecida.mp3':'v/f-obrigada.mp3';
+    if(ni!==undefined){if(!await falaEmendada(['v/n/_pedido-de.mp3','v/n/'+String(ni).padStart(3,'0')+'.mp3',fim],[0.06,0.22])){await tocarArquivo({url:'v/n/_pedido-de.mp3',silencioso:true},()=>{});if(ligado)await tocarArquivo({url:'v/n/'+String(ni).padStart(3,'0')+'.mp3',silencioso:true},()=>{});if(ligado)await tocarArquivo({url:fim,silencioso:true},()=>{})}}
+    else{await tocarArquivo({url:'v/n/_pedido-de.mp3',silencioso:true},()=>{});if(ligado)await falar(p.nome.split(/\s+/).slice(0,2).join(' ')+'!',()=>{});if(ligado)await tocarArquivo({url:fim,silencioso:true},()=>{})}}
    if(ligado)await espera(it.t0+PED_INTRO*1000-agora(),false);stop()}
   if(!ligado)return;const o2=Math.max(0,(agora()-it.t0)/1000-PED_INTRO);
   if(o2<p.dur-3){mostra(`Pedido de ${p.nome}`,tr.titulo,tr.artista,capa(tr),'');const ok=await tocarYT(tr,x=>prog(x),o2,p.dur);if(ok)falhasYT=0}
@@ -707,7 +718,7 @@ async function auMostra(){const m=Math.floor(Date.now()/60000)-1;const [a,b,c]=a
  $('auOn').textContent=Math.max(a,1);$('auOuv').textContent=b;$('auDia').textContent=Math.max(c,1);
  $('auInfo').textContent='Último minuto completo · atualizado às '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'})}
 if(ADMIN){auMostra();setInterval(auMostra,30000)}
-const VERSAO=18;
+const VERSAO=19;
 function checaVersao(){fetch('index.html?nv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VERSAO=(\d+)/);if(m&&+m[1]>VERSAO&&!ligado)location.reload()}).catch(()=>{})}
 checaVersao();setInterval(checaVersao,5*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checaVersao()});
 
