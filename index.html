@@ -355,7 +355,7 @@ const _q=location.search+location.hash;
 /* Administrador só pelo link de admin (?admin). O link de ouvinte é sempre ouvinte. */
 try{localStorage.removeItem('radioEcontec.admin')}catch(e){}
 const ADMIN=/[?&#]admin\b/.test(_q);
-if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 16</span>')}
+if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 17</span>')}
 const CLI_PADRAO=[
  {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'img/logo-econtec.png',zap:ZAP_ECONTEC},
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
@@ -474,13 +474,13 @@ const ofensivoBase=t=>{const e=extra;extra='';try{return ofensivo(t)}finally{ext
 function pedValido(p){return p&&typeof p.nome==='string'&&p.nome.length<=40&&p.tr&&/^[\w-]{11}$/.test(p.tr.id)&&typeof p.tr.titulo==='string'&&p.ts>0&&p.dur>=30&&p.dur<=600&&!ofensivoBase(p.nome+' '+p.tr.titulo+' '+(p.tr.artista||''))}
 function addPed(p){if(!pedValido(p)||pedList[p.id])return false;pedList[p.id]={id:String(p.id),ts:+p.ts,nome:p.nome.trim()||'Ouvinte',dur:Math.round(+p.dur),tr:{id:p.tr.id,tipo:'yt',titulo:String(p.tr.titulo).slice(0,90),artista:String(p.tr.artista||'').slice(0,60),estilo:String(p.tr.estilo||'Pedido').slice(0,30),parecida:!!p.tr.parecida}};return true}
 function pedsDoDia(d){const ini=d*DIA+FUSO,fim=ini+DIA;const L=Object.values(pedList).filter(p=>p.ts>=ini-3*36e5&&p.ts<fim).sort((a,b)=>a.ts-b.ts||(a.id<b.id?-1:1));
- const ok=[];for(const p of L){if(ok.filter(x=>x.ts>p.ts-36e5).length>=12)continue;if(ok.some(x=>x.tr.id===p.tr.id&&norm(x.nome)===norm(p.nome)&&p.ts-x.ts<30*6e4))continue;ok.push(p)}return ok}
+ const ok=[];for(const p of L){if(ok.filter(x=>x.ts>p.ts-36e5).length>=15)continue;if(ok.some(x=>x.tr.id===p.tr.id&&norm(x.nome)===norm(p.nome)&&p.ts-x.ts<30*6e4))continue;ok.push(p)}return ok}
 function gradeViva(d,prev){
  const reqs=pedsDoDia(d),sig=reqs.map(p=>p.id).join(',');const c=cacheViva[d];if(c&&c.sig===sig&&c.base===grade(d))return c;
  let tocados=new Set();if(prev!==false&&reqs.some(p=>p.ts<d*DIA+FUSO)){const a=gradeViva(d-1,false);tocados=a.tocados}
  const fila=reqs.filter(p=>!tocados.has(p.id)),base=grade(d),out=[],toc=new Set();let real=d*DIA+FUSO,k=0;
  for(const g of base){out.push(Object.assign({},g,{t0:real}));real+=g.dur*1000;
-  if(g.k==='musica'&&k<fila.length&&fila[k].ts+PED_MARGEM<=real){const p=fila[k++];const dur=PED_INTRO+p.dur+PED_VIN;out.push({k:'pedido',p,t0:real,dur,id:'p:'+p.id});toc.add(p.id);real+=dur*1000}}
+  if(g.k==='musica')while(k<fila.length&&fila[k].ts+PED_MARGEM<=real){const p=fila[k++];const dur=PED_INTRO+p.dur+PED_VIN;out.push({k:'pedido',p,t0:real,dur,id:'p:'+p.id});toc.add(p.id);real+=dur*1000}}
  return cacheViva[d]={sig,base,g:out,tocados:toc,pendentes:fila.slice(k)};
 }
 function noAr(ms){const d=Math.floor((ms-FUSO)/DIA),g=gradeViva(d).g;let lo=0,hi=g.length-1;while(lo<hi){const m=(lo+hi+1)>>1;if(g[m].t0<=ms)lo=m;else hi=m-1}const it=g[lo];return{it,off:(ms-it.t0)/1000,g,i:lo}}
@@ -595,7 +595,7 @@ function avisaPedido(nome,tr,id,extraTxt){if(!id){bot(`Desculpe, ${esc(nome)}, n
 function atualizaMeuPed(){const el=$('meuPed');if(!el)return;const ids=store.get('meusPed',[]).filter(id=>pedList[id]);const ms=agora();let html='';
  for(const id of ids){const p=pedList[id],t=quandoToca(id);if(t&&ms>t+(PED_INTRO+p.dur)*1000)continue;
   if(t&&ms>=t)html+=`🎶 Tocando agora o pedido de <b>${esc(p.nome)}</b>: ${esc(p.tr.titulo)}<br>`;
-  else{const min=t?Math.max(1,Math.round((t-ms)/6e4)):null;html+=`⏳ Pedido de <b>${esc(p.nome)}</b>: ${esc(p.tr.titulo)} ${t?`toca às <b>${hhmm(t)}</b> (em ${min} min), depois da música que está tocando.`:'está na fila.'}<br>`}}
+  else{const min=t?Math.max(1,Math.round((t-ms)/6e4)):null;html+=`⏳ Pedido de <b>${esc(p.nome)}</b>: ${esc(p.tr.titulo)} ${t?`toca às <b>${hhmm(t)}</b> (em ${min} min), depois da música que está tocando${ids.length>1?' e dos pedidos anteriores':''}.`:'está na fila.'}<br>`}}
  el.innerHTML=html;el.hidden=!html}
 setInterval(atualizaMeuPed,5000);
 async function enviarPedido(){if(enviando)return;const nome=$('pNome').value.trim().slice(0,40)||'Ouvinte';let q=$('pMus').value.trim();if(!q)return;
@@ -707,7 +707,7 @@ async function auMostra(){const m=Math.floor(Date.now()/60000)-1;const [a,b,c]=a
  $('auOn').textContent=Math.max(a,1);$('auOuv').textContent=b;$('auDia').textContent=Math.max(c,1);
  $('auInfo').textContent='Último minuto completo · atualizado às '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'})}
 if(ADMIN){auMostra();setInterval(auMostra,30000)}
-const VERSAO=16;
+const VERSAO=17;
 function checaVersao(){fetch('index.html?nv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VERSAO=(\d+)/);if(m&&+m[1]>VERSAO&&!ligado)location.reload()}).catch(()=>{})}
 checaVersao();setInterval(checaVersao,5*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checaVersao()});
 
