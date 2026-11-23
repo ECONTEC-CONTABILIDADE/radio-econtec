@@ -267,7 +267,7 @@ header .marcaTopo{animation:brilhaLogo 4s ease-in-out infinite}
         <input id="pNome" placeholder="Seu nome" maxlength="40" autocomplete="off">
         <div class="sugWrap"><input id="pMus" placeholder="Busque pelo nome da música ou do artista" maxlength="80" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="sug"><div id="sug" role="listbox" hidden></div></div>
         <div class="chips" id="chips"></div>
-        <label class="file adm" style="min-height:40px;font-size:14px">Tem a música no aparelho? Anexe o arquivo<input id="pArq" type="file" accept="audio/*"></label>
+        
         <button type="button" id="btnPed">Pedir esta música</button>
       </form>
       <div class="chat" id="chat" aria-live="polite"></div>
@@ -353,7 +353,7 @@ const _q=location.search+location.hash;
 /* Administrador só pelo link de admin (?admin). O link de ouvinte é sempre ouvinte. */
 try{localStorage.removeItem('radioEcontec.admin')}catch(e){}
 const ADMIN=/[?&#]admin\b/.test(_q);
-if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 14</span>')}
+if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 15</span>')}
 const CLI_PADRAO=[
  {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'img/logo-econtec.png',zap:ZAP_ECONTEC},
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
@@ -442,9 +442,9 @@ function falar(txt,onProg){
 }
 
 /* ---------- Programação AO VIVO: a mesma grade para todos, calculada pelo relógio ---------- */
-let pedidos=[],vezDoSistema=false,ultimoId=null,itemAtual=null,ajuste=0;
+let ultimoId=null,itemAtual=null,ajuste=0;
 const agora=()=>Date.now()+ajuste;
-if(/[?&]teste\b/.test(location.search))window.__aj=v=>{ajuste=v};
+if(/[?&]teste\b/.test(location.search))window.__aj=v=>{ajuste=v;if(cancelar)cancelar()};
 const DUR={"Be6ROem9ms8": 207, "rJnEBfvbUTg": 255, "uWX0O8ATY3k": 159, "oTREAvZbmME": 218, "v4k6JgC7UVA": 233, "UNNOHk60ojk": 205, "OPf0YbXqDm0": 270, "ZbZSe6N_BXs": 241, "hT_nvWreIhg": 283, "DUT5rEU6pqM": 218, "vx2u5uUu3DE": 267, "1w7OgIMMRc4": 303, "xFrGuyw1V8s": 233, "Gs069dndIYk": 215, "nqAvFx3NxUM": 229, "eCyMh-mZ1B0": 210, "ILADw1aretk": 159, "CKtHg1jBREY": 174, "2_xBCeBmaS8": 154, "2Q6eFRuYa2w": 210, "mQr7XemLs8s": 140, "l0SDN7W5lZg": 178, "14C28JSO-sg": 175, "Z1ZKaR-9Kt4": 204, "mvWXaz0Gtbo": 247, "MxwZ66L9RQI": 239, "rYKOuKaWEjg": 189, "VfjFppJSvD4": 152, "JybMBMTHWP8": 174, "KY_6FYsX6wo": 178, "vzEIwc0rG8Y": 180, "DyQ3McP4Two": 179, "cApl782ciSU": 177},DV={'v/vinheta-numeros.mp3':10.5,'v/vinheta-servicos.mp3':11.4,'v/anuncio-econtec.mp3':19.3,'v/f-padaria.mp3':10.3,'v/f-autopecas.mp3':9.9},HORA=16,PADRAO=230;
 const GRADE=acervo.filter(x=>x.tipo==='yt');
 const DIA=864e5,FUSO=3*36e5; /* horário de Brasília */
@@ -465,7 +465,36 @@ function grade(d){
  }
  return cacheGrade[d]=it;
 }
-function noAr(ms){const d=Math.floor((ms-FUSO)/DIA),g=grade(d);let lo=0,hi=g.length-1;while(lo<hi){const m=(lo+hi+1)>>1;if(g[m].t0<=ms)lo=m;else hi=m-1}const it=g[lo];return{it,off:(ms-it.t0)/1000,g,i:lo}}
+/* ---------- Pedidos AO VIVO: valem para todos os ouvintes ---------- */
+const PED_TOP='radio-econtec-pedidos-q7k2m9x4',PED_MARGEM=45000,PED_INTRO=18,PED_VIN=11;
+let pedList={},pedSinal='',cacheViva={},pedUltimo='';
+const ofensivoBase=t=>{const e=extra;extra='';try{return ofensivo(t)}finally{extra=e}};
+function pedValido(p){return p&&typeof p.nome==='string'&&p.nome.length<=40&&p.tr&&/^[\w-]{11}$/.test(p.tr.id)&&typeof p.tr.titulo==='string'&&p.ts>0&&p.dur>=30&&p.dur<=600&&!ofensivoBase(p.nome+' '+p.tr.titulo+' '+(p.tr.artista||''))}
+function addPed(p){if(!pedValido(p)||pedList[p.id])return false;pedList[p.id]={id:String(p.id),ts:+p.ts,nome:p.nome.trim()||'Ouvinte',dur:Math.round(+p.dur),tr:{id:p.tr.id,tipo:'yt',titulo:String(p.tr.titulo).slice(0,90),artista:String(p.tr.artista||'').slice(0,60),estilo:String(p.tr.estilo||'Pedido').slice(0,30),parecida:!!p.tr.parecida}};return true}
+function pedsDoDia(d){const ini=d*DIA+FUSO,fim=ini+DIA;const L=Object.values(pedList).filter(p=>p.ts>=ini-3*36e5&&p.ts<fim).sort((a,b)=>a.ts-b.ts||(a.id<b.id?-1:1));
+ const ok=[];for(const p of L){if(ok.filter(x=>x.ts>p.ts-36e5).length>=12)continue;if(ok.some(x=>x.tr.id===p.tr.id&&norm(x.nome)===norm(p.nome)&&p.ts-x.ts<30*6e4))continue;ok.push(p)}return ok}
+function gradeViva(d,prev){
+ const reqs=pedsDoDia(d),sig=reqs.map(p=>p.id).join(',');const c=cacheViva[d];if(c&&c.sig===sig&&c.base===grade(d))return c;
+ let tocados=new Set();if(prev!==false&&reqs.some(p=>p.ts<d*DIA+FUSO)){const a=gradeViva(d-1,false);tocados=a.tocados}
+ const fila=reqs.filter(p=>!tocados.has(p.id)),base=grade(d),out=[],toc=new Set();let real=d*DIA+FUSO,k=0;
+ for(const g of base){out.push(Object.assign({},g,{t0:real}));real+=g.dur*1000;
+  if(g.k==='musica'&&k<fila.length&&fila[k].ts+PED_MARGEM<=real){const p=fila[k++];const dur=PED_INTRO+p.dur+PED_VIN;out.push({k:'pedido',p,t0:real,dur,id:'p:'+p.id});toc.add(p.id);real+=dur*1000}}
+ return cacheViva[d]={sig,base,g:out,tocados:toc,pendentes:fila.slice(k)};
+}
+function noAr(ms){const d=Math.floor((ms-FUSO)/DIA),g=gradeViva(d).g;let lo=0,hi=g.length-1;while(lo<hi){const m=(lo+hi+1)>>1;if(g[m].t0<=ms)lo=m;else hi=m-1}const it=g[lo];return{it,off:(ms-it.t0)/1000,g,i:lo}}
+async function buscaPedidos(){
+ try{const t=await fetch('https://ntfy.sh/'+PED_TOP+'/json?poll=1&since='+(pedUltimo||'12h'),{cache:'no-store'}).then(r=>r.text());let novo=false;
+  for(const ln of t.split('\n')){if(!ln.trim())continue;let m;try{m=JSON.parse(ln)}catch(e){continue}if(m.event!=='message')continue;pedUltimo=m.id;
+   let p;try{p=JSON.parse(m.message)}catch(e){continue}p.id=m.id;p.ts=m.time*1000;if(addPed(p))novo=true}
+  if(novo){renderFila()}}catch(e){}}
+async function carregaPedidosSite(){const d=Math.floor((Date.now()-FUSO)/DIA);for(const x of [d-1,d]){const nome=new Date(x*DIA).toISOString().slice(0,10);
+ try{const l=await fetch('pedidos/'+nome+'.json',{cache:'no-store'}).then(r=>r.ok?r.json():[]);if(Array.isArray(l))l.forEach(addPed)}catch(e){}}renderFila()}
+async function duracaoYT(id){if(DUR[id])return DUR[id];const k=(store.get('ytkey','')||'').trim()||YT_KEY;
+ try{const j=await fetch('https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id='+id+'&key='+encodeURIComponent(k)).then(r=>r.json());const iso=j.items[0].contentDetails.duration;const m=iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);const s=(+m[1]||0)*3600+(+m[2]||0)*60+(+m[3]||0);return s>=30?Math.min(s,420):240}catch(e){return 240}}
+async function publicaPedido(nome,tr){const dur=await duracaoYT(tr.id);const corpo={nome,dur,tr:{id:tr.id,tipo:'yt',titulo:tr.titulo,artista:tr.artista,estilo:tr.estilo,parecida:!!tr.parecida}};
+ try{const r=await fetch('https://ntfy.sh/'+PED_TOP,{method:'POST',body:JSON.stringify(corpo)});const m=await r.json();corpo.id=m.id;corpo.ts=m.time*1000;addPed(corpo);renderFila();return pedList[m.id]?m.id:null}catch(e){return null}}
+function quandoToca(id){const ms=agora(),d=Math.floor((ms-FUSO)/DIA);for(const x of [d,d+1]){const it=gradeViva(x).g.find(i=>i.k==='pedido'&&i.p.id===id);if(it)return it.t0}return null}
+carregaPedidosSite().then(buscaPedidos);setInterval(()=>{if(!document.hidden||ligado)buscaPedidos()},12000);
 const hhmm=ms=>{const x=new Date(ms-FUSO);return String(x.getUTCHours()).padStart(2,'0')+':'+String(x.getUTCMinutes()).padStart(2,'0')};
 const capa=tr=>tr&&tr.tipo==='yt'&&/^[\w-]{11}$/.test(tr.id)?`https://i.ytimg.com/vi/${tr.id}/hqdefault.jpg`:'';
 function descreve(it){
@@ -473,13 +502,14 @@ function descreve(it){
  if(it.k==='hora')return['Hora certa',hhmm(it.t0+11000),'Oferecimento ECONTEC Contabilidade','img/e-econtec.png',''];
  if(it.k==='adE')return['Anúncio','ECONTEC Contabilidade','Imposto, folha, abertura de empresa: fale com a ECONTEC','img/e-econtec.png',ZAP_ECONTEC];
  if(it.k==='adC')return['Anúncio',it.c.nome,it.c.txt,it.c.logo,it.c.zap];
+ if(it.k==='pedido')return['Pedido de '+it.p.nome,it.p.tr.titulo,it.p.tr.artista,capa(it.p.tr),''];
  return['Ao vivo · '+it.tr.estilo,it.tr.titulo,it.tr.artista,capa(it.tr),''];
 }
 function renderFila(){
- const {g,i}=noAr(agora()),prox=[];
- for(let j=i+1;j<g.length&&prox.length<5;j++)if(g[j].k==='musica')prox.push(g[j]);
- $('fila').innerHTML=[...pedidos.map(p=>`<li><span><b>${esc(p.tr.titulo)}</b> · ${esc(p.tr.artista)}</span><span class="tag">pedido de ${esc(p.nome)}</span></li>`),
-  ...prox.map(x=>`<li><span><b>${esc(x.tr.titulo)}</b> · ${esc(x.tr.artista)}</span><span class="tag">${hhmm(x.t0)} · ${esc(x.tr.estilo)}</span></li>`)].slice(0,6).join('');
+ const ms=agora(),{g,i}=noAr(ms),prox=[];
+ for(let j=i+1;j<g.length&&prox.length<6;j++)if(g[j].k==='musica'||g[j].k==='pedido')prox.push(g[j]);
+ const d=Math.floor((ms-FUSO)/DIA),pend=gradeViva(d).pendentes||[];
+ $('fila').innerHTML=prox.map(x=>x.k==='pedido'?`<li class="ped"><span><b>${esc(x.p.tr.titulo)}</b> · ${esc(x.p.tr.artista)}</span><span class="tag">${hhmm(x.t0)} · pedido de ${esc(x.p.nome)}</span></li>`:`<li><span><b>${esc(x.tr.titulo)}</b> · ${esc(x.tr.artista)}</span><span class="tag">${hhmm(x.t0)} · ${esc(x.tr.estilo)}</span></li>`).concat(pend.slice(0,3).map(p=>`<li class="ped"><span><b>${esc(p.tr.titulo)}</b> · ${esc(p.tr.artista)}</span><span class="tag">na fila · pedido de ${esc(p.nome)}</span></li>`)).slice(0,7).join('');
 }
 function mostra(kind,title,who,logo,zap){const z=$('npZap');if(zap){z.hidden=false;z.href=zapLink(zap);z.textContent='Chamar '+title.replace(/ Contabilidade$/,'')+' no WhatsApp: '+zapFmt(zap)}else z.hidden=true;$('npKind').textContent=kind;$('npTitle').textContent=title;$('npWho').textContent=who;
  const L=$('npLogo');L.classList.toggle('e3d',!logo);L.classList.toggle('marca',/e-econtec/.test(logo||''));L.classList.toggle('capa',/ytimg/.test(logo||''));document.querySelector('.deck').style.setProperty('--capa',/ytimg/.test(logo||'')?`url(${logo})`:'none');atualizaMini(kind,title,who,logo);L.innerHTML=logo?`<img src="${esc(logo)}" alt="">`:`<b>${esc((title||'E').replace(/^Rádio\s+/,'').replace(/^Obrigad[oa],?\s*/,'').trim()[0]||'E')}</b>`}
@@ -495,6 +525,17 @@ async function tocaItem(it,off){
   if(ligado&&resto()>1500){await tocarArquivo({url:h,silencioso:true},()=>{});if(ligado)await tocarArquivo({url:m,silencioso:true},()=>{})}
   stop();return}
  if(it.k==='adC'){const stop=fundo();if(it.au)await tocarArquivo({url:it.au,ini:off,silencioso:true,txt:off<1?it.c.txt:''},pr);else if(off<1)await falar(it.c.txt,pr);stop();return}
+ if(it.k==='pedido'){const p=it.p,tr=p.tr;
+  if(off<PED_INTRO-1){mostra(`Obrigado, ${p.nome}!`,tr.titulo,'Em nome da ECONTEC Contabilidade e de todos os nossos clientes','img/e-econtec.png','');const stop=fundo();
+   if(off<2){const pn=String(p.nome).trim().split(/\s+/);const ni=NOMES_IDX[norm(pn.slice(0,2).join(' '))]??NOMES_IDX[norm(pn[0])];
+    if(ni!==undefined){await tocarArquivo({url:'v/n/_pedido-de.mp3',silencioso:true},()=>{});if(ligado)await tocarArquivo({url:'v/n/'+String(ni).padStart(3,'0')+'.mp3',silencioso:true},()=>{})}
+    else{await tocarArquivo({url:'v/n/_pedido-de.mp3',silencioso:true},()=>{});if(ligado)await falar(p.nome.split(/\s+/).slice(0,2).join(' ')+'!',()=>{})}
+    if(ligado)await tocarArquivo({url:tr.parecida?'v/f-parecida.mp3':'v/f-obrigada.mp3',silencioso:true},()=>{})}
+   if(ligado)await espera(it.t0+PED_INTRO*1000-agora(),false);stop()}
+  if(!ligado)return;const o2=Math.max(0,(agora()-it.t0)/1000-PED_INTRO);
+  if(o2<p.dur-3){mostra(`Pedido de ${p.nome}`,tr.titulo,tr.artista,capa(tr),'');const ok=await tocarYT(tr,x=>prog(x),o2,p.dur);if(ok)falhasYT=0}
+  if(ligado&&resto()>2500){mostra('Ao vivo','Rádio ECONTEC','Voltando para a programação ao vivo','img/e-econtec.png','');await tocarArquivo({url:VINHETAS[0]},pr)}
+  return}
  /* música */
  const ate=DUR[it.tr.id]?0:it.dur;
  if(modoLivre){const lv=LIVRES[Math.abs(it.t0/1000|0)%LIVRES.length];mostra('Ao vivo · '+lv.estilo,lv.titulo,lv.artista,'','');await tocarArquivo(Object.assign({},lv,{ini:off}),pr);return}
@@ -505,25 +546,11 @@ async function tocaItem(it,off){
 }
 const NOMES=["Maria", "José", "Ana", "João", "Antônio", "Francisco", "Carlos", "Paulo", "Pedro", "Lucas", "Luiz", "Marcos", "Luis", "Gabriel", "Rafael", "Daniel", "Marcelo", "Bruno", "Eduardo", "Felipe", "Raimundo", "Rodrigo", "Manoel", "Mateus", "André", "Fernando", "Fábio", "Leonardo", "Gustavo", "Guilherme", "Leandro", "Tiago", "Anderson", "Ricardo", "Márcio", "Jorge", "Sebastião", "Alexandre", "Roberto", "Edson", "Diego", "Vitor", "Sérgio", "Cláudio", "Matheus", "Thiago", "Geraldo", "Adriano", "Luciano", "Júlio", "Renato", "Alex", "Vinícius", "Rogério", "Samuel", "Ronaldo", "Mário", "Flávio", "Igor", "Douglas", "Davi", "Enzo", "Miguel", "Arthur", "Heitor", "Bernardo", "Benício", "Wellington", "Juliana", "Adriana", "Márcia", "Fernanda", "Patrícia", "Aline", "Sandra", "Camila", "Amanda", "Bruna", "Jéssica", "Letícia", "Júlia", "Luciana", "Vanessa", "Mariana", "Gabriela", "Vera", "Vitória", "Larissa", "Cláudia", "Beatriz", "Luana", "Rita", "Sônia", "Renata", "Eliane", "Débora", "Simone", "Cristina", "Daniela", "Tatiana", "Carla", "Paula", "Raquel", "Natália", "Andréia", "Isabela", "Laura", "Alice", "Valentina", "Helena", "Sophia", "Heloísa", "Lorena", "Lívia", "Manuela", "Cecília", "Eduarda", "Rafaela", "Priscila", "Kelly", "Rosa", "Lúcia", "Regina", "Aparecida", "Fátima", "Dalila", "Joana", "Luzia", "Antônia", "Francisca", "Edna", "Célia", "Silvia", "Tereza", "Marta", "Cleide", "Rosângela", "Elaine", "Abel", "Abner", "Ademir", "Adilson", "Ailton", "Alan", "Alberto", "Aldo", "Alessandro", "Alexsandro", "Alisson", "Altair", "Álvaro", "Amauri", "Anselmo", "Antony", "Arnaldo", "Augusto", "Benedito", "Benjamin", "Breno", "Brayan", "Caio", "Carlito", "Cássio", "Celso", "Cesar", "Cícero", "Cleber", "Cristiano", "Danilo", "Denis", "Deivid", "Dirceu", "Edilson", "Edmilson", "Edvaldo", "Elias", "Emerson", "Erick", "Everton", "Ezequiel", "Fabiano", "Fabrício", "Francis", "Gael", "Gilberto", "Gilmar", "Gilson", "Giovanni", "Hélio", "Henrique", "Hugo", "Humberto", "Iago", "Isaac", "Ítalo", "Ivan", "Jacó", "Jailson", "Jair", "Jefferson", "Jeová", "Joaquim", "Jonas", "Jonathan", "Josué", "Juan", "Juliano", "Kaio", "Kauã", "Kevin", "Leonel", "Lorenzo", "Lourival", "Luan", "Lucca", "Marcelino", "Marcondes", "Mauro", "Maurício", "Max", "Milton", "Moisés", "Murilo", "Nathan", "Nelson", "Nicolas", "Noah", "Odair", "Orlando", "Osmar", "Oswaldo", "Otávio", "Pablo", "Raí", "Ravi", "Reinaldo", "Renan", "Rian", "Robson", "Rodolfo", "Rômulo", "Rubens", "Ruan", "Sandro", "Saulo", "Silvio", "Tales", "Theo", "Thomas", "Valdir", "Valter", "Vagner", "Valdecir", "Vicente", "Wagner", "Waldir", "Washington", "Weslley", "Willian", "Wilson", "Yuri", "Zé", "Adriele", "Agatha", "Alana", "Alessandra", "Aléxia", "Alícia", "Ana Clara", "Ana Júlia", "Ana Paula", "Andressa", "Ângela", "Antonella", "Bárbara", "Benedita", "Bianca", "Brenda", "Carina", "Carolina", "Catarina", "Clara", "Clarice", "Cleusa", "Conceição", "Cristiane", "Dayane", "Denise", "Diana", "Edilene", "Eliana", "Eloá", "Elisa", "Elisângela", "Emanuelly", "Emília", "Ester", "Eva", "Fabiana", "Flávia", "Gisele", "Giovana", "Glória", "Graça", "Iara", "Inês", "Ingrid", "Iolanda", "Irene", "Isabel", "Isabelly", "Isadora", "Ivone", "Jaqueline", "Jane", "Janaína", "Josiane", "Joyce", "Jucélia", "Jussara", "Karen", "Karina", "Kátia", "Kauane", "Lara", "Leila", "Liliane", "Luna", "Madalena", "Maitê", "Marcela", "Margarida", "Maria Clara", "Maria Eduarda", "Maria Luiza", "Mariane", "Marilene", "Marina", "Marisa", "Maysa", "Melissa", "Michele", "Mirela", "Mirian", "Mônica", "Nair", "Neide", "Nicole", "Nilza", "Olívia", "Pâmela", "Pietra", "Rayane", "Rebeca", "Roberta", "Rosana", "Rosilene", "Sabrina", "Samara", "Sara", "Sarah", "Selma", "Sheila", "Sofia", "Solange", "Stefany", "Suelen", "Tânia", "Telma", "Thaís", "Valéria", "Vânia", "Viviane", "Yasmin", "Zilda", "Zuleide"];
 const NOMES_IDX={};NOMES.forEach((n,i)=>{const k=norm(n);if(!(k in NOMES_IDX))NOMES_IDX[k]=i});
-async function tocaPedido(ped){
- const tr=ped.tr;renderFila();
- mostra(`Obrigado, ${ped.nome}!`,tr.titulo,'Em nome da ECONTEC Contabilidade e de todos os nossos clientes','img/e-econtec.png');prog(0);
- const pn=String(ped.nome).trim().split(/\s+/);const ni=NOMES_IDX[norm(pn.slice(0,2).join(' '))]??NOMES_IDX[norm(pn[0])];
- if(ni!==undefined){await tocarArquivo({url:'v/n/_pedido-de.mp3',silencioso:true},()=>{});if(ligado)await tocarArquivo({url:'v/n/'+String(ni).padStart(3,'0')+'.mp3',silencioso:true},()=>{})}
- else await tocarArquivo({url:'v/n/_especial.mp3',silencioso:true},()=>{});
- if(ligado)await tocarArquivo({url:tr.parecida?'v/f-parecida.mp3':'v/f-obrigada.mp3',silencioso:true},()=>{});
- if(!ligado)return;mostra(`Pedido de ${ped.nome}`,tr.titulo,tr.artista,capa(tr));
- if(tr.tipo==='yt'){const ok=await tocarYT(tr,prog);if(!ok&&ligado)bot(`O YouTube não deixou tocar "${esc(tr.titulo)}" neste aparelho. Desculpe, ${esc(ped.nome)}!`,true)}
- else await tocarArquivo(tr,prog);
- if(ligado){mostra('Ao vivo','Rádio ECONTEC','Voltando para a programação ao vivo','img/e-econtec.png');await tocarArquivo({url:VINHETAS[0]},prog)}
-}
 async function loop(){
  while(ligado){
-  if(pedidos.length&&!vezDoSistema){await tocaPedido(pedidos.shift());vezDoSistema=true;continue}
   const {it,off}=noAr(agora());itemAtual=it;
   if(it.id===ultimoId){await espera(it.t0+it.dur*1000-agora()+50,true);continue}
   ultimoId=it.id;renderFila();await tocaItem(it,Math.max(0,off));
-  if(it.k==='musica')vezDoSistema=false;
  }
 }
 /* antes de ligar, a tela já mostra o que está no ar agora */
@@ -534,7 +561,7 @@ $('btnPlay').addEventListener('click',async()=>{
  if(!ligado){ligado=true;document.body.classList.add('tocando');await ctx.resume();ultimoId=null;$('btnPlay').textContent='Desligar';$('btnSkip').disabled=false;$('lamp').classList.add('live');$('lampTxt').textContent='Ao vivo';loop()}
  else{ligado=false;document.body.classList.remove('tocando');if(cancelar)cancelar();$('btnPlay').textContent='Ouvir ao vivo';$('btnSkip').disabled=true;$('lamp').classList.remove('live');$('lampTxt').textContent='Ao vivo (toque para ouvir)'}
 });
-$('btnSkip').addEventListener('click',()=>{if(!ADMIN)return;if(itemAtual&&!pedidos.length){const r=itemAtual.t0+itemAtual.dur*1000-agora();if(r>0)ajuste+=r+100}if(cancelar)cancelar()});
+$('btnSkip').addEventListener('click',()=>{if(!ADMIN)return;if(itemAtual){const r=itemAtual.t0+itemAtual.dur*1000-agora();if(r>0)ajuste+=r+100}if(cancelar)cancelar()});
 $('vol').addEventListener('input',e=>{try{yt&&yt.setVolume(Math.round(+e.target.value*100))}catch(x){}if(volArq)volArq.volume=+e.target.value;if(master)master.gain.setTargetAtTime(+e.target.value,ctx.currentTime,.05)});
 
 /* ---------- Robô de pedidos ---------- */
@@ -557,24 +584,22 @@ const YT_KEY='AIzaSyDWt1w5AGxofkcmeDSNR05YOmXIPq0kUT4';
 async function buscaYT(q){const k=(store.get('ytkey','')||'').trim()||YT_KEY;if(!k)return null;const ck=store.get('ytcache',{}),nk=norm(q);if(ck[nk])return ck[nk];
  try{const r=await fetch('https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoEmbeddable=true&safeSearch=strict&videoCategoryId=10&regionCode=BR&maxResults=1&q='+encodeURIComponent(q)+'&key='+encodeURIComponent(k));const j=await r.json();const it=j.items&&j.items[0];if(!it)return null;
  const t=it.snippet.title.replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"');if(ofensivo(t))return null;const t2=t.replace(/\s*[\(\[][^\)\]]*(clipe|video|vídeo|official|oficial|lyric|letra|ao vivo|audio|áudio)[^\)\]]*[\)\]]/gi,'').trim(),pp=t2.split(/\s+[-–|]\s+/);const tr={id:it.id.videoId,tipo:'yt',titulo:pp.length>1?pp.slice(1).join(' - '):t2,artista:pp.length>1?pp[0]:it.snippet.channelTitle.replace(/VEVO$|\s*-\s*Topic$/i,''),estilo:'Pedido'};ck[nk]=tr;const ks=Object.keys(ck);if(ks.length>300)delete ck[ks[0]];store.set('ytcache',ck);return tr}catch(e){return null}}
-function enviarPedido(){const nome=$('pNome').value.trim()||'Ouvinte',f=$('pArq').files[0];let q=$('pMus').value.trim();if(!q&&f)q=f.name.replace(/\.[^.]+$/,'').replace(/_/g,' ');if(!q)return;$('pArq').value='';
- const c=$('chat');c.insertAdjacentHTML('beforeend',`<div class="msg me"><small>${esc(nome)}</small>${esc(q)}</div>`);
- $('pMus').value='';
- setTimeout(()=>{
-  if(ofensivo(q)||ofensivo(nome)){bot('Desculpe, esse pedido não pode tocar: a Rádio ECONTEC tem uma programação para toda a família. Que tal outra música?',true);return}
-  if(f){const base=q;const [a,t]=base.includes(' - ')?base.split(' - ',2):['',base];const tr={id:'p'+Date.now(),tipo:'arquivo',titulo:t.trim(),artista:a.trim()||'pedido do ouvinte',estilo:'Pedido',url:URL.createObjectURL(f)};pedidos.push({nome,tr,q});renderFila();bot(`Pedido aceito, ${esc(nome)}! Vou tocar <b>${esc(tr.titulo)}</b> do arquivo que você mandou, ${pedidos.length===1?'logo em seguida':'daqui a '+pedidos.length+' músicas'}. A responsabilidade pelos direitos dessa música é de quem enviou.`);return}
-  const lk=idDoLink(q);if(lk){const tr={id:lk,tipo:'yt',titulo:'Música do link',artista:'pedido de '+nome,estilo:'Pedido'};pedidos.push({nome,tr,q});renderFila();bot(`Pedido aceito, ${esc(nome)}! Vou tocar o vídeo do link ${pedidos.length===1?'logo em seguida':'daqui a '+pedidos.length+' músicas'}.`);return}
-  let tr=busca(q,true);
-  if(!tr)(async()=>{let t=await buscaYT(q);if(t){pedidos.push({nome,tr:t,q});renderFila();bot(`Pedido aceito, ${esc(nome)}! Achei <b>${esc(t.titulo)}</b> no YouTube. Toca ${pedidos.length===1?'logo em seguida':'daqui a '+pedidos.length+' músicas'}.`);return}t=busca(q);pedidos.push({nome,tr:t,q});renderFila();bot(`${esc(nome)}, ainda não tenho "${esc(q)}" na lista da rádio. Já coloquei uma no mesmo clima: <b>${esc(t.titulo)}</b>, com ${esc(t.artista)}. E anotei o seu pedido para a próxima atualização.`);anotar(q)})();
-  if(!tr)return;
-  if(!tr){bot(`Ainda não tenho "${esc(q)}" no acervo de teste. Anotei o pedido para a próxima atualização do acervo. Enquanto isso, peça por estilo: ${ESTILOS.join(', ')}.`);return}
-  pedidos.push({nome,tr,q});renderFila();
-  if(tr.parecida){bot(`${esc(nome)}, "${esc(q)}" não está no acervo, porque aqui só tocam músicas liberadas para rádio. Mas já coloquei uma no mesmo clima: <b>${esc(tr.titulo)}</b> (${esc(tr.estilo)}), ${pedidos.length===1?'logo em seguida':'daqui a '+pedidos.length+' músicas'}.`);return}
-  bot(`Pedido aceito, ${esc(nome)}! Vou tocar <b>${esc(tr.titulo)}</b> (${esc(tr.artista)}, ${esc(tr.estilo)}) ${pedidos.length===1?'logo em seguida':'daqui a '+pedidos.length+' músicas'}.${ligado?'':' Ligue a rádio para ouvir.'}`);
- },500);
-}
+let enviando=false;
+function avisaPedido(nome,tr,id,extraTxt){if(!id){bot(`Desculpe, ${esc(nome)}, não consegui enviar o pedido agora (sem internet?). Tente de novo.`,true);return}
+ const t=quandoToca(id);const q=t?` por volta das <b>${hhmm(t)}</b>`:' assim que chegar a vez dele na fila';
+ bot(`${extraTxt||`Pedido aceito, ${esc(nome)}!`} <b>${esc(tr.titulo)}</b>${tr.artista?' ('+esc(tr.artista)+')':''} vai tocar ao vivo para todos os ouvintes${q}, depois da música que está tocando. A Betina vai falar o seu nome e agradecer!${ligado?'':' Ligue a rádio para ouvir.'}`)}
+async function enviarPedido(){if(enviando)return;const nome=$('pNome').value.trim().slice(0,40)||'Ouvinte';let q=$('pMus').value.trim();if(!q)return;
+ const c=$('chat');c.insertAdjacentHTML('beforeend',`<div class="msg me"><small>${esc(nome)}</small>${esc(q)}</div>`);$('pMus').value='';
+ if(ofensivo(q)||ofensivo(nome)){bot('Desculpe, esse pedido não pode tocar: a Rádio ECONTEC tem uma programação para toda a família. Que tal outra música?',true);return}
+ enviando=true;$('btnPed').disabled=true;
+ try{const lk=idDoLink(q);let tr,txt;
+  if(lk)tr={id:lk,tipo:'yt',titulo:'Música do link',artista:'',estilo:'Pedido'};
+  else{tr=busca(q,true);if(!tr){tr=await buscaYT(q);if(!tr){tr=busca(q);txt=`${esc(nome)}, ainda não tenho "${esc(q)}". Coloquei uma no mesmo clima:`;anotar(q)}}
+   else if(tr.parecida)txt=`${esc(nome)}, "${esc(q)}" não está no acervo. Coloquei uma no mesmo clima:`}
+  const id=await publicaPedido(nome,tr);avisaPedido(nome,tr,id,txt)}
+ finally{enviando=false;$('btnPed').disabled=false}}
 $('btnPed').addEventListener('click',enviarPedido);$('fPed').addEventListener('submit',e=>{e.preventDefault();enviarPedido()});$('fPed').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.tagName==='INPUT'&&e.target.type!=='file'){e.preventDefault();enviarPedido()}});
-bot('Olá! Sou o robô da Rádio ECONTEC. Peça uma música pelo nome, artista ou estilo, e eu coloco na fila.');
+bot('Olá! Sou o robô da Rádio ECONTEC. Peça uma música pelo nome, artista ou estilo. O pedido toca ao vivo para todos os ouvintes, com o seu nome!');
 
 /* ---------- Clientes ---------- */
 const b64e=buf=>btoa(String.fromCharCode(...new Uint8Array(buf))),b64d=t=>Uint8Array.from(atob(t),c=>c.charCodeAt(0));
@@ -672,7 +697,7 @@ async function auMostra(){const m=Math.floor(Date.now()/60000)-1;const [a,b,c]=a
  $('auOn').textContent=Math.max(a,1);$('auOuv').textContent=b;$('auDia').textContent=Math.max(c,1);
  $('auInfo').textContent='Último minuto completo · atualizado às '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'})}
 if(ADMIN){auMostra();setInterval(auMostra,30000)}
-const VERSAO=14;
+const VERSAO=15;
 function checaVersao(){fetch('index.html?nv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VERSAO=(\d+)/);if(m&&+m[1]>VERSAO&&!ligado)location.reload()}).catch(()=>{})}
 checaVersao();setInterval(checaVersao,5*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checaVersao()});
 

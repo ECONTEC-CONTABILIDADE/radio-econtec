@@ -17,3 +17,18 @@ if(melhor&&melhor.ts>(meta.ts||0)){
  meta={ts:melhor.ts,verificado:agora};fs.writeFileSync('clientes-meta.json',JSON.stringify(meta)+'\n');console.log('Anúncios atualizados',melhor.ts);
 }else if(!meta.verificado||Date.now()-Date.parse(meta.verificado)>6*864e5){meta.verificado=agora;fs.writeFileSync('clientes-meta.json',JSON.stringify(meta)+'\n');console.log('Sem mudanças (registro semanal)')}
 else console.log('Sem mudanças');
+
+// Pedidos de música: guarda no site os pedidos do dia (o ntfy só guarda 12 horas)
+{
+ const FUSO=3*36e5,DIA=864e5;const t2=await (await fetch('https://ntfy.sh/radio-econtec-pedidos-q7k2m9x4/json?poll=1&since=12h')).text();
+ const porDia={};
+ for(const ln of t2.split('\n')){if(!ln.trim())continue;let m;try{m=JSON.parse(ln)}catch{continue}if(m.event!=='message')continue;let p;try{p=JSON.parse(m.message)}catch{continue}
+  if(!p||!p.tr||!/^[\w-]{11}$/.test(p.tr.id)||typeof p.nome!=='string')continue;
+  const ts=m.time*1000,dia=new Date(Math.floor((ts-FUSO)/DIA)*DIA).toISOString().slice(0,10);
+  (porDia[dia]=porDia[dia]||[]).push({id:m.id,ts,nome:p.nome.slice(0,40),dur:+p.dur,tr:{id:p.tr.id,tipo:'yt',titulo:String(p.tr.titulo||'').slice(0,90),artista:String(p.tr.artista||'').slice(0,60),estilo:String(p.tr.estilo||'Pedido').slice(0,30),parecida:!!p.tr.parecida}})}
+ fs.mkdirSync('pedidos',{recursive:true});
+ for(const [dia,l] of Object.entries(porDia)){const f='pedidos/'+dia+'.json';let atual=[];try{atual=JSON.parse(fs.readFileSync(f,'utf8'))}catch{}
+  const ids=new Set(atual.map(x=>x.id));const novos=l.filter(x=>!ids.has(x.id));if(novos.length){fs.writeFileSync(f,JSON.stringify(atual.concat(novos).sort((a,b)=>a.ts-b.ts))+'\n');console.log('pedidos',dia,novos.length)}}
+ // apaga dias antigos (mais de 3 dias)
+ for(const f of fs.readdirSync('pedidos'))if(Date.now()-Date.parse(f.slice(0,10))>3*DIA)fs.unlinkSync('pedidos/'+f);
+}
