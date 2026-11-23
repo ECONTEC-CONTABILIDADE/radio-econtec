@@ -1,26 +1,47 @@
 name: Anúncios do administrador
+# Fica de plantão quase 6 horas seguidas, conferindo a cada minuto os anúncios publicados
+# pelo administrador e os pedidos dos ouvintes. No fim, chama a si mesmo de novo.
 on:
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '*/30 * * * *'
   workflow_dispatch:
 permissions:
   contents: write
-concurrency: anuncios
+  actions: write
+concurrency:
+  group: vigia
+  cancel-in-progress: false
 jobs:
-  copiar:
+  vigiar:
     runs-on: ubuntu-latest
+    timeout-minutes: 350
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: node scripts/anuncios.mjs
-      - name: Publicar no site
+      - name: Plantão
         run: |
-          git add -A
-          if git diff --cached --quiet; then exit 0; fi
           git config user.name "Rádio ECONTEC"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "Anúncios e pedidos atualizados"
-          git push origin HEAD:Econtec_Radio
-          git push origin HEAD:main
+          FIM=$(( $(date +%s) + 335*60 )); ULT=0
+          while [ "$(date +%s)" -lt "$FIM" ]; do
+            git pull -q --rebase --autostash origin Econtec_Radio || git rebase --abort || true
+            node scripts/anuncios.mjs || true
+            git add -A
+            if ! git diff --cached --quiet; then
+              URG=0
+              git diff --cached --name-only | grep -qE '^(clientes|homenagem/)' && URG=1
+              if [ "$URG" = 1 ] || [ $(( $(date +%s) - ULT )) -ge 600 ]; then
+                git commit -qm "Anúncios e pedidos atualizados" && \
+                git push -q origin HEAD:Econtec_Radio && ULT=$(date +%s) && \
+                (git push -q origin HEAD:main || true)
+              fi
+            fi
+            sleep 60
+          done
+      - name: Chamar o próximo plantão
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run anuncios.yml --ref Econtec_Radio -R "$GITHUB_REPOSITORY" || true
