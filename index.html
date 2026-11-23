@@ -83,6 +83,14 @@ body:not(.admin) .adm{display:none!important}
 .rel{display:grid;gap:10px}.rel h3{margin:0;font-family:Outfit,sans-serif;color:#ffd978;font-size:18px}.rel select{padding:10px;border-radius:12px;background:#120c0d;color:#fff;border:1px solid #f0c14b55}
 .relCli{background:#120c0d;border:1px solid #f0c14b33;border-radius:16px;padding:12px;display:grid;gap:6px}.relCli b{font-size:16px}.relNums{display:flex;gap:14px;flex-wrap:wrap;color:#e3cccc;font-size:14px}.relNums strong{color:#fff;font-size:20px;display:block}
 .relCli a{justify-self:start}.anuncieLink{display:block;text-align:center;margin-top:12px;padding:12px;border-radius:14px;border:1px solid #f0c14b88;color:#ffd978;font-weight:800;text-decoration:none}
+.btnPedir{border:0;border-radius:999px;font-family:Outfit,sans-serif;font-weight:800;font-size:19px;color:#2a1a00;background:linear-gradient(180deg,#ffe08a,#f0b429);box-shadow:0 8px 26px #f0b42966,inset 0 -3px 0 #c98a10;cursor:pointer}
+.heroPed{display:block;width:100%;max-width:420px;margin:14px auto 10px;padding:17px 20px;font-size:21px;animation:pulsePed 2.2s ease-in-out infinite}
+@keyframes pulsePed{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+#fabPed{position:fixed;right:14px;bottom:14px;z-index:45;padding:14px 20px;transition:bottom .3s}
+body.miniOn #fabPed{bottom:92px}
+body.pedVisivel #fabPed{opacity:0;pointer-events:none}
+.pedCard.destaque{box-shadow:0 0 0 3px #f0c14b,0 0 40px #f0c14b55;transition:box-shadow .4s}
+@media(prefers-reduced-motion:reduce){.heroPed{animation:none}}
 .admtag{display:inline-block;background:#c0392b;color:#fff;border-radius:6px;padding:2px 8px;font-size:12px;margin-left:8px}
 input,textarea{font:16px Inter,sans-serif;width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
 textarea{min-height:90px;resize:vertical}
@@ -194,7 +202,7 @@ body.miniOn #mini{transform:none}
 body.tocando #miniBtn::before{left:16px;top:15px;border:0;width:16px;height:18px;background:linear-gradient(90deg,#3a0610 0 35%,transparent 35% 65%,#3a0610 65%)}
 main{padding-bottom:90px}
 @media(prefers-reduced-motion:reduce){#mini{transition:none}}
-.pedCard{position:relative;z-index:6}
+.pedCard{position:relative;z-index:6;scroll-margin-top:120px}
 @media(max-width:640px){.fig{min-height:120px!important}}
 #sug{position:static;margin-top:6px;max-height:300px}
 .btnCanc{min-height:40px;padding:0 16px;font-size:14px;font-weight:700;background:transparent;color:#ff8a98;border:1.5px solid #e5223f}
@@ -241,6 +249,7 @@ header .marcaTopo{animation:brilhaLogo 4s ease-in-out infinite}
       <span class="heroTag"><i></i>Rádio ao vivo · 24 horas</span>
       <h2>Só sucesso, o dia inteiro, com a <b>ECONTEC Contabilidade</b></h2>
       <p>Peça sua música, ouça os nossos clientes e fale com a gente no WhatsApp.</p>
+      <button type="button" class="btnPedir heroPed" data-pedir>🎵 Peça sua música</button>
       <a class="zapCli heroZap" href="https://wa.me/5564984192320" target="_blank" rel="noopener">Falar com a ECONTEC <span>(64) 9 8419-2320</span></a>
     </div>
   </section>
@@ -328,6 +337,7 @@ header .marcaTopo{animation:brilhaLogo 4s ease-in-out infinite}
     </section>
   </div>
 </div></main>
+<button type="button" id="fabPed" class="btnPedir" data-pedir aria-label="Peça sua música">🎵 Peça sua música</button>
 <div id="mini" aria-label="Player"><img id="miniImg" alt=""><div class="miniTxt"><small id="miniKind">Ao vivo</small><b id="miniTit">Rádio ECONTEC</b></div><button type="button" id="miniBtn" aria-label="Ouvir ao vivo"></button></div>
 
 <script src="https://www.youtube.com/iframe_api"></script>
@@ -366,7 +376,7 @@ const _q=location.search+location.hash;
 /* Administrador só pelo link de admin (?admin). O link de ouvinte é sempre ouvinte. */
 try{localStorage.removeItem('radioEcontec.admin')}catch(e){}
 const ADMIN=/[?&#]admin\b/.test(_q);
-if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 22</span>')}
+if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 23</span>')}
 const CLI_PADRAO=[
  {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'img/logo-econtec.png',zap:ZAP_ECONTEC},
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
@@ -648,6 +658,10 @@ async function enviarPedido(){if(enviando)return;const nome=$('pNome').value.tri
    else if(tr.parecida)txt=`${esc(nome)}, "${esc(q)}" não está no acervo. Coloquei uma no mesmo clima:`}
   const id=await publicaPedido(nome,tr);if(id){store.set('meusPed',store.get('meusPed',[]).concat(id).slice(-5))}avisaPedido(nome,tr,id,txt);atualizaMeuPed();$('meuPed').scrollIntoView({behavior:'smooth',block:'center'})}
  finally{enviando=false;$('btnPed').disabled=false}}
+
+/* Botões "Peça sua música": levam direto ao pedido */
+document.querySelectorAll('[data-pedir]').forEach(b=>b.addEventListener('click',()=>{const c=document.querySelector('.pedCard');c.scrollIntoView({behavior:'smooth',block:'start'});c.classList.add('destaque');setTimeout(()=>c.classList.remove('destaque'),2200);setTimeout(()=>{const n=$('pNome');(n.value.trim()?$('pMus'):n).focus({preventScroll:true})},500)}));
+try{const vis=new Set();const io=new IntersectionObserver(es=>{es.forEach(e=>e.isIntersecting?vis.add(e.target):vis.delete(e.target));document.body.classList.toggle('pedVisivel',vis.size>0)},{threshold:.25});io.observe(document.querySelector('.pedCard'));io.observe(document.querySelector('.heroPed'))}catch(e){}
 $('btnPed').addEventListener('click',enviarPedido);$('fPed').addEventListener('submit',e=>{e.preventDefault();enviarPedido()});$('fPed').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.tagName==='INPUT'&&e.target.type!=='file'){e.preventDefault();enviarPedido()}});
 bot('Olá! Sou o robô da Rádio ECONTEC. Peça uma música pelo nome, artista ou estilo. O pedido toca ao vivo para todos os ouvintes, com o seu nome!');
 
@@ -760,7 +774,7 @@ async function geraRelatorio(){const n=+$('relDia').value,out=$('relOut');out.in
   return `<div class="relCli"><b>${esc(k)}</b><div class="relNums"><span><strong>${L.length}</strong>vezes no ar</span><span><strong>${on}</strong>aparelhos conectados</span><span><strong>${ouv}</strong>ouvindo na hora</span><span><strong>${pico}</strong>pico de ouvintes</span></div>${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório no WhatsApp do cliente</a>`:`<a class="zapCli" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório pelo WhatsApp</a>`}</div>`}).join('')+'<p class="note">Os números de audiência contam aparelhos com a rádio aberta no minuto do anúncio.</p>'}
 if(ADMIN)$('btnRel').addEventListener('click',geraRelatorio);
 
-const VERSAO=22;
+const VERSAO=23;
 function checaVersao(){fetch('index.html?nv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VERSAO=(\d+)/);if(m&&+m[1]>VERSAO&&!ligado)location.reload()}).catch(()=>{})}
 checaVersao();setInterval(checaVersao,5*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checaVersao()});
 
