@@ -80,6 +80,9 @@ body:not(.admin) .adm{display:none!important}
 .btnNovoAn{width:100%;margin:6px 0 12px;padding:14px;border-radius:14px;font-size:16px;font-weight:800;background:linear-gradient(180deg,#ffd978,#e0a62b);color:#2a1a00;border:0}
 #vouAdm{position:fixed;right:12px;top:12px;z-index:60;padding:9px 14px;border-radius:999px;border:1px solid #f0c14b88;background:#1a0f10ee;color:#ffd978;font-weight:700;font-size:13px}
 .meuPed{margin:0 0 10px;padding:12px 14px;border-radius:14px;background:linear-gradient(180deg,#3a2a05,#1f1603);border:1px solid #f0c14b88;color:#ffe9a8;font-weight:700;font-size:15px}.meuPed b{color:#fff}
+.rel{display:grid;gap:10px}.rel h3{margin:0;font-family:Outfit,sans-serif;color:#ffd978;font-size:18px}.rel select{padding:10px;border-radius:12px;background:#120c0d;color:#fff;border:1px solid #f0c14b55}
+.relCli{background:#120c0d;border:1px solid #f0c14b33;border-radius:16px;padding:12px;display:grid;gap:6px}.relCli b{font-size:16px}.relNums{display:flex;gap:14px;flex-wrap:wrap;color:#e3cccc;font-size:14px}.relNums strong{color:#fff;font-size:20px;display:block}
+.relCli a{justify-self:start}.anuncieLink{display:block;text-align:center;margin-top:12px;padding:12px;border-radius:14px;border:1px solid #f0c14b88;color:#ffd978;font-weight:800;text-decoration:none}
 .admtag{display:inline-block;background:#c0392b;color:#fff;border-radius:6px;padding:2px 8px;font-size:12px;margin-left:8px}
 input,textarea{font:16px Inter,sans-serif;width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
 textarea{min-height:90px;resize:vertical}
@@ -246,6 +249,12 @@ header .marcaTopo{animation:brilhaLogo 4s ease-in-out infinite}
     <div class="audiNums"><div><b id="auOn">–</b><span>aparelhos conectados</span></div><div><b id="auOuv">–</b><span>ouvindo a rádio</span></div><div><b id="auDia">–</b><span>aparelhos hoje</span></div></div>
     <small id="auInfo">Atualiza sozinho a cada 30 segundos.</small>
   </section>
+  <section class="card adm rel" aria-label="Relatório dos anunciantes">
+    <h3>📈 Relatório dos anunciantes</h3>
+    <p class="note" style="margin:0">Quantas vezes o anúncio de cada cliente tocou e quantos aparelhos estavam ouvindo na hora. Bom para mostrar ao cliente.</p>
+    <div class="row" style="gap:8px;flex-wrap:wrap"><select id="relDia"><option value="0">Hoje</option><option value="1">Ontem</option><option value="7">Últimos 7 dias</option></select><button type="button" id="btnRel">Gerar relatório</button></div>
+    <div id="relOut"></div>
+  </section>
   <div class="grid">
     <section class="deck" aria-label="Aparelho da rádio">
       <div class="fig"><canvas id="viz"></canvas><div id="ytwrap"><div id="yt"></div></div></div>
@@ -285,6 +294,7 @@ header .marcaTopo{animation:brilhaLogo 4s ease-in-out infinite}
 
     <section class="card">
       <h3>Anúncios dos clientes</h3>
+      <a class="anuncieLink" href="anuncie.html">📣 Quer anunciar aqui? Conheça os planos</a>
       <button type="button" class="adm btnNovoAn" id="btnNovoAn">➕ Adicionar anúncio de cliente</button>
       <div id="clientes"></div>
       <form id="fCli" class="adm admForm">
@@ -355,7 +365,7 @@ const _q=location.search+location.hash;
 /* Administrador só pelo link de admin (?admin). O link de ouvinte é sempre ouvinte. */
 try{localStorage.removeItem('radioEcontec.admin')}catch(e){}
 const ADMIN=/[?&#]admin\b/.test(_q);
-if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 19</span>')}
+if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 20</span>')}
 const CLI_PADRAO=[
  {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'img/logo-econtec.png',zap:ZAP_ECONTEC},
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
@@ -718,7 +728,20 @@ async function auMostra(){const m=Math.floor(Date.now()/60000)-1;const [a,b,c]=a
  $('auOn').textContent=Math.max(a,1);$('auOuv').textContent=b;$('auDia').textContent=Math.max(c,1);
  $('auInfo').textContent='Último minuto completo · atualizado às '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'})}
 if(ADMIN){auMostra();setInterval(auMostra,30000)}
-const VERSAO=19;
+/* Relatório dos anunciantes: a programação é a mesma para todos, então dá para saber exatamente quando cada anúncio tocou */
+async function geraRelatorio(){const n=+$('relDia').value,out=$('relOut');out.innerHTML='<p class="note">Calculando…</p>';
+ const hoje=Math.floor((Date.now()-FUSO)/DIA),dias=n===0?[hoje]:n===1?[hoje-1]:Array.from({length:7},(_,i)=>hoje-6+i),fimMs=Date.now();
+ const slots={};for(const d of dias){for(const it of gradeViva(d).g){if(it.k!=='adC'||it.t0>fimMs)continue;(slots[it.c.nome]=slots[it.c.nome]||[]).push(it.t0)}}
+ const nomes=Object.keys(slots);if(!nomes.length){out.innerHTML='<p class="note">Nenhum anúncio de cliente tocou nesse período.</p>';return}
+ const minutos=[...new Set(nomes.flatMap(k=>slots[k].map(t=>Math.floor(t/6e4))))];const aud={};
+ for(let i=0;i<minutos.length;i+=8){await Promise.all(minutos.slice(i,i+8).map(async m=>{const [a,b]=await Promise.all([auGet('on-'+m),auGet('ouv-'+m)]);aud[m]={on:a||0,ouv:b||0}}))}
+ const per=n===0?'hoje':n===1?'ontem':'nos últimos 7 dias';
+ out.innerHTML=nomes.map(k=>{const L=slots[k],c=anuncios.find(x=>x.nome===k)||{};let on=0,ouv=0,pico=0;for(const t of L){const a=aud[Math.floor(t/6e4)]||{on:0,ouv:0};on+=a.on;ouv+=a.ouv;pico=Math.max(pico,a.ouv)}
+  const txt=`Olá! Relatório da Rádio ECONTEC (${per}): o anúncio de ${k} tocou ${L.length} vezes, chegando a ${on} aparelhos conectados (${ouv} ouvindo na hora). Obrigado por anunciar com a gente!`;
+  return `<div class="relCli"><b>${esc(k)}</b><div class="relNums"><span><strong>${L.length}</strong>vezes no ar</span><span><strong>${on}</strong>aparelhos conectados</span><span><strong>${ouv}</strong>ouvindo na hora</span><span><strong>${pico}</strong>pico de ouvintes</span></div>${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório no WhatsApp do cliente</a>`:`<a class="zapCli" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório pelo WhatsApp</a>`}</div>`}).join('')+'<p class="note">Os números de audiência contam aparelhos com a rádio aberta no minuto do anúncio.</p>'}
+if(ADMIN)$('btnRel').addEventListener('click',geraRelatorio);
+
+const VERSAO=20;
 function checaVersao(){fetch('index.html?nv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VERSAO=(\d+)/);if(m&&+m[1]>VERSAO&&!ligado)location.reload()}).catch(()=>{})}
 checaVersao();setInterval(checaVersao,5*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checaVersao()});
 
