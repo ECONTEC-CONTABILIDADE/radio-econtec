@@ -32,3 +32,37 @@ else console.log('Sem mudanças');
  // apaga dias antigos (mais de 3 dias)
  for(const f of fs.readdirSync('pedidos'))if(Date.now()-Date.parse(f.slice(0,10))>3*DIA)fs.unlinkSync('pedidos/'+f);
 }
+
+// Homenagem do dia: às 22h toca 5 músicas do artista da música mais pedida do dia (pedidos até 21h; arquivo criado entre 21h e 21h57)
+{
+ const FUSO=3*36e5,DIA=864e5,agora=Date.now(),d=Math.floor((agora-FUSO)/DIA),dia=new Date(d*DIA).toISOString().slice(0,10);
+ const corte=d*DIA+FUSO+21*36e5,limite=d*DIA+FUSO+21.95*36e5,arq='homenagem/'+dia+'.json';
+ fs.mkdirSync('homenagem',{recursive:true});
+ if(agora>=corte&&!fs.existsSync(arq)&&agora>=limite){fs.writeFileSync(arq,JSON.stringify({dia,artista:null,motivo:'fora do horário'})+'\n')}
+ else if(agora>=corte&&!fs.existsSync(arq)){
+  let peds=[];try{peds=JSON.parse(fs.readFileSync('pedidos/'+dia+'.json','utf8'))}catch{}
+  peds=peds.filter(p=>p.ts<corte&&p.tr&&/^[\w-]{11}$/.test(p.tr.id));
+  const cont={};for(const p of peds){const c=cont[p.tr.id]=cont[p.tr.id]||{n:0,ts:p.ts,tr:p.tr,dur:p.dur};c.n++}
+  const top=Object.values(cont).sort((a,b)=>b.n-a.n||a.ts-b.ts)[0];
+  if(top&&top.tr.artista){
+   const KEY='AIzaSyDWt1w5AGxofkcmeDSNR05YOmXIPq0kUT4',H={headers:{Referer:'https://econtec-contabilidade.github.io/radio-econtec/'}};
+   const art=top.tr.artista.replace(/\s*(oficial|official|vevo|- topic)\s*$/i,'').trim();
+   const norm=t=>String(t).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+   const faixas=[{id:top.tr.id,titulo:top.tr.titulo,artista:art,dur:top.dur,maisPedida:true,vezes:top.n}];
+   try{
+    const j=await (await fetch('https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoEmbeddable=true&safeSearch=strict&videoCategoryId=10&regionCode=BR&maxResults=15&q='+encodeURIComponent(art)+'&key='+KEY,H)).json();
+    const cand=(j.items||[]).filter(it=>it.id.videoId!==top.tr.id&&norm(it.snippet.title).includes(norm(art).split(' ')[0])&&!/sucessos|completo|album|álbum|playlist|cd |dvd|ao vivo em|live session|mix|medley|as melhores|top \d/i.test(it.snippet.title));
+    const ids=cand.map(i=>i.id.videoId).slice(0,10);
+    if(ids.length){const v=await (await fetch('https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id='+ids.join(',')+'&key='+KEY,H)).json();
+     const durs={};for(const it of v.items||[]){const m=it.contentDetails.duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);durs[it.id]=(+m[1]||0)*3600+(+m[2]||0)*60+(+m[3]||0)}
+     for(const it of cand){if(faixas.length>=5)break;const dd=durs[it.id.videoId];if(!dd||dd<90||dd>420)continue;
+      const t=it.snippet.title.replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"').replace(/\s*[\(\[][^\)\]]*(clipe|video|vídeo|official|oficial|lyric|letra|audio|áudio|visualizer)[^\)\]]*[\)\]]/gi,'').trim();const pp=t.split(/\s+[-–|]\s+/);
+      faixas.push({id:it.id.videoId,titulo:(pp.length>1?pp.slice(1).join(' - '):t).slice(0,90),artista:art,dur:dd})}}
+   }catch(e){console.log('youtube falhou',e.message)}
+   // a mais pedida fecha a homenagem
+   const ord=faixas.slice(1).concat(faixas[0]);
+   fs.writeFileSync(arq,JSON.stringify({dia,artista:art,maisPedida:top.tr.titulo,vezes:top.n,faixas:ord})+'\n');console.log('homenagem',art,ord.length);
+  }else{fs.writeFileSync(arq,JSON.stringify({dia,artista:null})+'\n');console.log('sem pedidos para homenagem')}
+ }
+ for(const f of fs.readdirSync('homenagem'))if(Date.now()-Date.parse(f.slice(0,10))>3*DIA)fs.unlinkSync('homenagem/'+f);
+}
