@@ -44,7 +44,10 @@ header .zapbtn{margin-left:auto}
 .fig{position:relative;flex:1;min-height:190px;border-radius:12px;background:#062a2a;overflow:hidden}
 .fig>canvas{position:absolute;inset:0;width:100%;height:100%}
 .fig{min-height:clamp(220px,30vw,340px)}#ytwrap{position:absolute;inset:0;visibility:hidden;background:#000}#ytwrap.on{visibility:visible}#ytwrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-.vidBtns{position:absolute;right:10px;bottom:10px;display:flex;gap:8px;z-index:3}
+.vidBtns button#vidInfo{background:#1f9a4bcc}
+#vidDica{position:fixed;left:12px;right:12px;bottom:96px;max-width:480px;margin:0 auto;z-index:10001;box-shadow:0 20px 50px #000c;background:#140203f2;border:1px solid #f0c14b88;border-radius:16px;padding:12px 14px;font-size:14px;line-height:1.45;color:#fff}
+#vidDica button{display:block;margin:10px 0 0 auto;background:#f0c14b;color:#2a0406;border:0;border-radius:999px;padding:7px 16px;font-weight:800}
+.vidBtns{position:absolute;right:10px;left:10px;bottom:10px;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;z-index:3}
 .vidBtns button{background:#000000b3;color:#fff;border:1px solid #ffffff55;border-radius:999px;padding:9px 14px;font:700 14px Inter,system-ui,sans-serif;cursor:pointer;backdrop-filter:blur(4px)}
 .vidBtns button:hover{background:#a50f26}
 body.vidGrande .fig{position:fixed!important;inset:0!important;z-index:9999;border-radius:0!important;min-height:0!important;background:#000}
@@ -338,7 +341,7 @@ body:not([data-aba="inicio"]) main .wrap{min-height:60vh}
   </section>
   <div class="grid">
     <section class="deck" id="aoVivo" data-ab="inicio" data-aa="inicio" aria-label="Aparelho da rádio">
-      <div class="fig"><canvas id="viz"></canvas><button type="button" id="figIdle" aria-label="Ouvir a rádio ao vivo"><img src="img/logo-econtec.png" alt=""><span>▶ Toque para ouvir ao vivo</span></button><div id="ytwrap"><div id="yt"></div><div class="vidBtns"><button type="button" id="vidTam" aria-label="Aumentar o vídeo">⤢ Aumentar vídeo</button><button type="button" id="vidCheia" aria-label="Tela cheia" hidden>⛶ Tela cheia</button></div></div></div>
+      <div class="fig"><canvas id="viz"></canvas><button type="button" id="figIdle" aria-label="Ouvir a rádio ao vivo"><img src="img/logo-econtec.png" alt=""><span>▶ Toque para ouvir ao vivo</span></button><div id="ytwrap"><div id="yt"></div><div class="vidBtns"><button type="button" id="vidTam" aria-label="Aumentar o vídeo">⤢ Aumentar vídeo</button><button type="button" id="vidCheia" aria-label="Tela cheia" hidden>⛶ Tela cheia</button><button type="button" id="vidInfo" aria-label="Como ver sem anúncios do YouTube">ⓘ Sem anúncios</button></div><div id="vidDica" hidden>💡 <b>Quer ouvir sem os anúncios do YouTube?</b> Quem tem <b>YouTube Premium</b> só precisa entrar na sua conta no youtube.com, neste mesmo navegador. Depois, abra a rádio de novo: os sucessos tocam sem os anúncios do YouTube. As músicas marcadas "sem intervalo" nunca têm anúncio.<button type="button" id="vidDicaOk">Entendi</button></div></div></div>
       <div class="np">
         <div class="logo marca" id="npLogo"><img src="img/e-econtec.png" alt=""></div>
         <div><div class="kind" id="npKind">Aperte "Ligar a rádio"</div><h2 id="npTitle">Rádio ECONTEC</h2><div class="who" id="npWho">Só sucesso, vinhetas e os nossos clientes, 24 horas</div></div>
@@ -514,7 +517,7 @@ const _q=location.search+location.hash;
 /* Administrador só pelo link de admin (?admin). O link de ouvinte é sempre ouvinte. */
 try{localStorage.removeItem('radioEcontec.admin')}catch(e){}
 const ADMIN=/[?&#]admin\b/.test(_q);
-if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 38</span>')}
+if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 39</span>')}
 const CLI_PADRAO=[
  {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'img/logo-econtec.png',zap:ZAP_ECONTEC},
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
@@ -562,6 +565,7 @@ let yt=null,ytOk=null;const ytPronto=new Promise(r=>ytOk=r);
  bT.addEventListener('click',()=>{quer=!quer;if(!quer&&document.fullscreenElement)document.exitFullscreen().catch(()=>{});aplica()});
  if(document.fullscreenEnabled&&fig.requestFullscreen){bC.hidden=false;bC.addEventListener('click',()=>{if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});else fig.requestFullscreen().then(()=>{try{screen.orientation.lock('landscape').catch(()=>{})}catch(e){}}).catch(()=>{quer=true;aplica()})});
   document.addEventListener('fullscreenchange',()=>{bC.textContent=document.fullscreenElement?'✕ Sair da tela cheia':'⛶ Tela cheia'})}
+ document.body.append($('vidDica'));$('vidInfo').addEventListener('click',()=>{$('vidDica').hidden=!$('vidDica').hidden});$('vidDicaOk').addEventListener('click',()=>{$('vidDica').hidden=true});
  new MutationObserver(aplica).observe($('ytwrap'),{attributes:true,attributeFilter:['class']});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&quer){quer=false;aplica()}})}
 window.onYouTubeIframeAPIReady=()=>{yt=new YT.Player('yt',{width:'100%',height:'100%',playerVars:{playsinline:1,rel:0,modestbranding:1,controls:0,disablekb:1,origin:location.origin},events:{onReady:()=>ytOk(),onStateChange:e=>ytEv&&ytEv('st',e.data),onError:e=>ytEv&&ytEv('err',e.data)}})};
@@ -579,7 +583,7 @@ function tocarYT(tr,onProg,ini,ate,ref){
   let ultAj=0;const iv=setInterval(()=>{try{const d00=yt.getDuration(),vd=yt.getVideoData?yt.getVideoData():null;const ad=(vd&&vd.video_id&&vd.video_id!==tr.id)||(espDur>0&&d00>0&&Math.abs(d00-espDur)>12&&d00<120);
    if(ad!==emAd){emAd=ad;if(ad){kindAntes=$('npKind').textContent;$('npKind').textContent='Anúncio do YouTube · a música entra já, no ponto ao vivo'}else if(kindAntes){$('npKind').textContent=kindAntes;ultAj=0}}
    if(ad){if(yt.getPlayerState()===1)tocou=true;return}
-   if(ref&&tocou&&Date.now()-ultAj>3000&&yt.getPlayerState()===1){const esp=(agora()-ref)/1000,cur=yt.getCurrentTime();if(Math.abs(cur-esp)>1.5&&esp>0){yt.seekTo(esp,true);ultAj=Date.now()}}if(ref&&ligado&&Date.now()-ultAj>3000&&yt.getPlayerState()===2){yt.seekTo(Math.max(0,(agora()-ref)/1000),true);yt.playVideo();ultAj=Date.now()}
+   if(ref&&tocou&&Date.now()-ultAj>20000&&yt.getPlayerState()===1){const esp=(agora()-ref)/1000,cur=yt.getCurrentTime();if(Math.abs(cur-esp)>6&&esp>0){yt.seekTo(esp+1,true);ultAj=Date.now()}}if(ref&&ligado&&Date.now()-ultAj>5000&&yt.getPlayerState()===2){yt.seekTo(Math.max(0,(agora()-ref)/1000),true);yt.playVideo();ultAj=Date.now()}
   const d0=yt.getDuration(),c=yt.getCurrentTime(),d=ate?Math.min(d0,ate):d0;if(d>0){onProg(c/d);const r=d-c;yt.setVolume(Math.round(volume()*100*Math.max(0,Math.min(1,r/3))));if(r<.4&&tocou)fim()}}catch(e){}},300);
  });
 }
@@ -1044,7 +1048,7 @@ async function geraRelatorio(){const n=+$('relDia').value,out=$('relOut');out.in
   return `<div class="relCli"><b>${esc(k)}</b><div class="relNums"><span><strong>${L.length}</strong>vezes no ar</span><span><strong>${on}</strong>aparelhos conectados</span><span><strong>${ouv}</strong>ouvindo na hora</span><span><strong>${pico}</strong>pico de ouvintes</span></div>${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório no WhatsApp do cliente</a>`:`<a class="zapCli" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório pelo WhatsApp</a>`}</div>`}).join('')+'<p class="note">Os números de audiência contam aparelhos com a rádio aberta no minuto do anúncio.</p>'}
 if(ADMIN)$('btnRel').addEventListener('click',geraRelatorio);
 
-const VERSAO=38;
+const VERSAO=39;
 function checaVersao(){fetch('index.html?nv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VERSAO=(\d+)/);if(m&&+m[1]>VERSAO&&!ligado)location.reload()}).catch(()=>{})}
 checaVersao();setInterval(checaVersao,5*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checaVersao()});
 
