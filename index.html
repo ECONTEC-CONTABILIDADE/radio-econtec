@@ -278,6 +278,29 @@ section[id],#painel{scroll-margin-top:150px}
 .redesLista.grande .rede svg{width:40px;height:40px;padding:9px;border-radius:12px;background:var(--cor);color:#fff;flex:none}
 .redesLista.grande .rede span{display:flex;flex-direction:column;min-width:0}.redesLista.grande .rede small{color:#cdb8b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media(max-width:640px){.redesLista.mini{justify-content:center}header.band .zapbtn,header.band .lamp{display:none}header.band{padding-block:6px 0}.menu a{padding:7px 12px;font-size:13px}}
+/* v28: abas no estilo app de rádio */
+[hidden]{display:none!important}
+.menu.abasTopo .abaBtn{flex:none;display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:99px;background:#ffffff0f;border:1px solid #ffffff1a;color:#f3e6e6;font-weight:700;font-size:15px;cursor:pointer}
+.menu.abasTopo .abaBtn:hover{background:#ffffff1f}
+.abaBtn.on{background:linear-gradient(180deg,#ffd978,#f0c14b)!important;color:#2a1a00!important;border-color:transparent!important}
+.tabbar{display:none}
+#fabPed{display:none!important}
+.grid{grid-template-columns:minmax(0,1fr)!important}
+#aoVivo{max-width:820px;width:100%;margin-inline:auto}
+#pedir{max-width:820px;width:100%;margin-inline:auto}
+body[data-aba="inicio"] .cols,body[data-aba="pedir"] .cols{grid-template-columns:minmax(0,1fr)}
+body:not([data-aba="inicio"]) main .wrap{min-height:60vh}
+@media(max-width:860px){
+ .menu.abasTopo{display:none}
+ .tabbar{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;z-index:55;background:#140b0df5;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid #f0c14b33;padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+ .tabbar .abaBtn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border:0;border-radius:14px;background:none;color:#cdb8b8;font-weight:700;font-size:11px;cursor:pointer;min-height:52px;justify-content:center}
+ .tabbar .abaIco{font-size:21px;line-height:1}
+ .tabbar .abaBtn.on{background:#f0c14b22!important;color:#ffd978!important}
+ .tabbar .abaBtn.on .abaTxt{color:#ffd978}
+ body{padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+ #mini{bottom:calc(74px + env(safe-area-inset-bottom))!important}
+ header.band{position:relative!important}
+}
 </style>
 </head>
 <body>
@@ -287,12 +310,10 @@ section[id],#painel{scroll-margin-top:150px}
   <span class="lamp" id="lamp"><i></i><span id="lampTxt">Ao vivo (toque para ouvir)</span></span>
   <a class="zapbtn" href="https://wa.me/5564984192320" target="_blank" rel="noopener">WhatsApp ECONTEC (64) 9 8419-2320</a>
 </div>
-<nav class="menu" aria-label="Menu"><div class="wrap">
-  <a href="#aoVivo">🎧 Ao vivo</a><a href="#pedir">🎵 Pedir música</a><a href="#programacao">📋 Programação</a><a href="#anunciantes">📣 Anunciantes</a><a href="#redes">📲 Redes sociais</a><a class="adm" href="#painel">📊 Painel</a><a class="adm" href="#ajustes">⚙️ Ajustes</a>
-</div></nav></header>
+<nav class="menu abasTopo" aria-label="Menu"><div class="wrap"></div></nav></header>
 
 <main class="band"><div class="wrap" style="display:grid;gap:20px">
-  <section class="hero" aria-label="ECONTEC Contabilidade">
+  <section class="hero" data-ab="inicio" data-aa="inicio" aria-label="ECONTEC Contabilidade">
     <div class="heroLogo"><img src="img/logo-econtec.png" alt="ECONTEC Contabilidade"></div>
     <div class="heroTxt">
       <span class="heroTag"><i></i>Rádio ao vivo · 24 horas</span>
@@ -304,7 +325,7 @@ section[id],#painel{scroll-margin-top:150px}
     </div>
   </section>
   <div class="grid">
-    <section class="deck" id="aoVivo" aria-label="Aparelho da rádio">
+    <section class="deck" id="aoVivo" data-ab="inicio" data-aa="inicio" aria-label="Aparelho da rádio">
       <div class="fig"><canvas id="viz"></canvas><button type="button" id="figIdle" aria-label="Ouvir a rádio ao vivo"><img src="img/logo-econtec.png" alt=""><span>▶ Toque para ouvir ao vivo</span></button><div id="ytwrap"><div id="yt"></div></div></div>
       <div class="np">
         <div class="logo marca" id="npLogo"><img src="img/e-econtec.png" alt=""></div>
@@ -319,7 +340,7 @@ section[id],#painel{scroll-margin-top:150px}
       </div>
     </section>
 
-    <section class="card pedCard" id="pedir" aria-label="Pedidos">
+    <section class="card pedCard" id="pedir" data-ab="pedir" data-aa="pedir" aria-label="Pedidos">
       <h3>Peça sua música</h3>
       <form id="fPed">
         <input id="pNome" placeholder="Seu nome" maxlength="40" autocomplete="off">
@@ -334,14 +355,14 @@ section[id],#painel{scroll-margin-top:150px}
   </div>
 
   <div class="cols">
-    <section class="card" id="programacao">
+    <section class="card" id="programacao" data-ab="programacao" data-aa="inicio pedir">
       <h3>A seguir no ao vivo</h3>
       <div id="homAviso" class="meuPed" hidden></div>
       <ol class="q" id="fila"></ol>
       <p class="note">A rádio é ao vivo: todo mundo ouve a mesma programação, na mesma hora. Quando chega um pedido, ele toca logo depois da música atual, para todos os ouvintes, com o nome de quem pediu na tela e na voz da locutora. A cada 5 músicas entra o intervalo com a hora certa e os anúncios dos nossos clientes.</p>
     </section>
 
-    <section class="card" id="anunciantes">
+    <section class="card" id="anunciantes" data-ab="anunciantes" data-aa="anunciantes">
       <h3>Anúncios dos clientes</h3>
       <a class="anuncieLink" href="anuncie.html">📣 Anuncie grátis na fase experimental</a>
       <button type="button" class="adm btnNovoAn" id="btnNovoAn">➕ Adicionar anúncio de cliente</button>
@@ -362,7 +383,7 @@ section[id],#painel{scroll-margin-top:150px}
       <p class="note adm">Área do administrador. Tudo o que você adicionar, editar, cancelar ou excluir aqui vale para a rádio de todos os ouvintes em poucos segundos. Use "▶ Ouvir" para escutar como o anúncio vai sair no ar. Só os anúncios ativos (sem a etiqueta Cancelado) entram nos intervalos.</p>
     </section>
 
-    <section class="card adm" id="ajustes" aria-label="Planos e preços">
+    <section class="card adm" id="ajustes" data-ab="-" data-aa="ajustes" aria-label="Planos e preços">
       <h3>💰 Planos e preços</h3>
       <p class="note" style="margin:0">O que você escrever aqui aparece para todos na página <a href="anuncie.html" target="_blank" rel="noopener">Anuncie na Rádio ECONTEC</a>. Deixe em branco para mostrar "Consulte o valor".</p>
       <form id="fPrecos" class="admForm">
@@ -375,7 +396,7 @@ section[id],#painel{scroll-margin-top:150px}
       </form>
     </section>
 
-    <section class="card adm" aria-label="Redes sociais (editar)">
+    <section class="card adm" data-ab="-" data-aa="ajustes" aria-label="Redes sociais (editar)">
       <h3>📲 Redes sociais da ECONTEC</h3>
       <p class="note" style="margin:0">Cole o link ou o @ de cada perfil. Só aparecem para os ouvintes as redes preenchidas. O WhatsApp da ECONTEC aparece sempre.</p>
       <form id="fRedes" class="admForm">
@@ -389,7 +410,7 @@ section[id],#painel{scroll-margin-top:150px}
       </form>
     </section>
 
-    <section class="card adm">
+    <section class="card adm" data-ab="-" data-aa="ajustes">
       <h3>Filtro de conteúdo</h3>
       <p style="margin:0">O robô recusa pedidos com palavrões, conteúdo sexual, drogas ou violência. Acrescente aqui outras palavras proibidas, separadas por vírgula.</p>
       <textarea id="extraBlock" placeholder="ex.: palavra1, palavra2"></textarea>
@@ -404,13 +425,13 @@ section[id],#painel{scroll-margin-top:150px}
     </section>
   </div>
 
-  <section class="card redesCard" id="redes" aria-label="Redes sociais">
+  <section class="card redesCard" id="redes" data-ab="redes" data-aa="ajustes" aria-label="Redes sociais">
     <h3>📲 Siga a ECONTEC nas redes</h3>
     <p class="note" style="margin:0">Novidades, dicas de contabilidade e os bastidores da Rádio ECONTEC.</p>
     <div class="redesLista grande"></div>
   </section>
 
-  <div class="adm admBloco" id="painel">
+  <div class="adm admBloco" id="painel" data-ab="-" data-aa="painel">
   <h2 class="admTit">📊 Painel do administrador</h2>
   <section class="card adm audi" aria-label="Audiência">
     <h3>📊 Audiência agora</h3>
@@ -425,6 +446,7 @@ section[id],#painel{scroll-margin-top:150px}
   </section>
   </div>
 </div></main>
+<nav class="tabbar" aria-label="Menu principal"></nav>
 <button type="button" id="fabPed" class="btnPedir" data-pedir aria-label="Peça sua música">🎵 Peça sua música</button>
 <div id="mini" aria-label="Player"><img id="miniImg" alt=""><div class="miniTxt"><small id="miniKind">Ao vivo</small><b id="miniTit">Rádio ECONTEC</b></div><button type="button" id="miniBtn" aria-label="Ouvir ao vivo"></button></div>
 
@@ -464,7 +486,7 @@ const _q=location.search+location.hash;
 /* Administrador só pelo link de admin (?admin). O link de ouvinte é sempre ouvinte. */
 try{localStorage.removeItem('radioEcontec.admin')}catch(e){}
 const ADMIN=/[?&#]admin\b/.test(_q);
-if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 27</span>')}
+if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 28</span>')}
 const CLI_PADRAO=[
  {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'img/logo-econtec.png',zap:ZAP_ECONTEC},
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
@@ -763,7 +785,7 @@ async function enviarPedido(){if(enviando)return;const nome=$('pNome').value.tri
  finally{enviando=false;$('btnPed').disabled=false}}
 
 /* Botões "Peça sua música": levam direto ao pedido */
-document.querySelectorAll('[data-pedir]').forEach(b=>b.addEventListener('click',()=>{const c=document.querySelector('.pedCard');c.scrollIntoView({behavior:'smooth',block:'start'});c.classList.add('destaque');setTimeout(()=>c.classList.remove('destaque'),2200);setTimeout(()=>{const n=$('pNome');(n.value.trim()?$('pMus'):n).focus({preventScroll:true})},500)}));
+document.querySelectorAll('[data-pedir]').forEach(b=>b.addEventListener('click',()=>{vaiAba('pedir');history.replaceState(null,'','#pedir');const c=document.querySelector('.pedCard');c.scrollIntoView({behavior:'smooth',block:'start'});c.classList.add('destaque');setTimeout(()=>c.classList.remove('destaque'),2200);setTimeout(()=>{const n=$('pNome');(n.value.trim()?$('pMus'):n).focus({preventScroll:true})},500)}));
 try{const vis=new Set();const io=new IntersectionObserver(es=>{es.forEach(e=>e.isIntersecting?vis.add(e.target):vis.delete(e.target));document.body.classList.toggle('pedVisivel',vis.size>0)},{threshold:.25});io.observe(document.querySelector('.pedCard'));io.observe(document.querySelector('.heroPed'))}catch(e){}
 $('btnPed').addEventListener('click',enviarPedido);$('fPed').addEventListener('submit',e=>{e.preventDefault();enviarPedido()});$('fPed').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.tagName==='INPUT'&&e.target.type!=='file'){e.preventDefault();enviarPedido()}});
 bot('Olá! Sou o robô da Rádio ECONTEC. Peça uma música pelo nome, artista ou estilo. O pedido toca ao vivo para todos os ouvintes, com o seu nome!');
@@ -879,9 +901,20 @@ function renderRedes(){const r=(cfgAtual&&cfgAtual.redes)||{};const itens=[];
  document.querySelectorAll('.redesLista').forEach(el=>{const g=el.classList.contains('grande');
   el.innerHTML=itens.map(([k,u,t])=>{const [n,cor,p]=ICO[k];return`<a class="rede" href="${esc(u)}" target="_blank" rel="noopener" style="--cor:${cor}" aria-label="${n}${g?'':' da ECONTEC'}"><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor">${p}</g></svg>${g?`<span><b>${n}</b><small>${esc(t)}</small></span>`:''}</a>`}).join('')})}
 renderRedes();
-/* menu: marca a seção visível */
-try{const ms=[...document.querySelectorAll('.menu a')];const io2=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){ms.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id));const a=ms.find(a=>a.classList.contains('on'));if(a&&a.scrollIntoView)a.parentNode.scrollTo({left:a.offsetLeft-20,behavior:'smooth'})}}),{rootMargin:'-45% 0px -50% 0px'});
- ms.forEach(a=>{const t=document.querySelector(a.getAttribute('href'));if(t)io2.observe(t)})}catch(e){}
+/* abas: navegação no estilo app de rádio */
+const ABAS_OUV=[['inicio','🏠','Início'],['pedir','🎵','Pedir'],['programacao','📋','Programação'],['anunciantes','📣','Anúncios'],['redes','📲','Redes']];
+const ABAS_ADM=[['inicio','📻','Ao vivo'],['pedir','🎵','Pedidos'],['anunciantes','📣','Anúncios'],['painel','📊','Painel'],['ajustes','⚙️','Ajustes']];
+const ABAS=ADMIN?ABAS_ADM:ABAS_OUV,ALIAS={aoVivo:'inicio',redes:ADMIN?'ajustes':'redes'};
+let abaAtual='';
+function vaiAba(a,semRolar){if(!ABAS.some(x=>x[0]===a))a='inicio';abaAtual=a;document.body.dataset.aba=a;
+ document.querySelectorAll('[data-ab]').forEach(el=>{const l=(ADMIN?el.dataset.aa:el.dataset.ab).split(' ');el.hidden=!l.includes(a)});
+ document.querySelectorAll('.abaBtn').forEach(b=>{const on=b.dataset.aba===a;b.classList.toggle('on',on);b.setAttribute('aria-current',on?'page':'false')});
+ if(!semRolar)scrollTo({top:0,behavior:'instant'});try{renderFila()}catch(e){}}
+const htmlAbas=ABAS.map(([k,i,t])=>`<button type="button" class="abaBtn" data-aba="${k}"><span class="abaIco" aria-hidden="true">${i}</span><span class="abaTxt">${t}</span></button>`).join('');
+document.querySelector('.abasTopo .wrap').innerHTML=htmlAbas;document.querySelector('.tabbar').innerHTML=htmlAbas;
+document.addEventListener('click',e=>{const b=e.target.closest('.abaBtn');if(b){vaiAba(b.dataset.aba);history.replaceState(null,'','#'+b.dataset.aba)}});
+function abaDoHash(){const h=location.hash.slice(1);return ALIAS[h]||h||'inicio'}
+addEventListener('hashchange',()=>vaiAba(abaDoHash()));vaiAba(abaDoHash(),true);if(location.hash)addEventListener('load',()=>setTimeout(()=>scrollTo(0,0),50));
 /* traz para a rádio de todos o que o administrador tinha mudado só neste aparelho (versões antigas) */
 async function migraLocal(){if(!ADMIN)return;const ks=['clientes3','editados','cancelados','excluidos'];const ed=store.get('editados',{}),ca=store.get('cancelados',[]),ex=store.get('excluidos',[]),lo=store.get('clientes3',[]);
  if(!Object.keys(ed).length&&!ca.length&&!ex.length&&!lo.length)return;if(!await pegaChave())return;
@@ -931,7 +964,7 @@ async function geraRelatorio(){const n=+$('relDia').value,out=$('relOut');out.in
   return `<div class="relCli"><b>${esc(k)}</b><div class="relNums"><span><strong>${L.length}</strong>vezes no ar</span><span><strong>${on}</strong>aparelhos conectados</span><span><strong>${ouv}</strong>ouvindo na hora</span><span><strong>${pico}</strong>pico de ouvintes</span></div>${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório no WhatsApp do cliente</a>`:`<a class="zapCli" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório pelo WhatsApp</a>`}</div>`}).join('')+'<p class="note">Os números de audiência contam aparelhos com a rádio aberta no minuto do anúncio.</p>'}
 if(ADMIN)$('btnRel').addEventListener('click',geraRelatorio);
 
-const VERSAO=27;
+const VERSAO=28;
 function checaVersao(){fetch('index.html?nv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VERSAO=(\d+)/);if(m&&+m[1]>VERSAO&&!ligado)location.reload()}).catch(()=>{})}
 checaVersao();setInterval(checaVersao,5*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checaVersao()});
 
