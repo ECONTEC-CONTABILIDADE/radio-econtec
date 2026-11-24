@@ -305,7 +305,7 @@ section[id],#painel{scroll-margin-top:150px}
 #pedir{max-width:820px;width:100%;margin-inline:auto}
 body[data-aba="inicio"] .cols,body[data-aba="pedir"] .cols{grid-template-columns:minmax(0,1fr)}
 body:not([data-aba="inicio"]) main .wrap{min-height:60vh}
-@media(max-width:860px){
+@media all{
  .menu.abasTopo{display:none}
  .tabbar{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;z-index:55;background:#140b0df5;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid #f0c14b33;padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
  .tabbar .abaBtn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border:0;border-radius:14px;background:none;color:#cdb8b8;font-weight:700;font-size:11px;cursor:pointer;min-height:52px;justify-content:center}
@@ -316,6 +316,7 @@ body:not([data-aba="inicio"]) main .wrap{min-height:60vh}
  #mini{bottom:calc(74px + env(safe-area-inset-bottom))!important}
  header.band{position:relative!important}
 }
+@media(min-width:861px){.tabbar{left:50%!important;right:auto!important;transform:translateX(-50%);width:min(760px,100%);border-radius:22px 22px 0 0;border:1px solid #f0c14b44;border-bottom:0}.tabbar .abaBtn{font-size:13px!important;min-height:58px}.tabbar .abaIco{font-size:23px}}
 </style>
 </head>
 <body>
@@ -349,7 +350,7 @@ body:not([data-aba="inicio"]) main .wrap{min-height:60vh}
       <a class="zapbtn" id="npZap" hidden target="_blank" rel="noopener" href="#">Chamar no WhatsApp</a>
       <div class="bar"><b id="prog"></b></div>
       <div class="ctl">
-        <button id="btnPlay">▶ Ouvir ao vivo</button>
+        <button id="btnPlay">Ouvir ao vivo</button>
         <button class="ghost adm" id="btnSkip" disabled>Pular (só admin)</button>
         <label class="vol">Volume <input id="vol" type="range" min="0" max="1" step="0.05" value="0.8" style="width:110px"></label>
       </div>
@@ -417,7 +418,7 @@ body:not([data-aba="inicio"]) main .wrap{min-height:60vh}
       </form>
     </section>
 
-    <section class="card adm" data-ab="-" data-aa="ajustes" aria-label="Músicas sem anúncio">
+    <section class="card adm" data-ab="-" data-aa="ajustes" aria-label="Músicas sem anúncio" hidden style="display:none">
       <h3>🎵 Músicas sem anúncio</h3>
       <p class="note" style="margin:0">Os sucessos tocam pelo YouTube, que às vezes mostra anúncios dele. As músicas instrumentais livres tocam direto da rádio, sem nenhum anúncio. Escolha quanto da programação fica com cada uma. Vale para todos os ouvintes.</p>
       <form id="fMix" class="admForm">
@@ -505,7 +506,7 @@ const MUS=[
  ['monkeys-spinning-monkeys','Monkeys Spinning Monkeys','Divertida'],['sneaky-snitch','Sneaky Snitch','Divertida'],['life-of-riley','Life of Riley','Pop'],['wallpaper','Wallpaper','Chill'],['pixelland','Pixelland','Eletrônica'],['airport-lounge','Airport Lounge','Lounge'],['hustle','Hustle','Funk'],['cool-vibes','Cool Vibes','Groove'],['easy-lemon','Easy Lemon','Pop'],['smooth-lovin','Smooth Lovin','Soul'],['vivacity','Vivacity','Pop'],['inspired','Inspired','Pop'],['jazz-brunch','Jazz Brunch','Jazz'],['pamgaea','Pamgaea','Latina'],['cut-and-run','Cut and Run','Rock'],['off-to-osaka','Off to Osaka','Pop'],['bushwick-tarantella','Bushwick Tarantella','Folk'],['merry-go','Merry Go','Divertida'],['shiny-tech','Shiny Tech','Eletrônica'],['salty-ditty','Salty Ditty','Swing'],['breaktime','Breaktime','Groove'],['blue-feather','Blue Feather','Chill'],['rhinoceros','Rhinoceros','Rock'],['hackbeat','Hackbeat','Eletrônica'],['funky-chunk','Funky Chunk','Funk'],['upbeat-forever','Upbeat Forever','Pop'],['fretless','Fretless','Chill'],['laid-back-guitars','Laid Back Guitars','Acústica'],['fig-leaf-rag','Fig Leaf Rag','Ragtime'],['too-cool','Too Cool','Groove']
 ];
 const DL={"airport-lounge":307,"blue-feather":278,"bossa-antigua":283,"breaktime":126,"bushwick-tarantella":203,"carefree":205,"chill-wave":240,"cool-vibes":218,"cut-and-run":214,"daily-beetle":316,"disco-medusae":221,"easy-lemon":126,"electrodoodle":166,"fig-leaf-rag":209,"fretless":336,"funkorama":201,"funky-chunk":239,"gonna-start":190,"groove-grove":205,"hackbeat":242,"hep-cats":250,"hustle":120,"inspired":286,"island-meet-and-greet":216,"jazz-brunch":323,"laid-back-guitars":244,"latin-industries":200,"life-of-riley":235,"local-forecast":189,"malt-shop-bop":166,"merry-go":120,"monkeys-spinning-monkeys":125,"night-on-the-docks":174,"off-to-osaka":109,"pamgaea":168,"pixelland":233,"raving-energy":267,"rhinoceros":203,"rollin-at-5":130,"salty-ditty":128,"samba-isobel":250,"shiny-tech":222,"smooth-lovin":259,"sneaky-snitch":136,"too-cool":181,"upbeat-forever":194,"vivacity":231,"volatile-reaction":165,"wallpaper":220,"werq":162};
-let MIXL=10;const LIVRES=MUS.map(([f,t,e])=>({id:f,tipo:'livre',titulo:t,artista:'Kevin MacLeod',estilo:e,url:'m/'+f+'.mp3'}));
+let MIXL=0;const LIVRES=MUS.map(([f,t,e])=>({id:f,tipo:'livre',titulo:t,artista:'Kevin MacLeod',estilo:e,url:'m/'+f+'.mp3'}));
 let falhasYT=0,modoLivre=false,avisouLivre=false;
 const acervo=CAT.map(([id,a,t,e])=>({id,tipo:'yt',titulo:t,artista:a,estilo:e}));
 const ESTILOS=[...new Set(acervo.map(x=>x.estilo))];
@@ -520,7 +521,7 @@ const _q=location.search+location.hash;
 /* Administrador só pelo link de admin (?admin). O link de ouvinte é sempre ouvinte. */
 try{localStorage.removeItem('radioEcontec.admin')}catch(e){}
 const ADMIN=/[?&#]admin\b/.test(_q);
-if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 41</span>')}
+if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 43</span>')}
 const CLI_PADRAO=[
  {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'img/logo-econtec.png',zap:ZAP_ECONTEC},
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
@@ -618,7 +619,8 @@ function tocarArquivo(tr,onProg){
  });
 }
 function jingle(){const t=ctx.currentTime+.05;{const s=ctx.createBufferSource(),f=ctx.createBiquadFilter(),g=ctx.createGain();s.buffer=noise;f.type='bandpass';f.Q.value=4;f.frequency.setValueAtTime(300,t);f.frequency.exponentialRampToValueAtTime(6000,t+.45);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.5,t+.35);g.gain.linearRampToValueAtTime(0,t+.5);s.connect(f);f.connect(g);g.connect(musica);s.start(t);s.stop(t+.55)}[72,76,79,84].forEach((m,i)=>tom(musica,mtof(m),t+i*.13,.6,'triangle',.18));return new Promise(r=>setTimeout(r,800))}
-function fundo(){const a=AUDF;a.pause();a.muted=false;a.src='m/chill-wave.mp3';a.loop=true;a.volume=0;const ft=(fundo.tok=(fundo.tok||0)+1);
+function fundo(){return()=>{}}
+function fundoAntigo(){const a=AUDF;a.pause();a.muted=false;a.src='m/chill-wave.mp3';a.loop=true;a.volume=0;const ft=(fundo.tok=(fundo.tok||0)+1);
  a.addEventListener('loadedmetadata',()=>{a.currentTime=Math.random()*Math.max(0,a.duration-60)},{once:true});a.play().catch(()=>{});
  let v=0;const up=setInterval(()=>{if(fundo.tok!==ft){clearInterval(up);return}v=Math.min(.18,v+.02);a.volume=v*volume()},100);
  return()=>{clearInterval(up);const dn=setInterval(()=>{v=Math.max(0,v-.02);a.volume=v*volume();if(v<=0){clearInterval(dn);if(fundo.tok===ft)a.pause()}},100)}}
@@ -664,7 +666,7 @@ const ehBase=c=>c.nome==='ECONTEC Contabilidade'&&c.logo==='img/logo-econtec.png
 function grade(d){
  if(cacheGrade[d])return cacheGrade[d];
  const r=rng(d*7919+13),it=[],fim=(d+1)*DIA+FUSO,ult=[],hit=['Pop nacional','Pagode','Forró','MPB','Rock nacional'];
- const outros=clientes.filter(c=>!ehBase(c));
+ const outros=clientes.filter(c=>!ehBase(c)&&(c.vid||c.audio||AUDIO_CLI[c.nome]||audGer(c)));
  let t=d*DIA+FUSO,b=0,iv=0;
  const add=(k,dur,x)=>{it.push(Object.assign({k,t0:t,dur,id:d+':'+it.length},x));t+=dur*1000};
  const vin=()=>{const u=VINHETAS[iv++%VINHETAS.length];add('vin',DV[u]||11,{url:u})};
@@ -778,7 +780,8 @@ async function tocaItem(it,off){
  const ate=DUR[it.tr.id]?0:it.dur;
  const reserva=async()=>{const lv=LIVRES[Math.abs(it.t0/1000|0)%LIVRES.length];mostra('Ao vivo · '+lv.estilo+' · sem intervalo',lv.titulo,'Kevin MacLeod (incompetech.com) · Licença CC BY 4.0','img/e-econtec.png','');const dl=DL[lv.id]||200,pos=((agora()-it.t0)/1000)%Math.max(60,dl-5);await tocarArquivo(Object.assign({},lv,{ini:pos,ref:agora()-pos*1000,ate:it.t0+it.dur*1000+300}),pr)};
  if(modoLivre){await reserva();return}
- const ok=await tocarYT(it.tr,pr,off,ate,it.t0);
+ let ok=await tocarYT(it.tr,pr,off,ate,it.t0);
+ if(!ok&&ligado&&resto()>20000){mostra('Ao vivo · reconectando','Rádio ECONTEC','Carregando a música…','img/e-econtec.png','');ok=await tocarYT(it.tr,pr,(agora()-it.t0)/1000,ate,it.t0)}
  if(ok)falhasYT=0;else if(ligado){falhasYT++;
   if(falhasYT>=3&&!modoLivre){modoLivre=true;if(!avisouLivre){avisouLivre=true;bot('O YouTube não está tocando neste aparelho agora. Para a rádio não parar, entram as músicas livres da ECONTEC.',true)}setTimeout(()=>{modoLivre=false;falhasYT=0},3*60*1000)}
   if(ligado&&resto()>8000)await reserva()}
@@ -811,8 +814,8 @@ $('btnPlay').addEventListener('click',async()=>{
  if(!ligado){liberaAudio();try{const {it,off}=noAr(agora());let vid=null,ini=0;
    if(it.k==='musica'&&it.tr.tipo==='yt'&&!modoLivre){vid=it.tr.id;ini=off}else if(it.k==='pedido'&&off>PED_INTRO){vid=it.p.tr.id;ini=off-PED_INTRO}
    if(yt&&yt.loadVideoById){if(vid){yt.setVolume(Math.round(volume()*100));yt.loadVideoById({videoId:vid,startSeconds:Math.floor(ini)});ytPrimado=vid}else{yt.mute();yt.loadVideoById(GRADE[0].id);setTimeout(()=>{try{if(yt.getVideoData().video_id===GRADE[0].id&&!ytEv)yt.stopVideo();yt.unMute()}catch(e){}},700)}}}catch(e){}
-  ligado=true;document.body.classList.add('tocando');ctx.resume();ultimoId=null;$('btnPlay').textContent='⏸ Pausar';avisoSom(false);$('btnSkip').disabled=false;$('lamp').classList.add('live');$('lampTxt').textContent='Ao vivo';loop()}
- else{ligado=false;pausouManual=true;document.body.classList.remove('tocando');if(cancelar)cancelar();$('btnPlay').textContent='▶ Ouvir ao vivo';$('btnSkip').disabled=true;$('lamp').classList.remove('live');$('lampTxt').textContent='Ao vivo (toque para ouvir)'}
+  ligado=true;document.body.classList.add('tocando');ctx.resume();ultimoId=null;$('btnPlay').textContent='Pausar';avisoSom(false);$('btnSkip').disabled=false;$('lamp').classList.add('live');$('lampTxt').textContent='Ao vivo';loop()}
+ else{ligado=false;pausouManual=true;document.body.classList.remove('tocando');if(cancelar)cancelar();$('btnPlay').textContent='Ouvir ao vivo';$('btnSkip').disabled=true;$('lamp').classList.remove('live');$('lampTxt').textContent='Ao vivo (toque para ouvir)'}
 });
 $('btnSkip').addEventListener('click',()=>{if(!ADMIN)return;if(itemAtual){const r=itemAtual.t0+itemAtual.dur*1000-agora();if(r>0)ajuste+=r+100}if(cancelar)cancelar()});
 $('vol').addEventListener('input',e=>{try{yt&&yt.setVolume(Math.round(+e.target.value*100))}catch(x){}if(volArq)volArq.volume=+e.target.value;if(master)master.gain.setTargetAtTime(+e.target.value,ctx.currentTime,.05)});
@@ -959,7 +962,7 @@ setInterval(renderProxAn,30000);setTimeout(renderProxAn,1500);
 let cfgAtual=null,cfgTs=-1;
 const REDES=['instagram','facebook','youtube','tiktok','linkedin','site'];
 function normCfg(c){c=c||{};const p=c.precos||{},r=c.redes||{};const s=(v,n)=>String(v||'').trim().slice(0,n);return{precos:{Essencial:s(p.Essencial,40),Destaque:s(p.Destaque,40),Patrocinador:s(p.Patrocinador,40)},promo:s(c.promo,120),planosOn:!!c.planosOn,livre:c.livre==null||isNaN(+c.livre)?10:Math.max(0,Math.min(60,Math.round(+c.livre))),redes:Object.fromEntries(REDES.map(k=>[k,s(r[k],120)]))}}
-function aplicaCfg(c,ts){if(!c||ts<cfgTs)return;cfgAtual=normCfg(c);cfgTs=ts;if(cfgAtual.livre!==MIXL){MIXL=cfgAtual.livre;cacheGrade={};cacheViva={};try{renderFila();renderProxAn()}catch(e){}}renderRedes();const al=document.querySelector('.anuncieLink');if(al&&cfgAtual.planosOn){al.textContent='📣 Quer anunciar aqui? Conheça os planos';al.href='anuncie.html'}if(!ADMIN)return;if($('mixLivre')&&document.activeElement!==$('mixLivre')){$('mixLivre').value=cfgAtual.livre;mixTxt()}
+function aplicaCfg(c,ts){if(!c||ts<cfgTs)return;cfgAtual=normCfg(c);cfgTs=ts;renderRedes();const al=document.querySelector('.anuncieLink');if(al&&cfgAtual.planosOn){al.textContent='📣 Quer anunciar aqui? Conheça os planos';al.href='anuncie.html'}if(!ADMIN)return;if($('mixLivre')&&document.activeElement!==$('mixLivre')){$('mixLivre').value=cfgAtual.livre;mixTxt()}
  for(const k of REDES){const el=$('rd'+k[0].toUpperCase()+k.slice(1));if(el&&document.activeElement!==el)el.value=cfgAtual.redes[k]}
  const m={prEss:'Essencial',prDes:'Destaque',prPat:'Patrocinador'};for(const [id,k] of Object.entries(m)){const el=$(id);if(el&&document.activeElement!==el)el.value=cfgAtual.precos[k]}
  if(document.activeElement!==$('prPromo'))$('prPromo').value=cfgAtual.promo;$('prOn').checked=cfgAtual.planosOn}
@@ -1055,7 +1058,7 @@ async function geraRelatorio(){const n=+$('relDia').value,out=$('relOut');out.in
   return `<div class="relCli"><b>${esc(k)}</b><div class="relNums"><span><strong>${L.length}</strong>vezes no ar</span><span><strong>${on}</strong>aparelhos conectados</span><span><strong>${ouv}</strong>ouvindo na hora</span><span><strong>${pico}</strong>pico de ouvintes</span></div>${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório no WhatsApp do cliente</a>`:`<a class="zapCli" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório pelo WhatsApp</a>`}</div>`}).join('')+'<p class="note">Os números de audiência contam aparelhos com a rádio aberta no minuto do anúncio.</p>'}
 if(ADMIN)$('btnRel').addEventListener('click',geraRelatorio);
 
-const VERSAO=41;
+const VERSAO=43;
 function checaVersao(){fetch('index.html?nv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VERSAO=(\d+)/);if(m&&+m[1]>VERSAO&&!ligado)location.reload()}).catch(()=>{})}
 checaVersao();setInterval(checaVersao,5*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checaVersao()});
 
