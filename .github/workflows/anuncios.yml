@@ -30,10 +30,15 @@ jobs:
           while [ "$(date +%s)" -lt "$FIM" ]; do
             git pull -q --rebase --autostash origin Econtec_Radio || git rebase --abort || true
             node scripts/anuncios.mjs || true
+            # Acervo de músicas: uma vez por dia (madrugada), renova parte dos artistas e guarda os pedidos novos (valem a partir de amanhã)
+            DIAH=$(TZ=America/Sao_Paulo date +%F); HR=$(TZ=America/Sao_Paulo date +%H)
+            if [ "$HR" -ge 2 ] && [ "$HR" -lt 5 ] && [ "$(cat .acervo-dia 2>/dev/null)" != "$DIAH" ]; then
+              echo "$DIAH" > .acervo-dia; timeout 1800 node scripts/acervo.mjs || true
+            fi
             git add -A
             if ! git diff --cached --quiet; then
               URG=0
-              git diff --cached --name-only | grep -qE '^(clientes|cadastros|homenagem/|audios|nomes-voz|v/a/|v/pn/|pedidos/)' && URG=1
+              git diff --cached --name-only | grep -qE '^(musicas|clientes|cadastros|homenagem/|audios|nomes-voz|v/a/|v/pn/|pedidos/)' && URG=1
               if [ "$URG" = 1 ] || [ $(( $(date +%s) - ULT )) -ge 600 ]; then
                 git commit -qm "Anúncios e pedidos atualizados" && \
                 git push -q origin HEAD:Econtec_Radio && ULT=$(date +%s) && \
