@@ -113,10 +113,10 @@ else console.log('Sem mudanças');
  let peds=[];for(const f of fs.existsSync('pedidos')?fs.readdirSync('pedidos'):[]){try{peds=peds.concat(JSON.parse(fs.readFileSync('pedidos/'+f,'utf8')))}catch{}}
  for(const p of peds){
   if(!p||agora-p.ts>6*36e5)continue;const nome=String(p.nome||'').trim().replace(/\s+/g,' ');
-  if(!nome||/^ouvinte$/i.test(nome)||!/^[\p{L}][\p{L} '.-]{0,39}$/u.test(nome))continue;
+  if(!nome||/^ouvinte$/i.test(nome)||!/^[\p{L}][\p{L}\p{N} ,'.!?-]{0,59}$/u.test(nome))continue;const dito=nome.replace(/[!?.,\s]+$/,'');
   const par=p.tr&&p.tr.parecida?1:0,k=fnv(nome.toLowerCase()+'|'+par),f='v/pn/'+k+'.mp3';
   if(mapa[k]&&fs.existsSync(f))continue;
-  const txt=par?`Esse pedido é do ouvinte especial ${nome}! Não encontramos exatamente a música que você pediu, então separamos uma bem parecida pra você, aqui na Rádio ECONTEC.`:`Esse pedido é do ouvinte especial ${nome}! Muito obrigada pelo carinho. Fique agora com a sua música, aqui na Rádio ECONTEC.`;
+  const txt=par?`Esse pedido é do ouvinte especial ${dito}! Não encontramos exatamente a música que você pediu, então separamos uma bem parecida pra você, aqui na Rádio ECONTEC.`:`Esse pedido é do ouvinte especial ${dito}! Muito obrigada pelo carinho. Fique agora com a sua música, aqui na Rádio ECONTEC.`;
   try{execFileSync('edge-tts',['--voice','pt-BR-FranciscaNeural','--rate=+4%','--text',txt,'--write-media',f],{stdio:'pipe',timeout:60000});
    const bytes=fs.statSync(f).size;if(bytes<2000)throw new Error('áudio vazio');
    mapa[k]={url:f,dur:Math.round(bytes*8/48000*10)/10};mudou=true;console.log('nome gerado',nome,mapa[k].dur+'s')}
