@@ -2,6 +2,8 @@
 import fs from 'node:fs';
 // Fala natural: palavras TODAS EM MAIÚSCULAS viram Primeira Maiúscula (senão a voz soletra)
 const falaNatural=s=>String(s).replace(/[\p{L}]{2,}/gu,w=>w===w.toUpperCase()?w[0]+w.slice(1).toLowerCase():w);
+// Nome do escritório escrito como se fala (a voz soletrava ECONTEC)
+const pronuncia=s=>String(s).replace(/\becontec\b/gi,'Econtéc');
 const tituloNome=s=>String(s).toLowerCase().replace(/[\p{L}]+/gu,(w,i)=>/^(de|da|do|das|dos|e)$/.test(w)&&i>0?w:w[0].toUpperCase()+w.slice(1));
 const TOP='radio-econtec-anuncios-q7k2m9x4';
 const norm=c=>{const o={nome:String(c.nome||''),txt:String(c.txt||''),logo:String(c.logo||''),zap:String(c.zap||'').replace(/\D/g,''),audio:String(c.audio||'')};for(const k of ['ig','tt','mail'])if(c[k])o[k]=String(c[k]).slice(0,80);if(/^[\w-]{11}$/.test(c.vid||'')){o.vid=c.vid;o.vdur=Math.max(10,Math.min(420,Math.round(+c.vdur||30)))}if(c.cancelado)o.cancelado=true;return o};
@@ -83,11 +85,11 @@ else console.log('Sem mudanças');
  for(const c of lista){
   if(c.cancelado||c.audio||AUDIO_CLI.includes(c.nome)||(c.nome==='ECONTEC Contabilidade'&&c.logo==='img/logo-econtec.png')||!c.txt)continue;
   const k=fnv(c.nome+'|'+c.txt),f='v/a/'+k+'.mp3';
-  if(mapa[k]&&mapa[k].v===2&&fs.existsSync(f))continue;
-  const txt=falaNatural(c.txt).replace(/([!?.])\1+/g,'$1').replace(/\s+/g,' ').trim();
+  if(mapa[k]&&mapa[k].v===3&&fs.existsSync(f))continue;
+  const txt=pronuncia(falaNatural(c.txt)).replace(/([!?.])\1+/g,'$1').replace(/\s+/g,' ').trim();
   try{execFileSync('edge-tts',['--voice','pt-BR-FranciscaNeural','--rate=+4%','--text',txt,'--write-media',f],{stdio:'pipe',timeout:60000});
    const bytes=fs.statSync(f).size;if(bytes<2000)throw new Error('áudio vazio');
-   mapa[k]={url:f+'?2',dur:Math.round(bytes*8/48000*10)/10,voz:'francisca',v:2};mudou=true;console.log('voz gerada',c.nome,mapa[k].dur+'s')}
+   mapa[k]={url:f+'?3',dur:Math.round(bytes*8/48000*10)/10,voz:'francisca',v:3};mudou=true;console.log('voz gerada',c.nome,mapa[k].dur+'s')}
   catch(e){console.log('voz falhou',c.nome,e.message)}
  }
  if(mudou||!fs.existsSync('audios.json'))fs.writeFileSync('audios.json',JSON.stringify(mapa)+'\n');
@@ -116,13 +118,13 @@ else console.log('Sem mudanças');
  let peds=[];for(const f of fs.existsSync('pedidos')?fs.readdirSync('pedidos'):[]){try{peds=peds.concat(JSON.parse(fs.readFileSync('pedidos/'+f,'utf8')))}catch{}}
  for(const p of peds){
   if(!p||agora-p.ts>6*36e5)continue;const nome=String(p.nome||'').trim().replace(/\s+/g,' ');
-  if(!nome||/^ouvinte$/i.test(nome)||!/^[\p{L}][\p{L}\p{N} ,'.!?-]{0,59}$/u.test(nome))continue;const dito=tituloNome(nome.replace(/[!?.,\s]+$/,''));
+  if(!nome||/^ouvinte$/i.test(nome)||!/^[\p{L}][\p{L}\p{N} ,'.!?-]{0,59}$/u.test(nome))continue;const dito=pronuncia(tituloNome(nome.replace(/[!?.,\s]+$/,'')));
   const par=p.tr&&p.tr.parecida?1:0,k=fnv(nome.toLowerCase()+'|'+par),f='v/pn/'+k+'.mp3';
-  if(mapa[k]&&mapa[k].v===2&&fs.existsSync(f))continue;
-  const txt=par?`Esse pedido é do ouvinte especial ${dito}! Não encontramos exatamente a música que você pediu, então separamos uma bem parecida pra você, aqui na Rádio ECONTEC.`:`Esse pedido é do ouvinte especial ${dito}! Muito obrigada pelo carinho. Fique agora com a sua música, aqui na Rádio ECONTEC.`;
+  if(mapa[k]&&mapa[k].v===3&&fs.existsSync(f))continue;
+  const txt=par?`Esse pedido é do ouvinte especial ${dito}! Não encontramos exatamente a música que você pediu, então separamos uma bem parecida pra você, aqui na Rádio Econtéc.`:`Esse pedido é do ouvinte especial ${dito}! Muito obrigada pelo carinho. Fique agora com a sua música, aqui na Rádio Econtéc.`;
   try{execFileSync('edge-tts',['--voice','pt-BR-FranciscaNeural','--rate=+4%','--text',txt,'--write-media',f],{stdio:'pipe',timeout:60000});
    const bytes=fs.statSync(f).size;if(bytes<2000)throw new Error('áudio vazio');
-   mapa[k]={url:f+'?2',dur:Math.round(bytes*8/48000*10)/10,v:2};mudou=true;console.log('nome gerado',nome,mapa[k].dur+'s')}
+   mapa[k]={url:f+'?3',dur:Math.round(bytes*8/48000*10)/10,v:3};mudou=true;console.log('nome gerado',nome,mapa[k].dur+'s')}
   catch(e){console.log('nome falhou',nome,e.message)}
  }
  if(mudou||!fs.existsSync('nomes-voz.json'))fs.writeFileSync('nomes-voz.json',JSON.stringify(mapa)+'\n');
