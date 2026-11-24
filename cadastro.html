@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Divulgação gratuita na Rádio ECONTEC</title>
+<meta name="description" content="Clientes e parceiros da ECONTEC: preencha os dados da sua empresa e veja como o seu anúncio vai aparecer na Rádio ECONTEC. Grátis.">
+<meta property="og:title" content="Divulgação gratuita na Rádio ECONTEC">
+<meta property="og:description" content="Preencha os dados da sua empresa e veja na hora como o seu anúncio aparece na rádio.">
+<meta property="og:image" content="https://econtec-contabilidade.github.io/radio-econtec/img/divulgacao.jpg">
+<meta name="theme-color" content="#7a0c1c">
+<link rel="icon" href="img/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,sans-serif;color:#f6eaea;background:radial-gradient(1200px 600px at 50% -10%,#5a0a16 0%,#1a0b0d 55%,#0f0a0b 100%);min-height:100vh}
+.wrap{max-width:1040px;margin:0 auto;padding:18px 16px 60px}
+header{display:flex;align-items:center;gap:12px}
+header img{width:56px;height:56px;border-radius:14px;background:#fff;padding:3px}
+header a{color:#ffd978;text-decoration:none;font-weight:700;margin-left:auto;font-size:15px;border:1px solid #f0c14b66;padding:9px 14px;border-radius:999px}
+.brand{font-family:Outfit,sans-serif;font-weight:800;font-size:21px}.brand .econ{color:#e5223f}.brand .tec{color:#f0c14b}
+.brand small{display:block;font-size:11px;letter-spacing:3px;color:#f0c14b;font-weight:700}
+.hero{text-align:center;padding:22px 6px 6px}
+.selo{display:inline-block;background:#1f9a4b;color:#fff;font-weight:800;font-size:13px;letter-spacing:2px;padding:7px 14px;border-radius:999px}
+h1{font-family:Outfit,sans-serif;font-size:clamp(28px,6vw,42px);line-height:1.1;margin:14px 0 8px}h1 b{color:#ffd978}
+.hero p{font-size:17px;color:#e9d6d6;max-width:680px;margin:0 auto}
+.grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:20px;margin-top:24px;align-items:start}
+@media(max-width:860px){.grid{grid-template-columns:1fr}}
+.card{background:#1a0f10d9;border:1px solid #f0c14b33;border-radius:22px;padding:20px}
+.card h2{font-family:Outfit,sans-serif;font-size:22px;margin:0 0 4px}.card .sub{color:#d9c4c4;font-size:14px;margin:0 0 14px}
+label{display:block;font-weight:600;margin:14px 0 6px;font-size:15px}label .op{font-weight:400;color:#bba;font-size:13px}
+input,textarea{width:100%;font:inherit;font-size:16px;color:#fff;background:#0f0a0b;border:1.5px solid #f0c14b44;border-radius:14px;padding:13px 14px;outline:none}
+input:focus,textarea:focus{border-color:#ffd978;box-shadow:0 0 0 3px #ffd97833}
+textarea{min-height:96px;resize:vertical}
+.cont{font-size:12px;color:#bba;text-align:right;margin-top:4px}
+.logoBox{display:flex;align-items:center;gap:14px;border:2px dashed #f0c14b77;border-radius:16px;padding:12px;cursor:pointer;background:#0f0a0b}
+.logoBox:hover{border-color:#ffd978}
+.logoBox .pv{width:72px;height:72px;border-radius:14px;background:#fff;display:grid;place-items:center;overflow:hidden;color:#a50f26;font:800 30px Outfit,sans-serif;flex:none}
+.logoBox .pv img{width:100%;height:100%;object-fit:contain}
+.logoBox b{display:block}.logoBox span{font-size:13px;color:#cbb}
+.logoBox input{display:none}
+.duas{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}@media(max-width:520px){.duas{grid-template-columns:1fr}}
+.btn{display:flex;width:100%;justify-content:center;align-items:center;gap:10px;margin-top:20px;padding:17px;border:0;border-radius:999px;background:linear-gradient(180deg,#ffd978,#e0a92b);color:#2a0406;font:800 18px Outfit,sans-serif;cursor:pointer;box-shadow:0 10px 30px #e0a92b44}
+.btn:disabled{opacity:.6;cursor:wait}
+.btn.zap{background:linear-gradient(180deg,#2fd06a,#1a9a4b);color:#fff;box-shadow:0 10px 30px #1a9a4b55;text-decoration:none}
+.erro{color:#ff9a9a;font-weight:600;margin-top:10px}
+.ok{display:none;text-align:center}.ok.on{display:block}.ok h2{color:#7ef0a6}
+.lgpd{font-size:12px;color:#bba;margin-top:12px}
+/* prévia: igual à tela da rádio durante um anúncio */
+.prevWrap{position:sticky;top:12px}
+.prevTit{font:700 14px Outfit,sans-serif;letter-spacing:2px;color:#ffd978;text-align:center;margin-bottom:10px}
+.phone{max-width:380px;margin:0 auto;border-radius:34px;padding:12px;background:#050303;border:2px solid #333;box-shadow:0 20px 60px #000a}
+.tela{border-radius:24px;overflow:hidden;background:radial-gradient(500px 300px at 50% 0,#6a0b18,#1a0b0d 70%);padding:16px 16px 18px}
+.topo{display:flex;align-items:center;gap:8px;font:700 13px Outfit,sans-serif;color:#f0c14b}
+.topo img{width:26px;height:26px;border-radius:7px;background:#fff}
+.vivo{margin-left:auto;background:#d10f1a;color:#fff;border-radius:999px;padding:3px 9px;font-size:11px;letter-spacing:1px}
+.vivo i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#fff;margin-right:5px;animation:pis 1s infinite}
+@keyframes pis{50%{opacity:.2}}
+.capa{margin:18px auto 12px;width:170px;height:170px;border-radius:26px;background:#fff;display:grid;place-items:center;overflow:hidden;box-shadow:0 0 0 4px #f0c14b,0 14px 40px #000a;color:#a50f26;font:800 70px Outfit,sans-serif}
+.capa img{width:100%;height:100%;object-fit:contain;padding:8px}
+.kind{text-align:center;font:700 12px Outfit,sans-serif;letter-spacing:2px;color:#ffd978}
+.tela h3{text-align:center;font:800 24px Outfit,sans-serif;margin:6px 0 6px;word-break:break-word}
+.tela .who{text-align:center;color:#e9d6d6;font-size:14px;line-height:1.4;min-height:40px;word-break:break-word}
+.npZap{display:block;margin:14px 0 0;text-align:center;background:#1a9a4b;color:#fff;font-weight:700;border-radius:999px;padding:11px;font-size:14px;text-decoration:none}
+.redes{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:10px}
+.redes span{background:#ffffff14;border:1px solid #ffffff22;border-radius:999px;padding:5px 10px;font-size:12px}
+.barra{display:flex;align-items:center;gap:10px;margin-top:14px;padding:10px;border-radius:16px;background:#00000055}
+.barra .pl{width:38px;height:38px;border-radius:50%;background:#ffd978;display:grid;place-items:center;color:#2a0406;font-weight:900}
+.barra .on{flex:1;height:5px;border-radius:5px;background:linear-gradient(90deg,#ffd978 40%,#ffffff22 40%)}
+.locu{margin-top:14px;background:#0f0a0b;border:1px solid #f0c14b33;border-radius:16px;padding:12px 14px;font-size:14px;color:#e9d6d6}
+.locu b{color:#ffd978;display:block;margin-bottom:4px;font-size:13px}
+.radioLink{display:block;margin:26px auto 0;text-align:center;color:#ffd978;font-weight:700;font-size:17px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+ <img src="img/logo-econtec.png" alt="ECONTEC Contabilidade">
+ <div class="brand"><span class="econ">Rádio </span><span class="tec">ECONTEC</span><small>AO VIVO 24 HORAS</small></div>
+ <a href="./">▶ Ouvir a rádio</a>
+</header>
+
+<div class="hero">
+ <span class="selo">DIVULGAÇÃO GRATUITA</span>
+ <h1>Coloque a sua empresa na <b>Rádio ECONTEC</b></h1>
+ <p>Para clientes e parceiros. Preencha os dados da sua empresa e veja na hora a prévia de como o seu anúncio vai aparecer na rádio. Depois é só tocar em <b>Enviar</b>.</p>
+</div>
+
+<div class="grid">
+ <div class="card">
+  <form id="f" novalidate>
+   <h2>Dados da sua empresa</h2>
+   <p class="sub">Os campos com * são obrigatórios.</p>
+   <label>Logomarca da empresa <span class="op">(foto ou imagem)</span></label>
+   <label class="logoBox" for="logo"><div class="pv" id="logoPv">+</div><div><b id="logoTxt">Toque para escolher a logomarca</b><span>Do celular ou do computador</span></div><input id="logo" type="file" accept="image/*"></label>
+   <label for="nome">Nome da empresa *</label>
+   <input id="nome" maxlength="60" placeholder="ex.: Padaria Pão Dourado" autocomplete="organization">
+   <div class="duas">
+    <div><label for="zap">WhatsApp comercial *</label><input id="zap" maxlength="20" inputmode="tel" placeholder="ex.: (64) 9 8419-2320"></div>
+    <div><label for="mail">E-mail <span class="op">(opcional)</span></label><input id="mail" type="email" maxlength="80" placeholder="contato@empresa.com.br" autocomplete="email"></div>
+    <div><label for="ig">Instagram <span class="op">(opcional)</span></label><input id="ig" maxlength="60" placeholder="@suaempresa"></div>
+    <div><label for="tt">TikTok <span class="op">(opcional)</span></label><input id="tt" maxlength="60" placeholder="@suaempresa"></div>
+   </div>
+   <label for="desc">Breve descrição dos produtos ou serviços *</label>
+   <textarea id="desc" maxlength="220" placeholder="ex.: Pães quentinhos toda hora, bolos e salgados para festas. Entregamos em toda a cidade."></textarea>
+   <div class="cont"><span id="cont">0</span>/220</div>
+   <label for="quem">Seu nome <span class="op">(quem está enviando, opcional)</span></label>
+   <input id="quem" maxlength="50" placeholder="ex.: Maria" autocomplete="name">
+   <button class="btn" id="env" type="submit">📨 Enviar para a ECONTEC</button>
+   <p class="erro" id="erro" hidden></p>
+   <p class="lgpd">Ao enviar, você autoriza a ECONTEC a divulgar estes dados da empresa na Rádio ECONTEC. O anúncio entra no ar depois que a ECONTEC conferir.</p>
+  </form>
+  <div class="ok" id="ok">
+   <h2>✅ Recebido! Obrigado.</h2>
+   <p>A ECONTEC vai conferir e colocar o seu anúncio no ar na Rádio ECONTEC, com a voz da nossa locutora.</p>
+   <a class="btn zap" id="okZap" target="_blank" rel="noopener">💬 Avisar a ECONTEC no WhatsApp</a>
+   <a class="btn" href="./">▶ Ouvir a Rádio ECONTEC agora</a>
+   <p><a href="#" id="outro" style="color:#ffd978">Cadastrar outra empresa</a></p>
+  </div>
+ </div>
+
+ <div class="prevWrap">
+  <div class="prevTit">👀 ASSIM O SEU ANÚNCIO APARECE NA RÁDIO</div>
+  <div class="phone"><div class="tela">
+   <div class="topo"><img src="img/logo-econtec.png" alt="">Rádio ECONTEC<span class="vivo"><i></i>AO VIVO</span></div>
+   <div class="capa" id="pCapa">?</div>
+   <div class="kind">📢 INTERVALO COMERCIAL</div>
+   <h3 id="pNome">Nome da sua empresa</h3>
+   <div class="who" id="pDesc">A descrição dos seus produtos ou serviços aparece aqui.</div>
+   <a class="npZap" id="pZap">💬 Chamar no WhatsApp</a>
+   <div class="redes" id="pRedes"></div>
+   <div class="barra"><div class="pl">❚❚</div><div class="on"></div></div>
+  </div></div>
+  <div class="locu"><b>🎙️ A locutora vai falar:</b><span id="pLocu">…</span></div>
+ </div>
+</div>
+<a class="radioLink" href="./">🎧 econtec-contabilidade.github.io/radio-econtec</a>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const TOP='radio-econtec-anuncios-q7k2m9x4-cadastro',ZAP='5564984192320';
+const zapFmt=n=>{const d=String(n||'').replace(/\D/g,'').replace(/^55(?=\d{10,11}$)/,'');return d.length===11?`(${d.slice(0,2)}) ${d[2]} ${d.slice(3,7)}-${d.slice(7)}`:d.length===10?`(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`:d};
+const arroba=s=>{s=String(s||'').trim().replace(/^https?:\/\/(www\.)?(instagram\.com|tiktok\.com)\//i,'').replace(/[/?].*$/,'');return s?('@'+s.replace(/^@+/,'')):''};
+let logo='';
+function reduzLogo(f){return new Promise(ok=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,320/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=Math.round(im.width*k);cv.height=Math.round(im.height*k);const g=cv.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,cv.width,cv.height);g.drawImage(im,0,0,cv.width,cv.height);ok(cv.toDataURL('image/jpeg',.85))};im.onerror=()=>ok('');im.src=r.result};r.onerror=()=>ok('');r.readAsDataURL(f)})}
+$('logo').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;logo=await reduzLogo(f);$('logoTxt').textContent=logo?'Logomarca escolhida ✔ (toque para trocar)':'Não consegui abrir essa imagem. Tente outra.';atualiza()});
+function dados(){return{nome:$('nome').value.trim(),zap:$('zap').value.replace(/\D/g,''),mail:$('mail').value.trim(),ig:arroba($('ig').value),tt:arroba($('tt').value),desc:$('desc').value.trim(),quem:$('quem').value.trim()}}
+function atualiza(){const d=dados();$('cont').textContent=$('desc').value.length;
+ for(const [cap,vazio] of [[$('pCapa'),(d.nome[0]||'?').toUpperCase()],[$('logoPv'),'+']]){if(logo){cap.innerHTML='';const i=new Image();i.src=logo;i.alt='';cap.append(i)}else cap.textContent=vazio}
+ $('pNome').textContent=d.nome||'Nome da sua empresa';
+ $('pDesc').textContent=d.desc||'A descrição dos seus produtos ou serviços aparece aqui.';
+ $('pZap').textContent='💬 Chamar '+(d.nome||'a empresa')+' no WhatsApp'+(d.zap?': '+zapFmt(d.zap):'');
+ const r=$('pRedes');r.innerHTML='';[['📸 ',d.ig],['🎵 ',d.tt],['✉️ ',d.mail]].forEach(([e,v])=>{if(v){const s=document.createElement('span');s.textContent=e+v;r.append(s)}});
+ $('pLocu').textContent=locucao(d)}
+function locucao(d){const n=d.nome||'Sua empresa';let t=n+'. '+(d.desc?d.desc.replace(/[.!\s]*$/,'')+'. ':'');t+='Chama no WhatsApp'+(d.zap?' '+zapFmt(d.zap):'')+'!';if(d.ig)t+=' E siga no Instagram '+d.ig+'.';return t}
+['nome','zap','mail','ig','tt','desc'].forEach(id=>$(id).addEventListener('input',atualiza));atualiza();
+function erro(t){const e=$('erro');e.textContent=t;e.hidden=!t}
+$('f').addEventListener('submit',async ev=>{ev.preventDefault();erro('');const d=dados();
+ if(!d.nome){erro('Escreva o nome da empresa.');$('nome').focus();return}
+ if(d.zap.length<10){erro('Escreva o WhatsApp comercial com DDD.');$('zap').focus();return}
+ if(d.desc.length<10){erro('Escreva uma breve descrição dos produtos ou serviços.');$('desc').focus();return}
+ if(d.mail&&!/^\S+@\S+\.\S+$/.test(d.mail)){erro('Confira o e-mail.');$('mail').focus();return}
+ const b=$('env');b.disabled=true;b.textContent='Enviando…';
+ const corpo=Object.assign({},d,{logo,txt:locucao(d),ts:Date.now()});
+ let ok=false;for(let i=0;i<3&&!ok;i++){try{const r=await fetch('https://ntfy.sh/'+TOP,{method:'PUT',headers:{'Filename':'cadastro.json'},body:JSON.stringify(corpo)});ok=r.ok}catch(e){await new Promise(r=>setTimeout(r,1500))}}
+ b.disabled=false;b.textContent='📨 Enviar para a ECONTEC';
+ const msg='Olá, ECONTEC! Quero divulgar minha empresa na Rádio ECONTEC.\n\n🏢 '+d.nome+'\n📱 WhatsApp: '+zapFmt(d.zap)+(d.mail?'\n✉️ '+d.mail:'')+(d.ig?'\n📸 Instagram: '+d.ig:'')+(d.tt?'\n🎵 TikTok: '+d.tt:'')+'\n📝 '+d.desc+(d.quem?'\n\nEnviado por: '+d.quem:'')+(logo?'\n\n(A logomarca foi enviada pelo formulário.)':'');
+ $('okZap').href='https://wa.me/'+ZAP+'?text='+encodeURIComponent(msg);
+ if(!ok){erro('A internet falhou. Toque no botão verde para mandar os dados pelo WhatsApp.');$('f').hidden=true;$('ok').classList.add('on');$('ok').querySelector('h2').textContent='Quase lá! Envie pelo WhatsApp';return}
+ $('f').hidden=true;$('ok').classList.add('on');$('ok').scrollIntoView({behavior:'smooth',block:'center'})});
+$('outro').addEventListener('click',e=>{e.preventDefault();$('f').reset();logo='';$('logoTxt').textContent='Toque para escolher a logomarca';$('f').hidden=false;$('ok').classList.remove('on');$('ok').querySelector('h2').textContent='✅ Recebido! Obrigado.';atualiza();scrollTo(0,0)});
+</script>
+</body>
+</html>
