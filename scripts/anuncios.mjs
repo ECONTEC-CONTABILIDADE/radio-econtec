@@ -68,3 +68,24 @@ else console.log('Sem mudanças');
  }
  for(const f of fs.readdirSync('homenagem'))if(Date.now()-Date.parse(f.slice(0,10))>3*DIA)fs.unlinkSync('homenagem/'+f);
 }
+
+// Voz dos anúncios novos (sem gravação da Betina): voz neural feminina Francisca (Microsoft), MP3 fixo em v/a/
+{
+ const {execFileSync}=await import('node:child_process');
+ const fnv=t=>{let h=0x811c9dc5;for(const ch of new TextEncoder().encode(t)){h^=ch;h=Math.imul(h,0x01000193)>>>0}return h.toString(16).padStart(8,'0')};
+ const AUDIO_CLI=['Padaria Pão Dourado','Auto Peças Avenida'];
+ let mapa={};try{mapa=JSON.parse(fs.readFileSync('audios.json','utf8'))}catch{}
+ let lista=[];try{lista=JSON.parse(fs.readFileSync('clientes.json','utf8'))}catch{}
+ fs.mkdirSync('v/a',{recursive:true});let mudou=false;
+ for(const c of lista){
+  if(c.cancelado||c.audio||AUDIO_CLI.includes(c.nome)||(c.nome==='ECONTEC Contabilidade'&&c.logo==='img/logo-econtec.png')||!c.txt)continue;
+  const k=fnv(c.nome+'|'+c.txt),f='v/a/'+k+'.mp3';
+  if(mapa[k]&&fs.existsSync(f))continue;
+  const txt=c.txt.replace(/([!?.])\1+/g,'$1').replace(/\s+/g,' ').trim();
+  try{execFileSync('edge-tts',['--voice','pt-BR-FranciscaNeural','--rate=+4%','--text',txt,'--write-media',f],{stdio:'pipe',timeout:60000});
+   const bytes=fs.statSync(f).size;if(bytes<2000)throw new Error('áudio vazio');
+   mapa[k]={url:f,dur:Math.round(bytes*8/48000*10)/10,voz:'francisca'};mudou=true;console.log('voz gerada',c.nome,mapa[k].dur+'s')}
+  catch(e){console.log('voz falhou',c.nome,e.message)}
+ }
+ if(mudou||!fs.existsSync('audios.json'))fs.writeFileSync('audios.json',JSON.stringify(mapa)+'\n');
+}

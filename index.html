@@ -381,7 +381,7 @@ body:not([data-aba="inicio"]) main .wrap{min-height:60vh}
       </form>
       <p class="note">Toque no WhatsApp para falar direto com o anunciante. Durante cada anúncio também aparece o botão do WhatsApp na tela.</p>
       <p id="admAviso" class="admAviso adm" hidden></p>
-      <p class="note adm">Área do administrador. Tudo o que você adicionar, editar, cancelar ou excluir aqui vale para a rádio de todos os ouvintes em poucos segundos. Todos os anúncios saem na voz da locutora Betina. Anúncio novo fica com a etiqueta "Aguardando gravação" até ser gravado; enquanto isso ele aparece na tela com fundo musical, sem voz. Só os anúncios ativos (sem a etiqueta Cancelado) entram nos intervalos.</p>
+      <p class="note adm">Área do administrador. Tudo o que você adicionar, editar, cancelar ou excluir aqui vale para a rádio de todos os ouvintes em poucos segundos. Anúncio novo ganha sozinho a voz da locutora Francisca em até 2 minutos (etiqueta "Gerando a voz"). Os anúncios antigos continuam com a voz da Betina. Só os anúncios ativos (sem a etiqueta Cancelado) entram nos intervalos.</p>
     </section>
 
     <section class="card adm" id="ajustes" data-ab="-" data-aa="ajustes" aria-label="Planos e preços">
@@ -487,7 +487,7 @@ const _q=location.search+location.hash;
 /* Administrador só pelo link de admin (?admin). O link de ouvinte é sempre ouvinte. */
 try{localStorage.removeItem('radioEcontec.admin')}catch(e){}
 const ADMIN=/[?&#]admin\b/.test(_q);
-if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 29</span>')}
+if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 30</span>')}
 const CLI_PADRAO=[
  {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'img/logo-econtec.png',zap:ZAP_ECONTEC},
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
@@ -604,6 +604,10 @@ const DUR={"Be6ROem9ms8": 207, "rJnEBfvbUTg": 255, "uWX0O8ATY3k": 159, "oTREAvZb
 const GRADE=acervo.filter(x=>x.tipo==='yt');
 const DIA=864e5,FUSO=3*36e5; /* horário de Brasília */
 function rng(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+let AUD_GER={};const fnvH=t=>{let h=0x811c9dc5;for(const ch of new TextEncoder().encode(t)){h^=ch;h=Math.imul(h,0x01000193)>>>0}return h.toString(16).padStart(8,'0')};
+const audGer=c=>AUD_GER[fnvH(c.nome+'|'+c.txt)]||null;
+function carregaAudios(){fetch('audios.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(m=>{if(!m||JSON.stringify(m)===JSON.stringify(AUD_GER))return;AUD_GER=m;cacheGrade={};try{renderFila();renderCli();renderProxAn()}catch(e){}}).catch(()=>{})}
+carregaAudios();setInterval(carregaAudios,90000);
 const ehBase=c=>c.nome==='ECONTEC Contabilidade'&&c.logo==='img/logo-econtec.png';
 function grade(d){
  if(cacheGrade[d])return cacheGrade[d];
@@ -615,7 +619,7 @@ function grade(d){
  const musica=()=>{const ue=ult.slice(-2).map(x=>x.estilo);let ops=GRADE.filter(x=>!ult.includes(x)&&!ue.includes(x.estilo));if(!ops.length)ops=GRADE;const pw=ops.flatMap(x=>hit.includes(x.estilo)?[x,x]:[x]);const tr=pw[Math.floor(r()*pw.length)];ult.push(tr);if(ult.length>12)ult.shift();add('musica',DUR[tr.id]||PADRAO,{tr})};
  while(t<fim){
   vin();add('hora',HORA);add('adE',DV['v/anuncio-econtec.mp3']);
-  if(outros.length){const c=outros[(d*31+b)%outros.length];const au=c.audio||AUDIO_CLI[c.nome];add('adC',au?(DV[au]||12):Math.max(6,c.txt.length*.075+1.5),{c,au})}
+  if(outros.length){const c=outros[(d*31+b)%outros.length];const g=audGer(c),au=c.audio||AUDIO_CLI[c.nome]||(g&&g.url);add('adC',au?(DV[au]||(g&&g.dur)||12):Math.max(6,c.txt.length*.075+1.5),{c,au})}
   for(let m=0;m<5;m++){musica();if(m<4)vin()}
   b++;
  }
@@ -829,7 +833,7 @@ async function publica(lista,msg,cfg){cfg=cfg||cfgAtual;if(publicando)return fal
  finally{publicando=false;document.body.classList.remove('publicando')}}
 function renderCli(){
  const L=ADMIN?anuncios.map((c,i)=>Object.assign({},c,{_i:i})):clientes;
- $('clientes').innerHTML=L.map(c=>`<div class="cl${c.cancelado?' cancelado':''}"><div class="lg">${c.logo?`<img src="${esc(c.logo)}" alt="">`:esc(c.nome[0]||'?')}</div><div><b>${esc(c.nome)}</b>${c.cancelado?' <span class="tagCanc">Cancelado</span>':''}${ADMIN&&!c.cancelado&&!ehBase(c)&&!(c.audio||AUDIO_CLI[c.nome])?' <span class="tagGrav">🎙️ Aguardando gravação da Betina</span>':''}<p>${esc(c.txt)}</p>${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.2c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.9s.7-2.1 1-2.4c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .5l-.4.6-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l2 .9c.3.1.5.2.5.3.1.1.1.7-.1 1.3z"/></svg>Chamar no WhatsApp <span>${esc(zapFmt(c.zap))}</span></a>`:''}</div>${ADMIN?`<div style="display:grid;gap:6px">${c.cancelado?`<button type="button" class="btnEd" data-reat="${c._i}">Reativar</button>`:`<button type="button" class="btnOuvir" data-ouvir="${c._i}">▶ Ouvir</button><button type="button" class="btnEd" data-ed="${c._i}">Editar</button><button type="button" class="btnPausa" data-pausa="${c._i}">Cancelar</button>`}<button type="button" class="btnCanc" data-exc="${c._i}">Excluir</button></div>`:''}</div>`).join('')||'<p class="note">Nenhum anúncio no momento.</p>';
+ $('clientes').innerHTML=L.map(c=>`<div class="cl${c.cancelado?' cancelado':''}"><div class="lg">${c.logo?`<img src="${esc(c.logo)}" alt="">`:esc(c.nome[0]||'?')}</div><div><b>${esc(c.nome)}</b>${c.cancelado?' <span class="tagCanc">Cancelado</span>':''}${ADMIN&&!c.cancelado&&!ehBase(c)&&!(c.audio||AUDIO_CLI[c.nome])?(audGer(c)?' <span class="tagGrav">🎙️ Voz Francisca</span>':' <span class="tagGrav">⏳ Gerando a voz (até 2 min)</span>'):''}<p>${esc(c.txt)}</p>${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.2c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.9s.7-2.1 1-2.4c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .5l-.4.6-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l2 .9c.3.1.5.2.5.3.1.1.1.7-.1 1.3z"/></svg>Chamar no WhatsApp <span>${esc(zapFmt(c.zap))}</span></a>`:''}</div>${ADMIN?`<div style="display:grid;gap:6px">${c.cancelado?`<button type="button" class="btnEd" data-reat="${c._i}">Reativar</button>`:`<button type="button" class="btnOuvir" data-ouvir="${c._i}">▶ Ouvir</button><button type="button" class="btnEd" data-ed="${c._i}">Editar</button><button type="button" class="btnPausa" data-pausa="${c._i}">Cancelar</button>`}<button type="button" class="btnCanc" data-exc="${c._i}">Excluir</button></div>`:''}</div>`).join('')||'<p class="note">Nenhum anúncio no momento.</p>';
 }
 $('clientes').addEventListener('click',async e=>{if(!ADMIN||publicando)return;const d=e.target.dataset;const L=anuncios.map(c=>Object.assign({},c));
  if(d.ouvir!==undefined){ouvirAn(anuncios[+d.ouvir],e.target);return}
@@ -858,9 +862,9 @@ function ouvirAn(c,b){if(!c)return;try{speechSynthesis.cancel()}catch(e){}if(ouv
  if(b.dataset.tocando){delete b.dataset.tocando;b.textContent='▶ Ouvir';return}
  document.querySelectorAll('[data-tocando]').forEach(x=>{delete x.dataset.tocando;x.textContent='▶ Ouvir'});
  b.dataset.tocando=1;b.textContent='■ Parar';const fim=()=>{if(b.isConnected){delete b.dataset.tocando;b.textContent='▶ Ouvir'}};
- const au=c.audio||AUDIO_CLI[c.nome];
+ const g=audGer(c),au=c.audio||AUDIO_CLI[c.nome]||(g&&g.url);
  if(au){ouvindoAn=new Audio(au);ouvindoAn.onended=fim;ouvindoAn.play().catch(fim);return}
- fim();avisoAdm('Este anúncio ainda não tem a gravação da Betina. Enquanto isso ele aparece na tela com fundo musical, sem voz.');return;
+ fim();avisoAdm('A voz deste anúncio está sendo gerada. Em até 2 minutos ela fica pronta; enquanto isso ele aparece na tela com fundo musical.');return;
  try{const u=new SpeechSynthesisUtterance(c.txt);u.lang='pt-BR';if(voz)u.voice=voz;u.rate=1.05;u.pitch=tomVoz();u.onend=fim;u.onerror=fim;speechSynthesis.speak(u)}catch(e){fim()}}
 /* próximos intervalos com anúncio de cliente (só admin) */
 function renderProxAn(){if(!ADMIN)return;const el=$('proxAn');if(!el)return;const ms=agora(),d=Math.floor((ms-FUSO)/DIA);
@@ -966,7 +970,7 @@ async function geraRelatorio(){const n=+$('relDia').value,out=$('relOut');out.in
   return `<div class="relCli"><b>${esc(k)}</b><div class="relNums"><span><strong>${L.length}</strong>vezes no ar</span><span><strong>${on}</strong>aparelhos conectados</span><span><strong>${ouv}</strong>ouvindo na hora</span><span><strong>${pico}</strong>pico de ouvintes</span></div>${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório no WhatsApp do cliente</a>`:`<a class="zapCli" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório pelo WhatsApp</a>`}</div>`}).join('')+'<p class="note">Os números de audiência contam aparelhos com a rádio aberta no minuto do anúncio.</p>'}
 if(ADMIN)$('btnRel').addEventListener('click',geraRelatorio);
 
-const VERSAO=29;
+const VERSAO=30;
 function checaVersao(){fetch('index.html?nv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VERSAO=(\d+)/);if(m&&+m[1]>VERSAO&&!ligado)location.reload()}).catch(()=>{})}
 checaVersao();setInterval(checaVersao,5*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checaVersao()});
 
