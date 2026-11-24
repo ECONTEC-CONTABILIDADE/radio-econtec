@@ -521,7 +521,7 @@ const _q=location.search+location.hash;
 /* Administrador só pelo link de admin (?admin). O link de ouvinte é sempre ouvinte. */
 try{localStorage.removeItem('radioEcontec.admin')}catch(e){}
 const ADMIN=/[?&#]admin\b/.test(_q);
-if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 43</span>')}
+if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 44</span>')}
 const CLI_PADRAO=[
  {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'img/logo-econtec.png',zap:ZAP_ECONTEC},
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
@@ -804,7 +804,7 @@ setInterval(()=>{renderFila();avisoHom()},15000);
 /* A rádio já entra tocando: se o navegador deixar, liga sozinha; se não, o primeiro toque em qualquer lugar liga o som */
 let pausouManual=false;
 function avisoSom(on){let el=document.getElementById('avisoSom');if(!on){if(el)el.remove();return}if(el)return;el=document.createElement('button');el.id='avisoSom';el.type='button';el.textContent='🔊 A rádio está no ar. Toque em qualquer lugar para ouvir';document.body.append(el)}
-function autoLiga(){if(ligado||pausouManual)return;const t=new Audio();t.src=SIL;const p=t.play();
+function autoLiga(){if(ligado||pausouManual)return;try{sessionStorage.removeItem('retomar')}catch(e){}const t=new Audio();t.src=SIL;const p=t.play();
  const pede=()=>{avisoSom(true);const vai=e=>{if(e.target.closest&&e.target.closest('#btnPlay,#figIdle,#miniBtn')){tira();return}tira();if(!ligado&&!pausouManual)$('btnPlay').click()};
   const tira=()=>{['pointerdown','keydown','touchend'].forEach(k=>document.removeEventListener(k,vai,true))};['pointerdown','keydown','touchend'].forEach(k=>document.addEventListener(k,vai,true))};
  if(p&&p.then)p.then(()=>{t.pause();if(!ligado&&!pausouManual)$('btnPlay').click()}).catch(pede);else pede()}
@@ -1016,7 +1016,7 @@ async function migraLocal(){if(!ADMIN)return;const ks=['clientes3','editados','c
  if(await publica(L,'Suas mudanças nos anúncios foram aplicadas.'))ks.forEach(k=>{try{localStorage.removeItem('radioEcontec.'+k)}catch(e){}})}
 sincroniza().then(mostraCodigo).then(migraLocal).then(()=>{const j=store.get('chaveAdmJwk',null);
  if(!ADMIN&&j&&AN_PUBS.some(k=>k.x===j.x&&k.y===j.y)){const b=document.createElement('button');b.id='vouAdm';b.type='button';b.textContent='⚙ Administrador';b.onclick=()=>location.href=location.pathname+'?admin';document.body.appendChild(b)}});
-$('btnNovoAn').addEventListener('click',()=>{fechaEdicao();$('fCli').scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>$('cNome').focus(),400)});setInterval(()=>{if(!document.hidden)buscaNtfy()},60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)buscaNtfy()});
+$('btnNovoAn').addEventListener('click',()=>{fechaEdicao();$('fCli').scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>$('cNome').focus(),400)});setInterval(()=>{if(!document.hidden||ligado)buscaNtfy()},45000);setInterval(()=>{if(!document.hidden||ligado){buscaSite();fetch('config.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(c=>{if(c)aplicaCfg(c,c.ts||0)}).catch(()=>{})}},3*60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)buscaNtfy()});
 
 /* ---------- Músicas do usuário ---------- */
 $('ytkey').value=store.get('ytkey','');$('ytkey').addEventListener('change',e=>store.set('ytkey',e.target.value.trim()));
@@ -1058,8 +1058,10 @@ async function geraRelatorio(){const n=+$('relDia').value,out=$('relOut');out.in
   return `<div class="relCli"><b>${esc(k)}</b><div class="relNums"><span><strong>${L.length}</strong>vezes no ar</span><span><strong>${on}</strong>aparelhos conectados</span><span><strong>${ouv}</strong>ouvindo na hora</span><span><strong>${pico}</strong>pico de ouvintes</span></div>${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório no WhatsApp do cliente</a>`:`<a class="zapCli" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório pelo WhatsApp</a>`}</div>`}).join('')+'<p class="note">Os números de audiência contam aparelhos com a rádio aberta no minuto do anúncio.</p>'}
 if(ADMIN)$('btnRel').addEventListener('click',geraRelatorio);
 
-const VERSAO=43;
-function checaVersao(){fetch('index.html?nv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VERSAO=(\d+)/);if(m&&+m[1]>VERSAO&&!ligado)location.reload()}).catch(()=>{})}
+const VERSAO=44;
+function checaVersao(){fetch('index.html?nv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VERSAO=(\d+)/);if(m&&+m[1]>VERSAO){if(!ligado)location.reload();else novaVersao=true}}).catch(()=>{})}
+/* versão nova com a rádio tocando: atualiza sozinha numa vinheta (só com a tela aberta) e volta a tocar */
+let novaVersao=false;setInterval(()=>{if(!novaVersao||!ligado||document.hidden)return;try{const {it,off}=noAr(agora());if(it.k==='vin'&&off<3){sessionStorage.setItem('retomar','1');location.reload()}}catch(e){}},1000);
 checaVersao();setInterval(checaVersao,5*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checaVersao()});
 
 
