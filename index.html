@@ -262,6 +262,8 @@ body.tocando #figIdle{display:none}
 .redesCli{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:4px;font-size:13px}.redesCli a{color:#ffd978!important;font-weight:600;text-decoration:none}
 .cadRec{margin:12px 0;padding:12px 14px;border-radius:14px;background:#2a1a05;border:1px solid #f0c14b66}.cadRec h4{margin:0 0 4px}
 .tocadas li[data-agora]{background:#f0c14b1f;border-radius:10px}
+#avisoSom{position:fixed;left:50%;top:12px;transform:translateX(-50%);z-index:10000;background:linear-gradient(180deg,#ffd978,#e0a92b);color:#2a0406;border:0;border-radius:999px;padding:12px 18px;font:800 14px Inter,system-ui,sans-serif;box-shadow:0 10px 30px #000a;width:min(92vw,440px);animation:pulsaSom 1.6s infinite}
+@keyframes pulsaSom{50%{transform:translateX(-50%) scale(1.04)}}
 .proxAn{margin:12px 0 4px;padding:12px 14px;border-radius:14px;background:#0f2a17;border:1px solid #2ecc7155;color:#d6f8e1;font-size:14px;line-height:1.5}
 .proxAn ul{margin:6px 0 0;padding-left:18px}
 .proxAn.alerta{background:#2a1a05;border-color:#f0c14b88;color:#ffe7a6}
@@ -344,7 +346,7 @@ body:not([data-aba="inicio"]) main .wrap{min-height:60vh}
       <a class="zapbtn" id="npZap" hidden target="_blank" rel="noopener" href="#">Chamar no WhatsApp</a>
       <div class="bar"><b id="prog"></b></div>
       <div class="ctl">
-        <button id="btnPlay">Ouvir ao vivo</button>
+        <button id="btnPlay">▶ Ouvir ao vivo</button>
         <button class="ghost adm" id="btnSkip" disabled>Pular (só admin)</button>
         <label class="vol">Volume <input id="vol" type="range" min="0" max="1" step="0.05" value="0.8" style="width:110px"></label>
       </div>
@@ -512,7 +514,7 @@ const _q=location.search+location.hash;
 /* Administrador só pelo link de admin (?admin). O link de ouvinte é sempre ouvinte. */
 try{localStorage.removeItem('radioEcontec.admin')}catch(e){}
 const ADMIN=/[?&#]admin\b/.test(_q);
-if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 37</span>')}
+if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 38</span>')}
 const CLI_PADRAO=[
  {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'img/logo-econtec.png',zap:ZAP_ECONTEC},
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
@@ -768,7 +770,7 @@ async function tocaItem(it,off){
  if(modoLivre){await reserva();return}
  const ok=await tocarYT(it.tr,pr,off,ate,it.t0);
  if(ok)falhasYT=0;else if(ligado){falhasYT++;
-  if(falhasYT>=3&&!modoLivre){modoLivre=true;if(!avisouLivre){avisouLivre=true;bot('O YouTube não está tocando neste aparelho agora. Para a rádio não parar, entram as músicas livres da ECONTEC.',true)}setTimeout(()=>{modoLivre=false;falhasYT=0},10*60*1000)}
+  if(falhasYT>=3&&!modoLivre){modoLivre=true;if(!avisouLivre){avisouLivre=true;bot('O YouTube não está tocando neste aparelho agora. Para a rádio não parar, entram as músicas livres da ECONTEC.',true)}setTimeout(()=>{modoLivre=false;falhasYT=0},3*60*1000)}
   if(ligado&&resto()>8000)await reserva()}
 }
 const NOMES=["Maria", "José", "Ana", "João", "Antônio", "Francisco", "Carlos", "Paulo", "Pedro", "Lucas", "Luiz", "Marcos", "Luis", "Gabriel", "Rafael", "Daniel", "Marcelo", "Bruno", "Eduardo", "Felipe", "Raimundo", "Rodrigo", "Manoel", "Mateus", "André", "Fernando", "Fábio", "Leonardo", "Gustavo", "Guilherme", "Leandro", "Tiago", "Anderson", "Ricardo", "Márcio", "Jorge", "Sebastião", "Alexandre", "Roberto", "Edson", "Diego", "Vitor", "Sérgio", "Cláudio", "Matheus", "Thiago", "Geraldo", "Adriano", "Luciano", "Júlio", "Renato", "Alex", "Vinícius", "Rogério", "Samuel", "Ronaldo", "Mário", "Flávio", "Igor", "Douglas", "Davi", "Enzo", "Miguel", "Arthur", "Heitor", "Bernardo", "Benício", "Wellington", "Juliana", "Adriana", "Márcia", "Fernanda", "Patrícia", "Aline", "Sandra", "Camila", "Amanda", "Bruna", "Jéssica", "Letícia", "Júlia", "Luciana", "Vanessa", "Mariana", "Gabriela", "Vera", "Vitória", "Larissa", "Cláudia", "Beatriz", "Luana", "Rita", "Sônia", "Renata", "Eliane", "Débora", "Simone", "Cristina", "Daniela", "Tatiana", "Carla", "Paula", "Raquel", "Natália", "Andréia", "Isabela", "Laura", "Alice", "Valentina", "Helena", "Sophia", "Heloísa", "Lorena", "Lívia", "Manuela", "Cecília", "Eduarda", "Rafaela", "Priscila", "Kelly", "Rosa", "Lúcia", "Regina", "Aparecida", "Fátima", "Dalila", "Joana", "Luzia", "Antônia", "Francisca", "Edna", "Célia", "Silvia", "Tereza", "Marta", "Cleide", "Rosângela", "Elaine", "Abel", "Abner", "Ademir", "Adilson", "Ailton", "Alan", "Alberto", "Aldo", "Alessandro", "Alexsandro", "Alisson", "Altair", "Álvaro", "Amauri", "Anselmo", "Antony", "Arnaldo", "Augusto", "Benedito", "Benjamin", "Breno", "Brayan", "Caio", "Carlito", "Cássio", "Celso", "Cesar", "Cícero", "Cleber", "Cristiano", "Danilo", "Denis", "Deivid", "Dirceu", "Edilson", "Edmilson", "Edvaldo", "Elias", "Emerson", "Erick", "Everton", "Ezequiel", "Fabiano", "Fabrício", "Francis", "Gael", "Gilberto", "Gilmar", "Gilson", "Giovanni", "Hélio", "Henrique", "Hugo", "Humberto", "Iago", "Isaac", "Ítalo", "Ivan", "Jacó", "Jailson", "Jair", "Jefferson", "Jeová", "Joaquim", "Jonas", "Jonathan", "Josué", "Juan", "Juliano", "Kaio", "Kauã", "Kevin", "Leonel", "Lorenzo", "Lourival", "Luan", "Lucca", "Marcelino", "Marcondes", "Mauro", "Maurício", "Max", "Milton", "Moisés", "Murilo", "Nathan", "Nelson", "Nicolas", "Noah", "Odair", "Orlando", "Osmar", "Oswaldo", "Otávio", "Pablo", "Raí", "Ravi", "Reinaldo", "Renan", "Rian", "Robson", "Rodolfo", "Rômulo", "Rubens", "Ruan", "Sandro", "Saulo", "Silvio", "Tales", "Theo", "Thomas", "Valdir", "Valter", "Vagner", "Valdecir", "Vicente", "Wagner", "Waldir", "Washington", "Weslley", "Willian", "Wilson", "Yuri", "Zé", "Adriele", "Agatha", "Alana", "Alessandra", "Aléxia", "Alícia", "Ana Clara", "Ana Júlia", "Ana Paula", "Andressa", "Ângela", "Antonella", "Bárbara", "Benedita", "Bianca", "Brenda", "Carina", "Carolina", "Catarina", "Clara", "Clarice", "Cleusa", "Conceição", "Cristiane", "Dayane", "Denise", "Diana", "Edilene", "Eliana", "Eloá", "Elisa", "Elisângela", "Emanuelly", "Emília", "Ester", "Eva", "Fabiana", "Flávia", "Gisele", "Giovana", "Glória", "Graça", "Iara", "Inês", "Ingrid", "Iolanda", "Irene", "Isabel", "Isabelly", "Isadora", "Ivone", "Jaqueline", "Jane", "Janaína", "Josiane", "Joyce", "Jucélia", "Jussara", "Karen", "Karina", "Kátia", "Kauane", "Lara", "Leila", "Liliane", "Luna", "Madalena", "Maitê", "Marcela", "Margarida", "Maria Clara", "Maria Eduarda", "Maria Luiza", "Mariane", "Marilene", "Marina", "Marisa", "Maysa", "Melissa", "Michele", "Mirela", "Mirian", "Mônica", "Nair", "Neide", "Nicole", "Nilza", "Olívia", "Pâmela", "Pietra", "Rayane", "Rebeca", "Roberta", "Rosana", "Rosilene", "Sabrina", "Samara", "Sara", "Sarah", "Selma", "Sheila", "Sofia", "Solange", "Stefany", "Suelen", "Tânia", "Telma", "Thaís", "Valéria", "Vânia", "Viviane", "Yasmin", "Zilda", "Zuleide"];
@@ -786,13 +788,21 @@ async function loop(){
 /* antes de ligar, a tela já mostra o que está no ar agora */
 setInterval(()=>{if(ligado)return;const {it,off}=noAr(agora());const [k,t,w,l,z]=descreve(it);mostra(k.replace(/^Ao vivo/,'No ar agora'),t,w,l,z);prog(off/it.dur)},1000);
 setInterval(()=>{renderFila();avisoHom()},15000);
+/* A rádio já entra tocando: se o navegador deixar, liga sozinha; se não, o primeiro toque em qualquer lugar liga o som */
+let pausouManual=false;
+function avisoSom(on){let el=document.getElementById('avisoSom');if(!on){if(el)el.remove();return}if(el)return;el=document.createElement('button');el.id='avisoSom';el.type='button';el.textContent='🔊 A rádio está no ar. Toque em qualquer lugar para ouvir';document.body.append(el)}
+function autoLiga(){if(ligado||pausouManual)return;const t=new Audio();t.src=SIL;const p=t.play();
+ const pede=()=>{avisoSom(true);const vai=e=>{if(e.target.closest&&e.target.closest('#btnPlay,#figIdle,#miniBtn')){tira();return}tira();if(!ligado&&!pausouManual)$('btnPlay').click()};
+  const tira=()=>{['pointerdown','keydown','touchend'].forEach(k=>document.removeEventListener(k,vai,true))};['pointerdown','keydown','touchend'].forEach(k=>document.addEventListener(k,vai,true))};
+ if(p&&p.then)p.then(()=>{t.pause();if(!ligado&&!pausouManual)$('btnPlay').click()}).catch(pede);else pede()}
+setTimeout(autoLiga,900);
 $('btnPlay').addEventListener('click',async()=>{
  if(!ctx)initAudio();
  if(!ligado){liberaAudio();try{const {it,off}=noAr(agora());let vid=null,ini=0;
-   if(it.k==='musica'&&!modoLivre){vid=it.tr.id;ini=off}else if(it.k==='pedido'&&off>PED_INTRO){vid=it.p.tr.id;ini=off-PED_INTRO}
+   if(it.k==='musica'&&it.tr.tipo==='yt'&&!modoLivre){vid=it.tr.id;ini=off}else if(it.k==='pedido'&&off>PED_INTRO){vid=it.p.tr.id;ini=off-PED_INTRO}
    if(yt&&yt.loadVideoById){if(vid){yt.setVolume(Math.round(volume()*100));yt.loadVideoById({videoId:vid,startSeconds:Math.floor(ini)});ytPrimado=vid}else{yt.mute();yt.loadVideoById(GRADE[0].id);setTimeout(()=>{try{if(yt.getVideoData().video_id===GRADE[0].id&&!ytEv)yt.stopVideo();yt.unMute()}catch(e){}},700)}}}catch(e){}
-  ligado=true;document.body.classList.add('tocando');ctx.resume();ultimoId=null;$('btnPlay').textContent='Desligar';$('btnSkip').disabled=false;$('lamp').classList.add('live');$('lampTxt').textContent='Ao vivo';loop()}
- else{ligado=false;document.body.classList.remove('tocando');if(cancelar)cancelar();$('btnPlay').textContent='Ouvir ao vivo';$('btnSkip').disabled=true;$('lamp').classList.remove('live');$('lampTxt').textContent='Ao vivo (toque para ouvir)'}
+  ligado=true;document.body.classList.add('tocando');ctx.resume();ultimoId=null;$('btnPlay').textContent='⏸ Pausar';avisoSom(false);$('btnSkip').disabled=false;$('lamp').classList.add('live');$('lampTxt').textContent='Ao vivo';loop()}
+ else{ligado=false;pausouManual=true;document.body.classList.remove('tocando');if(cancelar)cancelar();$('btnPlay').textContent='▶ Ouvir ao vivo';$('btnSkip').disabled=true;$('lamp').classList.remove('live');$('lampTxt').textContent='Ao vivo (toque para ouvir)'}
 });
 $('btnSkip').addEventListener('click',()=>{if(!ADMIN)return;if(itemAtual){const r=itemAtual.t0+itemAtual.dur*1000-agora();if(r>0)ajuste+=r+100}if(cancelar)cancelar()});
 $('vol').addEventListener('input',e=>{try{yt&&yt.setVolume(Math.round(+e.target.value*100))}catch(x){}if(volArq)volArq.volume=+e.target.value;if(master)master.gain.setTargetAtTime(+e.target.value,ctx.currentTime,.05)});
@@ -1034,7 +1044,7 @@ async function geraRelatorio(){const n=+$('relDia').value,out=$('relOut');out.in
   return `<div class="relCli"><b>${esc(k)}</b><div class="relNums"><span><strong>${L.length}</strong>vezes no ar</span><span><strong>${on}</strong>aparelhos conectados</span><span><strong>${ouv}</strong>ouvindo na hora</span><span><strong>${pico}</strong>pico de ouvintes</span></div>${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório no WhatsApp do cliente</a>`:`<a class="zapCli" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório pelo WhatsApp</a>`}</div>`}).join('')+'<p class="note">Os números de audiência contam aparelhos com a rádio aberta no minuto do anúncio.</p>'}
 if(ADMIN)$('btnRel').addEventListener('click',geraRelatorio);
 
-const VERSAO=37;
+const VERSAO=38;
 function checaVersao(){fetch('index.html?nv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VERSAO=(\d+)/);if(m&&+m[1]>VERSAO&&!ligado)location.reload()}).catch(()=>{})}
 checaVersao();setInterval(checaVersao,5*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checaVersao()});
 
