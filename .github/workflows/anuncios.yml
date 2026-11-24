@@ -29,7 +29,7 @@ jobs:
           FIM=$(( $(date +%s) + 335*60 )); ULT=0
           while [ "$(date +%s)" -lt "$FIM" ]; do
             git pull -q --rebase --autostash origin Econtec_Radio || git rebase --abort || true
-            node scripts/anuncios.mjs || true
+            timeout 240 node scripts/anuncios.mjs || true
             # Acervo de músicas: uma vez por dia (madrugada), renova parte dos artistas e guarda os pedidos novos (valem a partir de amanhã)
             DIAH=$(TZ=America/Sao_Paulo date +%F); HR=$(TZ=America/Sao_Paulo date +%H)
             if [ "$HR" -ge 2 ] && [ "$HR" -lt 5 ] && [ "$(cat .acervo-dia 2>/dev/null)" != "$DIAH" ]; then

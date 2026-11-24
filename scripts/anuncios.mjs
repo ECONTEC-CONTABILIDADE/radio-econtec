@@ -37,7 +37,8 @@ else console.log('Sem mudanças');
  for(const ln of t2.split('\n')){if(!ln.trim())continue;let m;try{m=JSON.parse(ln)}catch{continue}if(m.event!=='message')continue;let p;try{p=JSON.parse(m.message)}catch{continue}
   if(!p||!p.tr||!/^[\w-]{11}$/.test(p.tr.id)||typeof p.nome!=='string')continue;
   const ts=m.time*1000,dia=new Date(Math.floor((ts-FUSO)/DIA)*DIA).toISOString().slice(0,10);
-  (porDia[dia]=porDia[dia]||[]).push({id:m.id,ts,nome:p.nome.slice(0,40),dur:+p.dur,tr:{id:p.tr.id,tipo:'yt',titulo:String(p.tr.titulo||'').slice(0,90),artista:String(p.tr.artista||'').slice(0,60),estilo:String(p.tr.estilo||'Pedido').slice(0,30),parecida:!!p.tr.parecida}})}
+  const para=typeof p.para==='string'?p.para.trim().replace(/\s+/g,' ').slice(0,40):'';
+  (porDia[dia]=porDia[dia]||[]).push({id:m.id,ts,nome:p.nome.slice(0,40),...(para?{para}:{}),dur:+p.dur,tr:{id:p.tr.id,tipo:'yt',titulo:String(p.tr.titulo||'').slice(0,90),artista:String(p.tr.artista||'').slice(0,60),estilo:String(p.tr.estilo||'Pedido').slice(0,30),parecida:!!p.tr.parecida}})}
  fs.mkdirSync('pedidos',{recursive:true});
  for(const [dia,l] of Object.entries(porDia)){const f='pedidos/'+dia+'.json';let atual=[];try{atual=JSON.parse(fs.readFileSync(f,'utf8'))}catch{}
   const ids=new Set(atual.map(x=>x.id));const novos=l.filter(x=>!ids.has(x.id));if(novos.length){fs.writeFileSync(f,JSON.stringify(atual.concat(novos).sort((a,b)=>a.ts-b.ts))+'\n');console.log('pedidos',dia,novos.length)}}
@@ -130,10 +131,13 @@ else console.log('Sem mudanças');
  let peds=[];for(const f of fs.existsSync('pedidos')?fs.readdirSync('pedidos'):[]){try{peds=peds.concat(JSON.parse(fs.readFileSync('pedidos/'+f,'utf8')))}catch{}}
  for(const p of peds){
   if(!p||agora-p.ts>6*36e5)continue;const nome=String(p.nome||'').trim().replace(/\s+/g,' ');
-  if(!nome||/^ouvinte$/i.test(nome)||!/^[\p{L}][\p{L}\p{N} ,'.!?-]{0,59}$/u.test(nome))continue;const dito=pronuncia(tituloNome(nome.replace(/[!?.,\s]+$/,'')));
-  const par=p.tr&&p.tr.parecida?1:0,k=fnv(nome.toLowerCase()+'|'+par),f='v/pn/'+k+'.mp3';
+  const OK=/^[\p{L}][\p{L}\p{N} ,'.!?-]{0,59}$/u,para=String(p.para||'').trim().replace(/\s+/g,' ');
+  if(para&&!OK.test(para))continue;
+  if(!nome||(!para&&/^ouvinte$/i.test(nome))||!OK.test(nome))continue;const dito=pronuncia(tituloNome(nome.replace(/[!?.,\s]+$/,''))),ditoP=para?pronuncia(tituloNome(para.replace(/[!?.,\s]+$/,''))):'';
+  const par=p.tr&&p.tr.parecida?1:0,k=fnv(nome.toLowerCase()+'|'+par+(para?'|'+para.toLowerCase():'')),f='v/pn/'+k+'.mp3';
   if(mapa[k]&&mapa[k].v===3&&fs.existsSync(f))continue;
-  const txt=par?`Esse pedido é do ouvinte especial ${dito}! Não encontramos exatamente a música que você pediu, então separamos uma bem parecida pra você, aqui na Rádio Econtéc.`:`Esse pedido é do ouvinte especial ${dito}! Muito obrigada pelo carinho. Fique agora com a sua música, aqui na Rádio Econtéc.`;
+  const semNome=/^ouvinte$/i.test(nome),resto=par?'Não encontramos exatamente a música pedida, então separamos uma bem parecida, aqui na Rádio Econtéc.':'Fique agora com essa música, aqui na Rádio Econtéc.';
+  const txt=para?(semNome?`Essa música vai oferecida com muito carinho para ${ditoP}! ${resto}`:`Esse pedido é do ouvinte especial ${dito}, que oferece essa música com muito carinho para ${ditoP}! ${resto}`):par?`Esse pedido é do ouvinte especial ${dito}! Não encontramos exatamente a música que você pediu, então separamos uma bem parecida pra você, aqui na Rádio Econtéc.`:`Esse pedido é do ouvinte especial ${dito}! Muito obrigada pelo carinho. Fique agora com a sua música, aqui na Rádio Econtéc.`;
   try{execFileSync('edge-tts',['--voice','pt-BR-FranciscaNeural','--rate=+4%','--text',txt,'--write-media',f],{stdio:'pipe',timeout:60000});
    const bytes=fs.statSync(f).size;if(bytes<2000)throw new Error('áudio vazio');
    mapa[k]={url:f+'?3',dur:Math.round(bytes*8/48000*10)/10,v:3};mudou=true;console.log('nome gerado',nome,mapa[k].dur+'s')}
