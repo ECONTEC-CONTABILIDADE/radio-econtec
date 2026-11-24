@@ -558,7 +558,7 @@ const _q=location.search+location.hash;
 /* Administrador só pelo link de admin (?admin). O link de ouvinte é sempre ouvinte. */
 try{localStorage.removeItem('radioEcontec.admin')}catch(e){}
 const ADMIN=/[?&#]admin\b/.test(_q);
-if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 54</span>')}
+if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 55</span>')}
 const CLI_PADRAO=[
  {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'img/logo-econtec.png',zap:ZAP_ECONTEC},
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
@@ -701,7 +701,9 @@ const GRADE=acervo.filter(x=>x.tipo==='yt'&&x.estilo!=='Eletrônica');
 /* Acervo grande (musicas.json, renovado sozinho pelo plantão): cada música vale a partir do dia "desde", então a programação do dia nunca muda no meio */
 let musOk=false;function juntaMus(L){const ids=new Set(acervo.map(x=>x.id));let n=0;for(const [id,a,t,e,dur,desde] of L){if(!id||ids.has(id))continue;ids.add(id);const o={id,tipo:'yt',titulo:t,artista:a,estilo:e,desde:desde||0};acervo.push(o);if(e!=='Eletrônica')GRADE.push(o);if(dur)DUR[id]=dur;if(!ESTILOS.includes(e))ESTILOS.push(e);n++}
  if(n){cacheGrade={};try{renderFila();info()}catch(e){}}}
-function carregaMus(){return fetch('musicas.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{if(j&&j.lista)juntaMus(j.lista)}).catch(()=>{})}
+function carregaMus(){return fetch('musicas.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{if(j&&j.lista){juntaMus(j.lista);if(j.ts!==store.get('musTs',0)){store.set('musCache',j.lista);store.set('musTs',j.ts)}}}).catch(()=>{})}
+/* abre na hora com o acervo guardado no aparelho (depois confere o novo) */
+try{const mc=store.get('musCache',null);if(Array.isArray(mc)&&mc.length){juntaMus(mc);musOk=true}}catch(e){}
 const musPronto=carregaMus().finally(()=>{musOk=true});setInterval(carregaMus,30*6e4);
 const esperaMus=()=>musOk?null:Promise.race([musPronto,new Promise(r=>setTimeout(r,4000))]);
 const DIA=864e5,FUSO=3*36e5; /* horário de Brasília */
@@ -779,7 +781,9 @@ function avisoHom(){const el=$('homAviso');if(!el)return;const ms=agora(),d=Math
  else if(ms<ini-60*6e4)el.innerHTML=`🏆 Às <b>${HOM_HORA}h</b>: homenagem ao artista mais pedido do dia, com 5 músicas dele. Os pedidos até as 21h contam. Peça a sua música e ajude a escolher!`;
  else el.innerHTML='';el.hidden=!el.innerHTML}
 carregaHomenagem();setInterval(carregaHomenagem,5*6e4);
-carregaPedidosSite().then(buscaPedidos);setInterval(()=>{if(!document.hidden||ligado)buscaPedidos()},12000);
+try{(store.get('pedCache',[])||[]).forEach(addPed)}catch(e){}
+function guardaPeds(){try{const lim=Date.now()-30*36e5;store.set('pedCache',Object.values(pedList).filter(p=>p.ts>lim))}catch(e){}}
+const pedPronto=carregaPedidosSite().then(buscaPedidos).then(guardaPeds).catch(()=>{});setInterval(guardaPeds,60000);setInterval(()=>{if(!document.hidden||ligado)buscaPedidos()},12000);
 const hhmm=ms=>{const x=new Date(ms-OFF()-FUSO);return String(x.getUTCHours()).padStart(2,'0')+':'+String(x.getUTCMinutes()).padStart(2,'0')};
 const capa=tr=>tr&&tr.tipo==='yt'&&/^[\w-]{11}$/.test(tr.id)?`https://i.ytimg.com/vi/${tr.id}/hqdefault.jpg`:'';
 function descreve(it){
@@ -871,10 +875,11 @@ function autoLiga(){if(ligado||pausouManual)return;try{sessionStorage.removeItem
  const pede=()=>{avisoSom(true);const vai=e=>{if(e.target.closest&&e.target.closest('#btnPlay,#figIdle,#miniBtn')){tira();return}tira();if(!ligado&&!pausouManual)$('btnPlay').click()};
   const tira=()=>{['pointerdown','keydown','touchend'].forEach(k=>document.removeEventListener(k,vai,true))};['pointerdown','keydown','touchend'].forEach(k=>document.addEventListener(k,vai,true))};
  if(p&&p.then)p.then(()=>{t.pause();if(!ligado&&!pausouManual)$('btnPlay').click()}).catch(pede);else pede()}
-setTimeout(()=>Promise.resolve(esperaMus()).then(autoLiga),900);
+const prontoTudo=()=>Promise.race([Promise.all([musPronto,pedPronto,avPronto]),new Promise(r=>setTimeout(r,3000))]);
+setTimeout(()=>prontoTudo().then(autoLiga),300);
 $('btnPlay').addEventListener('click',async()=>{
  if(!ctx)initAudio();
- if(!ligado){liberaAudio();if(!musOk)await esperaMus();try{const {it,off}=noAr(agora());let vid=null,ini=0;
+ if(!ligado){liberaAudio();await prontoTudo();try{const {it,off}=noAr(agora());let vid=null,ini=0;
    if(it.k==='musica'&&it.tr.tipo==='yt'&&!modoLivre){vid=it.tr.id;ini=off}else if(it.k==='pedido'&&off>PED_INTRO){vid=it.p.tr.id;ini=off-PED_INTRO}
    if(yt&&yt.loadVideoById){if(vid){yt.setVolume(Math.round(volume()*100));yt.loadVideoById({videoId:vid,startSeconds:Math.floor(ini)});ytPrimado=vid}else{yt.mute();yt.loadVideoById(GRADE[0].id);setTimeout(()=>{try{if(yt.getVideoData().video_id===GRADE[0].id&&!ytEv)yt.stopVideo();yt.unMute()}catch(e){}},700)}}}catch(e){}
   ligado=true;document.body.classList.add('tocando');ctx.resume();ultimoId=null;$('btnPlay').textContent='Pausar';avisoSom(false);$('btnSkip').disabled=false;$('lamp').classList.add('live');$('lampTxt').textContent='Ao vivo';loop()}
@@ -949,7 +954,11 @@ if(ADMIN){
    juntaPosts({[post.id]:post});$('trLink').value='';$('trArq').value='';$('trTit').value='';trAviso('Pronto! Começa em 5 segundos para todos os ouvintes.')}
   catch(e){trAviso('Algo deu errado. Tente de novo.',true)}finally{b.disabled=false}});
 }
-buscaPulos();ouveAoVivo();setInterval(buscaPulos,60000);setInterval(()=>{if(calcPul()){if(cancelar&&ligado)cancelar();try{renderFila()}catch(e){}}},60000);
+try{const c=store.get('aoVivoCache',null);if(c){juntaPulos(c.pulos);juntaPosts(c.posts,c.fins)}}catch(e){}
+setInterval(()=>store.set('aoVivoCache',{pulos:PULOS,posts:POSTS,fins:FINS}),30000);
+const avPronto=buscaPulos().then(()=>store.set('aoVivoCache',{pulos:PULOS,posts:POSTS,fins:FINS}));ouveAoVivo();
+/* confere sempre: se o ao vivo mudou (pedido novo, acervo, pulo), troca na hora para a música certa */
+setInterval(()=>{try{if(!ligado||postTocando||!itemAtual||!cancelar)return;const {it}=noAr(agora());if(it.id!==itemAtual.id&&agora()-it.t0>1500)cancelar()}catch(e){}},2000);setInterval(buscaPulos,60000);setInterval(()=>{if(calcPul()){if(cancelar&&ligado)cancelar();try{renderFila()}catch(e){}}},60000);
 $('btnSkip').addEventListener('click',async()=>{if(!ADMIN||!itemAtual)return;const r=itemAtual.t0+itemAtual.dur*1000-agora();if(r<=500)return;
  const k=await pegaChave();if(!k){avisoAdm('Este aparelho ainda não está liberado para mudar a rádio de todos. Mande o código dele para o Claude.',true);return}
  const pulo={id:Date.now().toString(36)+Math.random().toString(36).slice(2,7),ts:Date.now()+relOff,ms:Math.round(r+150)};const p=JSON.stringify({pulo});
@@ -1196,7 +1205,7 @@ async function geraRelatorio(){const n=+$('relDia').value,out=$('relOut');out.in
   return `<div class="relCli"><b>${esc(k)}</b><div class="relNums"><span><strong>${L.length}</strong>vezes no ar</span><span><strong>${on}</strong>aparelhos conectados</span><span><strong>${ouv}</strong>ouvindo na hora</span><span><strong>${pico}</strong>pico de ouvintes</span></div>${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório no WhatsApp do cliente</a>`:`<a class="zapCli" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório pelo WhatsApp</a>`}</div>`}).join('')+'<p class="note">Os números de audiência contam aparelhos com a rádio aberta no minuto do anúncio.</p>'}
 if(ADMIN)$('btnRel').addEventListener('click',geraRelatorio);
 
-const VERSAO=54;
+const VERSAO=55;
 function checaVersao(){fetch('index.html?nv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VERSAO=(\d+)/);if(m&&+m[1]>VERSAO){if(!ligado)location.reload();else novaVersao=true}}).catch(()=>{})}
 /* versão nova com a rádio tocando: atualiza sozinha numa vinheta (só com a tela aberta) e volta a tocar */
 let novaVersao=false;setInterval(()=>{if(!novaVersao||!ligado||document.hidden)return;try{const {it,off}=noAr(agora());if(it.k==='vin'&&off<3){sessionStorage.setItem('retomar','1');location.reload()}}catch(e){}},1000);
