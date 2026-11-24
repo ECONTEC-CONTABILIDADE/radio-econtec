@@ -43,7 +43,7 @@ header .zapbtn{margin-left:auto}
 .deck{background:linear-gradient(160deg,var(--deck),var(--deck2));color:#fff;border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:16px;box-shadow:0 12px 30px #0003}
 .fig{position:relative;flex:1;min-height:190px;border-radius:12px;background:#062a2a;overflow:hidden}
 .fig>canvas{position:absolute;inset:0;width:100%;height:100%}
-.fig{min-height:clamp(220px,30vw,340px)}#ytwrap{position:absolute;inset:0;visibility:hidden;background:#000}#ytwrap.on{visibility:visible}#ytwrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.fig{min-height:clamp(220px,30vw,340px)}#vidPost{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;z-index:4}#vidPost[hidden]{display:none}#ytwrap{position:absolute;inset:0;visibility:hidden;background:#000}#ytwrap.on{visibility:visible}#ytwrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 .vidBtns button#vidInfo{background:#1f9a4bcc}
 #vidDica{position:fixed;left:12px;right:12px;bottom:96px;max-width:480px;margin:0 auto;z-index:10001;box-shadow:0 20px 50px #000c;background:#140203f2;border:1px solid #f0c14b88;border-radius:16px;padding:12px 14px;font-size:14px;line-height:1.45;color:#fff}
 #vidDica button{display:block;margin:10px 0 0 auto;background:#f0c14b;color:#2a0406;border:0;border-radius:999px;padding:7px 16px;font-weight:800}
@@ -368,7 +368,7 @@ body:not(.admin) #fila li:nth-child(n+6),body:not(.admin) #tocadas li:nth-child(
   </section>
   <div class="grid">
     <section class="deck" id="aoVivo" data-ab="inicio" data-aa="inicio" aria-label="Aparelho da rádio">
-      <div class="fig"><canvas id="viz"></canvas><button type="button" id="figIdle" aria-label="Ouvir a rádio ao vivo"><img src="img/logo-econtec.png" alt=""><span>▶ Toque para ouvir ao vivo</span></button><div id="ytwrap"><div id="yt"></div><div class="vidBtns"><button type="button" id="vidTam" aria-label="Aumentar o vídeo">⤢ Aumentar vídeo</button><button type="button" id="vidCheia" aria-label="Tela cheia" hidden>⛶ Tela cheia</button><button type="button" id="vidInfo" aria-label="Como ver sem anúncios do YouTube">ⓘ Sem anúncios</button></div><div id="vidDica" hidden>💡 <b>Quer ouvir sem os anúncios do YouTube?</b> Quem tem <b>YouTube Premium</b> só precisa entrar na sua conta no youtube.com, neste mesmo navegador. Depois, abra a rádio de novo: os sucessos tocam sem os anúncios do YouTube. As músicas marcadas "sem intervalo" nunca têm anúncio.<button type="button" id="vidDicaOk">Entendi</button></div></div></div>
+      <div class="fig"><canvas id="viz"></canvas><video id="vidPost" playsinline hidden></video><button type="button" id="figIdle" aria-label="Ouvir a rádio ao vivo"><img src="img/logo-econtec.png" alt=""><span>▶ Toque para ouvir ao vivo</span></button><div id="ytwrap"><div id="yt"></div><div class="vidBtns"><button type="button" id="vidTam" aria-label="Aumentar o vídeo">⤢ Aumentar vídeo</button><button type="button" id="vidCheia" aria-label="Tela cheia" hidden>⛶ Tela cheia</button><button type="button" id="vidInfo" aria-label="Como ver sem anúncios do YouTube">ⓘ Sem anúncios</button></div><div id="vidDica" hidden>💡 <b>Quer ouvir sem os anúncios do YouTube?</b> Quem tem <b>YouTube Premium</b> só precisa entrar na sua conta no youtube.com, neste mesmo navegador. Depois, abra a rádio de novo: os sucessos tocam sem os anúncios do YouTube. As músicas marcadas "sem intervalo" nunca têm anúncio.<button type="button" id="vidDicaOk">Entendi</button></div></div></div>
       <div class="np">
         <div class="logo marca" id="npLogo"><img src="img/e-econtec.png" alt=""></div>
         <div><div class="kind" id="npKind">Aperte "Ligar a rádio"</div><h2 id="npTitle">Rádio ECONTEC</h2><div class="who" id="npWho">Só sucesso, vinhetas e os nossos clientes, 24 horas</div></div>
@@ -398,6 +398,16 @@ body:not(.admin) #fila li:nth-child(n+6),body:not(.admin) #tocadas li:nth-child(
     </section>
   </div>
 
+  <section class="card adm" id="transmitir" data-ab="-" data-aa="inicio" aria-label="Transmitir para todos">
+    <h3>📡 Transmitir agora para todos</h3>
+    <p class="note">Cole um link do YouTube (música, vídeo ou transmissão ao vivo, como jogos) ou um link direto de arquivo .mp3/.mp4. Ou escolha um arquivo do aparelho (mp3 ou mp4, até 15 MB). Começa em poucos segundos para todos os ouvintes. Enquanto toca, a programação fica parada; quando termina, ela continua de onde parou.</p>
+    <input id="trLink" placeholder="Link do YouTube ou de um arquivo .mp3/.mp4" autocomplete="off">
+    <label class="file">📁 Ou escolher arquivo mp3/mp4<input id="trArq" type="file" accept=".mp3,.mp4,audio/mpeg,video/mp4"></label>
+    <input id="trTit" placeholder="Título (opcional), ex.: Jogo ao vivo" maxlength="80" autocomplete="off">
+    <button type="button" id="btnTr">▶ Tocar agora para todos</button>
+    <p id="trMsg" class="note" hidden></p>
+    <div id="trAtivo" class="meuPed" hidden></div>
+  </section>
   <div class="cols">
     <section class="card" id="programacao" data-ab="inicio" data-aa="inicio pedir">
       <h3>🎶 Músicas da rádio</h3>
@@ -548,7 +558,7 @@ const _q=location.search+location.hash;
 /* Administrador só pelo link de admin (?admin). O link de ouvinte é sempre ouvinte. */
 try{localStorage.removeItem('radioEcontec.admin')}catch(e){}
 const ADMIN=/[?&#]admin\b/.test(_q);
-if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 53</span>')}
+if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 54</span>')}
 const CLI_PADRAO=[
  {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'img/logo-econtec.png',zap:ZAP_ECONTEC},
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
@@ -616,7 +626,7 @@ function tocarYT(tr,onProg,ini,ate,ref,durReal){
    if(ad!==emAd){emAd=ad;if(ad){kindAntes=$('npKind').textContent;$('npKind').textContent='Anúncio do YouTube · a música entra já, no ponto ao vivo'}else if(kindAntes){$('npKind').textContent=kindAntes;ultAj=0}}
    if(ad){if(yt.getPlayerState()===1)tocou=true;return}
    if(ref&&tocou&&Date.now()-ultAj>20000&&yt.getPlayerState()===1){const esp=(agora()-ref)/1000,cur=yt.getCurrentTime();if(Math.abs(cur-esp)>6&&esp>0){yt.seekTo(esp+1,true);ultAj=Date.now()}}if(ref&&ligado&&Date.now()-ultAj>5000&&yt.getPlayerState()===2){yt.seekTo(Math.max(0,(agora()-ref)/1000),true);yt.playVideo();ultAj=Date.now()}
-  const d0=yt.getDuration(),c=yt.getCurrentTime(),d=ate?Math.min(d0,ate):d0;if(d>0){onProg(c/d);const r=d-c;yt.setVolume(Math.round(volume()*100*Math.max(0,Math.min(1,r/3))));if(r<.4&&tocou)fim()}}catch(e){}},300);
+  const d0=yt.getDuration(),c=yt.getCurrentTime(),d=ate?Math.min(d0,ate):d0;if(d>0){onProg(c/d);const r=d-c;yt.setVolume(Math.round(volume()*100*Math.max(0,Math.min(1,r/3))));if(r<.4&&tocou&&!tr.live)fim()}}catch(e){}},300);
  });
 }
 /* fala sem emendas: junta os trechos (frase + nome + agradecimento) num áudio só, sem silêncios nem atraso de carregamento */
@@ -632,7 +642,7 @@ function preCarregaNome(p){try{if(!ctx)return;const ni=idxNome(p.nome);if(ni===u
 /* um só elemento de áudio, liberado no toque do ouvinte (celulares bloqueiam áudio novo sem toque) */
 const AUD=new Audio(),AUDF=new Audio();AUD.preload='auto';let audTok=0;if(/[?&]teste\b/.test(location.search))window.__AUD=AUD;
 const SIL='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
-function liberaAudio(){for(const a of [AUD,AUDF]){try{a.muted=true;a.src=SIL;const p=a.play();if(p)p.then(()=>{if(a.src===SIL)a.pause();a.muted=false}).catch(()=>{a.muted=false})}catch(e){}}}
+function liberaAudio(){for(const a of [AUD,AUDF,document.getElementById('vidPost')].filter(Boolean)){try{a.muted=true;a.src=SIL;const p=a.play();if(p)p.then(()=>{if(a.src===SIL)a.pause();a.muted=false}).catch(()=>{a.muted=false})}catch(e){}}}
 function tocarArquivo(tr,onProg){
  return new Promise(res=>{
   const tok=++audTok,a=AUD;a.onended=a.onerror=a.ontimeupdate=null;a.pause();a.muted=false;a.loop=false;a.src=tr.url;a.preload='auto';
@@ -671,7 +681,12 @@ function falar(txt,onProg){
 
 /* ---------- Programação AO VIVO: a mesma grade para todos, calculada pelo relógio ---------- */
 let ultimoId=null,itemAtual=null,ajuste=0;
-let relOff=0,PUL=0;const agora=()=>Date.now()+ajuste+relOff+PUL;
+let relOff=0,PUL=0,POSTS={},FINS={};
+/* Transmissão do administrador: enquanto ela toca, a programação fica PARADA e depois continua de onde parou */
+function fimPost(p){const f=p.ini+(p.dur>0?p.dur*1000:6*36e5);return FINS[p.id]?Math.min(f,FINS[p.id]):f}
+function pausaEm(t){const dr=ms=>Math.floor((ms-3*36e5-4*36e5)/864e5),d=dr(t);let s=0;for(const k in POSTS){const p=POSTS[k];if(dr(p.ini)!==d)continue;s+=Math.max(0,Math.min(t,fimPost(p))-p.ini)}return s}
+const OFF=()=>PUL-pausaEm(Date.now()+relOff);
+const agora=()=>Date.now()+ajuste+relOff+OFF();
 /* relógio do servidor: todos os aparelhos usam a mesma hora, não a do celular/computador */
 async function sincRelogio(){try{let ant=null;for(let i=0;i<14;i++){const t0=Date.now();const r=await fetch('manifest.webmanifest?t='+t0+i,{method:'HEAD',cache:'no-store'});const t1=Date.now();const d=Date.parse(r.headers.get('date'));if(!d)return;
   if(ant&&d>ant.d){const meio=(ant.t1+t0)/2;relOff=d-meio;store.set('relOff',relOff);return}ant={d,t1};if(i===0)relOff=d+500-(t0+t1)/2;await new Promise(z=>setTimeout(z,90))}}catch(e){}}
@@ -765,7 +780,7 @@ function avisoHom(){const el=$('homAviso');if(!el)return;const ms=agora(),d=Math
  else el.innerHTML='';el.hidden=!el.innerHTML}
 carregaHomenagem();setInterval(carregaHomenagem,5*6e4);
 carregaPedidosSite().then(buscaPedidos);setInterval(()=>{if(!document.hidden||ligado)buscaPedidos()},12000);
-const hhmm=ms=>{const x=new Date(ms-PUL-FUSO);return String(x.getUTCHours()).padStart(2,'0')+':'+String(x.getUTCMinutes()).padStart(2,'0')};
+const hhmm=ms=>{const x=new Date(ms-OFF()-FUSO);return String(x.getUTCHours()).padStart(2,'0')+':'+String(x.getUTCMinutes()).padStart(2,'0')};
 const capa=tr=>tr&&tr.tipo==='yt'&&/^[\w-]{11}$/.test(tr.id)?`https://i.ytimg.com/vi/${tr.id}/hqdefault.jpg`:'';
 function descreve(it){
  if(it.hom&&it.k==='vin')return['🏆 Homenagem do dia','Especial '+it.hom.artista,'O artista mais pedido hoje na Rádio ECONTEC','img/e-econtec.png',''];
@@ -800,7 +815,7 @@ async function tocaItem(it,off){
  const [k,t,w,l,z]=descreve(it);mostra(k,t,w,l,z);const pr=x=>prog(x);prog(off/it.dur);
  const resto=()=>it.t0+it.dur*1000-agora();
  if(it.k==='vin'||it.k==='adE'){try{const {g,i}=noAr(it.t0+50);const nx=g[i+1];if(nx&&nx.k==='musica'&&nx.tr.tipo==='yt'&&yt&&yt.cueVideoById&&!modoLivre)yt.cueVideoById(nx.tr.id)}catch(e){}await tocarArquivo({url:it.k==='adE'?'v/anuncio-econtec.mp3':it.url,ini:off,ref:it.t0,ate:it.t0+it.dur*1000+400},pr);return}
- if(it.k==='hora'){const stop=fundo();const [h,m]=horaFalada(it.t0-PUL+11000);
+ if(it.k==='hora'){const stop=fundo();const [h,m]=horaFalada(it.t0-OFF()+11000);
   if(off<10.5)await tocarArquivo({url:'v/f-hora.mp3',ini:off,silencioso:true},pr);
   if(ligado&&resto()>1500){await tocarArquivo({url:h,silencioso:true},()=>{});if(ligado)await tocarArquivo({url:m,silencioso:true},()=>{})}
   stop();return}
@@ -840,6 +855,7 @@ const FRASES=new Set([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17, 
 function idxNome(nome){const pn=String(nome).trim().split(/\s+/),a=pn.slice(0,2).join(' ');return NOMES_IDX[norm(a)]??NOMES_IDX[norm(pn[0])]??NOMES_FZ[fuz(a)]??NOMES_FZ[fuz(pn[0])]}
 async function loop(){
  while(ligado){
+  const pa=postAtivo();if(pa){itemAtual=null;ultimoId='post:'+pa.id;await tocaPost(pa);continue}
   const {it,off}=noAr(agora());itemAtual=it;
   if(it.id===ultimoId){await espera(it.t0+it.dur*1000-agora()+50,true);continue}
   ultimoId=it.id;renderFila();await tocaItem(it,Math.max(0,off));
@@ -873,10 +889,66 @@ function juntaPulos(o){let novo=false;for(const [id,x] of Object.entries(o||{}))
 async function verificaEnv(env){try{if(!env||typeof env.p!=='string'||typeof env.s!=='string')return null;
  anPubKey=anPubKey||await Promise.all(AN_PUBS.map(k=>crypto.subtle.importKey('jwk',{kty:'EC',crv:'P-256',x:k.x,y:k.y},AN_EC,false,['verify'])));
  for(const k of anPubKey)if(await crypto.subtle.verify({name:'ECDSA',hash:'SHA-256'},k,b64d(env.s),new TextEncoder().encode(env.p)))return JSON.parse(env.p);return null}catch(e){return null}}
-async function msgPulo(txt){try{const env=JSON.parse(txt);const o=await verificaEnv(env);if(o&&o.pulo&&o.pulo.id)juntaPulos({[o.pulo.id]:o.pulo})}catch(e){}}
-async function buscaPulos(){try{const j=await fetch('aovivo.json',{cache:'no-store'}).then(r=>r.ok?r.json():null);if(j&&j.pulos)juntaPulos(j.pulos)}catch(e){}
+async function msgPulo(txt){try{const env=JSON.parse(txt);const o=await verificaEnv(env);if(o&&o.pulo&&o.pulo.id)juntaPulos({[o.pulo.id]:o.pulo});if(o&&o.post&&o.post.id)juntaPosts({[o.post.id]:o.post});if(o&&o.fim&&o.fim.id)juntaPosts(null,{[o.fim.id]:o.fim.ts})}catch(e){}}
+async function buscaPulos(){try{const j=await fetch('aovivo.json',{cache:'no-store'}).then(r=>r.ok?r.json():null);if(j&&j.pulos)juntaPulos(j.pulos);if(j)juntaPosts(j.posts,j.fins)}catch(e){}
  try{if(!AN_PUBS.length)await carregaChaves();const t=await fetch('https://ntfy.sh/'+AV_TOP+'/json?poll=1&since=12h',{cache:'no-store'}).then(r=>r.text());for(const ln of t.split('\n')){if(!ln.trim())continue;let m;try{m=JSON.parse(ln)}catch(e){continue}if(m.event==='message')await msgPulo(m.message)}}catch(e){}}
 function ouveAoVivo(){try{const es=new EventSource('https://ntfy.sh/'+AV_TOP+','+AN_TOP+'/sse');es.onmessage=e=>{try{const m=JSON.parse(e.data);if(m.event!=='message')return;if(m.topic===AV_TOP)msgPulo(m.message);else if(m.topic===AN_TOP)buscaNtfy()}catch(x){}}}catch(e){}}
+/* ---------- Transmissão do administrador (YouTube, ao vivo, mp3, mp4) ---------- */
+const realAgora=()=>Date.now()+relOff;
+function postValido(p){return p&&typeof p.id==='string'&&p.id.length<40&&['yt','live','mp3','mp4'].includes(p.tipo)&&+p.ini>0&&+p.dur>=0&&+p.dur<=6*3600&&(p.tipo==='yt'||p.tipo==='live'?/^[\w-]{11}$/.test(p.vid||''):/^(https:\/\/|midia\/)[^\s"'<>]+$/.test(p.url||''))}
+function postAtivo(){const t=realAgora();let m=null;for(const p of Object.values(POSTS)){if(t>=p.ini&&t<fimPost(p)&&(!m||p.ini>m.ini))m=p}return m}
+let postTocando=null;
+function juntaPosts(ps,fs){let mud=false;for(const [id,p] of Object.entries(ps||{}))if(!POSTS[id]&&postValido(Object.assign({},p,{id}))){POSTS[id]={id,tipo:p.tipo,vid:p.vid,url:p.url,titulo:String(p.titulo||'').slice(0,80),ini:+p.ini,dur:+p.dur};mud=true}else if(POSTS[id]&&p&&p.url&&/^midia\//.test(p.url)&&POSTS[id].url!==p.url&&!postTocando){POSTS[id].url=p.url}
+ for(const [id,t] of Object.entries(fs||{}))if(!FINS[id]&&+t>0){FINS[id]=+t;mud=true}if(mud)postMudou()}
+function postMudou(){const a=postAtivo();if((a&&a.id)!==(postTocando&&postTocando.id)&&ligado&&cancelar)cancelar();try{renderPost();renderFila()}catch(e){}}
+setInterval(postMudou,4000);
+async function tocaPost(pa){postTocando=pa;const pr=x=>prog(x);
+ const capaP=pa.vid?`https://i.ytimg.com/vi/${pa.vid}/hqdefault.jpg`:'img/e-econtec.png';
+ while(ligado){const a=postAtivo();if(!a||a.id!==pa.id)break;
+  mostra(pa.tipo==='live'?'🔴 Ao vivo agora':'📡 Especial da rádio',pa.titulo||'Transmissão da Rádio ECONTEC','Para todos os ouvintes, ao vivo',capaP,'');
+  const off=(realAgora()-pa.ini)/1000,resta=fimPost(pa)-realAgora();
+  if(pa.tipo==='yt')await tocarYT({id:pa.vid,tipo:'yt'},pr,off,pa.dur||0,0,pa.dur||0);
+  else if(pa.tipo==='live')await tocarYT({id:pa.vid,tipo:'yt',live:true},pr,0,0,0,0);
+  else if(pa.tipo==='mp3')await tocarArquivo({url:pa.url,ini:off,ate:agora()+resta,silencioso:true},pr);
+  else await tocarVideo(pa,off,resta);
+  const b=postAtivo();if(!b||b.id!==pa.id||!ligado)break;
+  const rr=fimPost(pa)-realAgora();if(pa.dur>0&&rr<5000){await new Promise(r=>{const t=setTimeout(r,Math.max(0,rr)+100);cancelar=()=>{clearTimeout(t);r()}});continue}
+  mostra('📡 Conectando a transmissão…',pa.titulo||'Transmissão da Rádio ECONTEC','Aguarde um instante',capaP,'');
+  await new Promise(r=>{const t=setTimeout(r,5000);cancelar=()=>{clearTimeout(t);r()}})}
+ postTocando=null}
+function tocarVideo(pa,off,resta){return new Promise(res=>{const v=$('vidPost'),fig=document.querySelector('.fig');let done=false,iv=null;
+ const fim=()=>{if(done)return;done=true;clearInterval(iv);clearTimeout(to);try{v.pause()}catch(e){}v.removeAttribute('src');try{v.load()}catch(e){}v.hidden=true;res()};cancelar=fim;
+ const to=setTimeout(fim,Math.max(1000,resta));v.hidden=false;v.muted=false;v.volume=volume();v.src=pa.url;
+ v.addEventListener('loadedmetadata',()=>{const p=off+(Date.now()-t0)/1000;if(p>0.5&&p<v.duration-0.5)v.currentTime=p;else if(v.duration&&p>=v.duration)fim()},{once:true});const t0=Date.now();
+ v.onended=fim;v.onerror=()=>setTimeout(fim,1500);v.play().catch(()=>{v.muted=true;v.play().catch(()=>setTimeout(fim,1500))});
+ iv=setInterval(()=>{if(v.duration)prog(v.currentTime/v.duration);if(!v.muted)v.volume=volume()},300)})}
+function renderPost(){const el=$('trAtivo');if(!el)return;const a=postAtivo();if(!a||!ADMIN){el.hidden=true;return}
+ const resta=fimPost(a)-realAgora();el.hidden=false;el.innerHTML=`<b>${a.tipo==='live'?'🔴 Ao vivo':'📡 Tocando'} para todos:</b> ${esc(a.titulo||'Transmissão')}${a.dur>0?' · termina em '+Math.max(1,Math.round(resta/6e4))+' min':''}<br><button type="button" id="btnTrFim" class="lite">⏹ Encerrar agora e voltar à programação</button>`}
+async function assinaPub(obj){const k=await pegaChave();if(!k)return 'chave';const p=JSON.stringify(obj);const sg=b64e(await crypto.subtle.sign({name:'ECDSA',hash:'SHA-256'},k,new TextEncoder().encode(p)));
+ for(let i=0;i<3;i++){try{const r=await fetch('https://ntfy.sh/'+AV_TOP,{method:'POST',body:JSON.stringify({p,s:sg})});if(r.ok)return 'ok'}catch(e){}await new Promise(r=>setTimeout(r,1500*(i+1)))}return 'erro'}
+async function infoYT(id){const k=(store.get('ytkey','')||'').trim()||YT_KEY;try{const j=await fetch('https://www.googleapis.com/youtube/v3/videos?part=contentDetails,snippet&id='+id+'&key='+encodeURIComponent(k)).then(r=>r.json());const it=j.items[0];
+  const m=it.contentDetails.duration.match(/P(?:(\d+)D)?T?(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/)||[];const s=(+m[1]||0)*86400+(+m[2]||0)*3600+(+m[3]||0)*60+(+m[4]||0);
+  return {titulo:it.snippet.title,live:it.snippet.liveBroadcastContent==='live'||s===0,dur:s}}catch(e){return null}}
+function duracaoMidia(src,video){return new Promise(r=>{const m=document.createElement(video?'video':'audio');m.preload='metadata';const to=setTimeout(()=>r(0),20000);m.onloadedmetadata=()=>{clearTimeout(to);r(isFinite(m.duration)?m.duration:0)};m.onerror=()=>{clearTimeout(to);r(0)};m.src=src})}
+function trAviso(t,erro){const el=$('trMsg');el.hidden=!t;el.textContent=t||'';el.style.color=erro?'#ff9a9a':''}
+if(ADMIN){
+ document.addEventListener('click',async e=>{if(!e.target.closest('#btnTrFim'))return;const a=postAtivo();if(!a)return;const r=await assinaPub({fim:{id:a.id,ts:realAgora()}});if(r==='ok')juntaPosts(null,{[a.id]:realAgora()});else trAviso(r==='chave'?'Este aparelho ainda não está liberado.':'Não consegui encerrar. Tente de novo.',true)});
+ $('btnTr').addEventListener('click',async()=>{const b=$('btnTr');if(b.disabled)return;b.disabled=true;trAviso('Preparando…');
+  try{if(!await pegaChave()){trAviso('Este aparelho ainda não está liberado para transmitir. Mande o código dele para o Claude.',true);return}
+   const link=$('trLink').value.trim(),arq=$('trArq').files[0];let post={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),titulo:$('trTit').value.trim().slice(0,80)};
+   const vid=link?idYT(link):null;
+   if(vid){const inf=await infoYT(vid);post.vid=vid;if(inf&&!inf.live){post.tipo='yt';post.dur=Math.min(inf.dur,6*3600)}else{post.tipo='live';post.dur=0}if(!post.titulo)post.titulo=inf?inf.titulo.slice(0,80):'Vídeo do YouTube'}
+   else if(arq){if(arq.size>15*1024*1024){trAviso('Arquivo grande demais: o limite é 15 MB. Dica: envie o vídeo para o YouTube e cole o link aqui.',true);return}
+    const ehVid=/mp4$/i.test(arq.name)||/video/.test(arq.type);const u=URL.createObjectURL(arq);const d=await duracaoMidia(u,ehVid);URL.revokeObjectURL(u);if(!d){trAviso('Não consegui ler esse arquivo. Use mp3 ou mp4.',true);return}
+    trAviso('Enviando o arquivo… (pode levar um pouco)');const r=await fetch('https://ntfy.sh/'+AV_TOP+'-arquivos',{method:'PUT',body:arq,headers:{Filename:ehVid?'midia.mp4':'midia.mp3'}});const j=await r.json().catch(()=>null);
+    if(!r.ok||!j||!j.attachment||!j.attachment.url){trAviso('Não consegui enviar o arquivo. Tente de novo ou use um link.',true);return}
+    post.tipo=ehVid?'mp4':'mp3';post.url=j.attachment.url;post.dur=Math.ceil(d);if(!post.titulo)post.titulo=arq.name.replace(/\.[^.]+$/,'').slice(0,80)}
+   else if(/^https:\/\/\S+\.(mp3|mp4)(\?\S*)?$/i.test(link)){const ehVid=/\.mp4/i.test(link);const d=await duracaoMidia(link,ehVid);if(!d){trAviso('Não consegui abrir esse link. Confira se é um arquivo .mp3 ou .mp4 público.',true);return}post.tipo=ehVid?'mp4':'mp3';post.url=link;post.dur=Math.ceil(d);if(!post.titulo)post.titulo='Especial da rádio'}
+   else{trAviso('Cole um link do YouTube ou de um arquivo .mp3/.mp4, ou escolha um arquivo.',true);return}
+   post.ini=realAgora()+5000;const r=await assinaPub({post});if(r!=='ok'){trAviso('Não consegui avisar os ouvintes. Tente de novo.',true);return}
+   juntaPosts({[post.id]:post});$('trLink').value='';$('trArq').value='';$('trTit').value='';trAviso('Pronto! Começa em 5 segundos para todos os ouvintes.')}
+  catch(e){trAviso('Algo deu errado. Tente de novo.',true)}finally{b.disabled=false}});
+}
 buscaPulos();ouveAoVivo();setInterval(buscaPulos,60000);setInterval(()=>{if(calcPul()){if(cancelar&&ligado)cancelar();try{renderFila()}catch(e){}}},60000);
 $('btnSkip').addEventListener('click',async()=>{if(!ADMIN||!itemAtual)return;const r=itemAtual.t0+itemAtual.dur*1000-agora();if(r<=500)return;
  const k=await pegaChave();if(!k){avisoAdm('Este aparelho ainda não está liberado para mudar a rádio de todos. Mande o código dele para o Claude.',true);return}
@@ -1124,7 +1196,7 @@ async function geraRelatorio(){const n=+$('relDia').value,out=$('relOut');out.in
   return `<div class="relCli"><b>${esc(k)}</b><div class="relNums"><span><strong>${L.length}</strong>vezes no ar</span><span><strong>${on}</strong>aparelhos conectados</span><span><strong>${ouv}</strong>ouvindo na hora</span><span><strong>${pico}</strong>pico de ouvintes</span></div>${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório no WhatsApp do cliente</a>`:`<a class="zapCli" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório pelo WhatsApp</a>`}</div>`}).join('')+'<p class="note">Os números de audiência contam aparelhos com a rádio aberta no minuto do anúncio.</p>'}
 if(ADMIN)$('btnRel').addEventListener('click',geraRelatorio);
 
-const VERSAO=53;
+const VERSAO=54;
 function checaVersao(){fetch('index.html?nv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VERSAO=(\d+)/);if(m&&+m[1]>VERSAO){if(!ligado)location.reload();else novaVersao=true}}).catch(()=>{})}
 /* versão nova com a rádio tocando: atualiza sozinha numa vinheta (só com a tela aberta) e volta a tocar */
 let novaVersao=false;setInterval(()=>{if(!novaVersao||!ligado||document.hidden)return;try{const {it,off}=noAr(agora());if(it.k==='vin'&&off<3){sessionStorage.setItem('retomar','1');location.reload()}}catch(e){}},1000);

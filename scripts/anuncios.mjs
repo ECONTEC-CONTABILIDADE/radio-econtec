@@ -137,7 +137,16 @@ else console.log('Sem mudanças');
  let mudou=false;
  for(const ln of t.split('\n')){if(!ln.trim())continue;let m;try{m=JSON.parse(ln)}catch{continue}if(m.event!=='message')continue;
   try{const env=JSON.parse(m.message);let ok=false;for(const key of keys)if(await crypto.subtle.verify({name:'ECDSA',hash:'SHA-256'},key,Buffer.from(env.s,'base64'),new TextEncoder().encode(env.p))){ok=true;break}if(!ok)continue;
-   const o=JSON.parse(env.p),x=o&&o.pulo;if(!x||!x.id||av.pulos[x.id]||!(+x.ms>0&&+x.ms<20*6e4)||!(+x.ts>0))continue;av.pulos[String(x.id).slice(0,40)]={ts:+x.ts,ms:Math.round(+x.ms)};mudou=true}catch{}}
+   const o=JSON.parse(env.p),x=o&&o.pulo;
+   if(o&&o.post&&typeof o.post.id==='string'&&!(av.posts||{})[o.post.id]){const q=o.post;av.posts=av.posts||{};
+    if(['yt','live','mp3','mp4'].includes(q.tipo)&&+q.ini>0&&+q.dur>=0&&+q.dur<=6*3600){const pp={tipo:q.tipo,titulo:String(q.titulo||'').slice(0,80),ini:+q.ini,dur:+q.dur};
+     if(q.vid&&/^[\w-]{11}$/.test(q.vid))pp.vid=q.vid;else if(typeof q.url==='string'&&/^https:\/\//.test(q.url)){pp.url=q.url;
+      if(/^https:\/\/ntfy\.sh\/file\//.test(q.url)){try{const b=Buffer.from(await (await fetch(q.url)).arrayBuffer());if(b.length>1000&&b.length<16e6){fs.mkdirSync('midia',{recursive:true});const f='midia/'+q.id.replace(/[^\w-]/g,'')+'.'+(q.tipo==='mp4'?'mp4':'mp3');fs.writeFileSync(f,b);pp.url=f}}catch{}}}
+     if(pp.vid||pp.url){av.posts[q.id]=pp;mudou=true}}}
+   if(o&&o.fim&&typeof o.fim.id==='string'&&+o.fim.ts>0){av.fins=av.fins||{};if(!av.fins[o.fim.id]){av.fins[o.fim.id]=+o.fim.ts;mudou=true}}
+   if(!x||!x.id||av.pulos[x.id]||!(+x.ms>0&&+x.ms<20*6e4)||!(+x.ts>0))continue;av.pulos[String(x.id).slice(0,40)]={ts:+x.ts,ms:Math.round(+x.ms)};mudou=true}catch{}}
+ for(const [k,x] of Object.entries(av.posts||{}))if(Date.now()-x.ini>2*864e5){delete av.posts[k];if(av.fins)delete av.fins[k];mudou=true}
+ if(fs.existsSync('midia'))for(const f of fs.readdirSync('midia'))if(Date.now()-fs.statSync('midia/'+f).mtimeMs>7*864e5)fs.unlinkSync('midia/'+f);
  for(const [k,x] of Object.entries(av.pulos))if(Date.now()-x.ts>2*864e5){delete av.pulos[k];mudou=true}
  if(mudou||!fs.existsSync('aovivo.json')){fs.writeFileSync('aovivo.json',JSON.stringify(av)+'\n');console.log('ao vivo: pulos',Object.keys(av.pulos).length)}
 }
