@@ -122,6 +122,9 @@ else console.log('Sem mudanças');
  if(novos){fs.writeFileSync('cadastros.json','[\n'+cad.map(c=>' '+JSON.stringify(c)).join(',\n')+'\n]\n');console.log('cadastros novos',novos)}
 }
 
+// nome limpo (sem emoji) e "Para Fulano" escrito no nome vira oferecimento — igual ao index.html
+const limpaN=s=>String(s||'').replace(/[^\p{L}\p{N} ,'.!?-]/gu,' ').trim().replace(/\s+/g,' ');
+const quemPara=p=>{let nome=limpaN(p.nome),para=limpaN(p.para);const m=!para&&nome.match(/^(?:para|pra)\s+(.+)$/i);if(m){para=m[1];nome='Ouvinte'}if(!nome)nome='Ouvinte';return {nome,para}};
 // Nome do ouvinte na voz da locutora (Francisca): "Esse pedido é do ouvinte especial Maria!" gerado sozinho quando chega o pedido
 {
  const {execFileSync}=await import('node:child_process');
@@ -130,8 +133,8 @@ else console.log('Sem mudanças');
  fs.mkdirSync('v/pn',{recursive:true});let mudou=false;const agora=Date.now();
  let peds=[];for(const f of fs.existsSync('pedidos')?fs.readdirSync('pedidos'):[]){try{peds=peds.concat(JSON.parse(fs.readFileSync('pedidos/'+f,'utf8')))}catch{}}
  for(const p of peds){
-  if(!p||agora-p.ts>6*36e5)continue;const nome=String(p.nome||'').trim().replace(/\s+/g,' ');
-  const OK=/^[\p{L}][\p{L}\p{N} ,'.!?-]{0,59}$/u,para=String(p.para||'').trim().replace(/\s+/g,' ');
+  if(!p||agora-p.ts>6*36e5)continue;const {nome,para}=quemPara(p);
+  const OK=/^[\p{L}][\p{L}\p{N} ,'.!?-]{0,59}$/u;
   if(para&&!OK.test(para))continue;
   if(!nome||(!para&&/^ouvinte$/i.test(nome))||!OK.test(nome))continue;const dito=pronuncia(tituloNome(nome.replace(/[!?.,\s]+$/,''))),ditoP=para?pronuncia(tituloNome(para.replace(/[!?.,\s]+$/,''))):'';
   const par=p.tr&&p.tr.parecida?1:0,k=fnv(nome.toLowerCase()+'|'+par+(para?'|'+para.toLowerCase():'')),f='v/pn/'+k+'.mp3';

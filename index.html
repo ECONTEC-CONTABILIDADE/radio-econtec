@@ -560,7 +560,7 @@ const _q=location.search+location.hash;
 /* Administrador só pelo link de admin (?admin). O link de ouvinte é sempre ouvinte. */
 try{localStorage.removeItem('radioEcontec.admin')}catch(e){}
 const ADMIN=/[?&#]admin\b/.test(_q);
-if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 57</span>')}
+if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 58</span>')}
 const CLI_PADRAO=[
  {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'img/logo-econtec.png',zap:ZAP_ECONTEC},
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
@@ -710,6 +710,8 @@ const musPronto=carregaMus().finally(()=>{musOk=true});setInterval(carregaMus,30
 const esperaMus=()=>musOk?null:Promise.race([musPronto,new Promise(r=>setTimeout(r,4000))]);
 const DIA=864e5,FUSO=3*36e5; /* horário de Brasília */
 function rng(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const limpaN=s=>String(s||'').replace(/[^\p{L}\p{N} ,'.!?-]/gu,' ').trim().replace(/\s+/g,' ');
+const quemPara=p=>{let nome=limpaN(p.nome),para=limpaN(p.para);const m=!para&&nome.match(/^(?:para|pra)\s+(.+)$/i);if(m){para=m[1];nome='Ouvinte'}if(!nome)nome='Ouvinte';return {nome,para}};
 let AUD_GER={};const fnvH=t=>{let h=0x811c9dc5;for(const ch of new TextEncoder().encode(t)){h^=ch;h=Math.imul(h,0x01000193)>>>0}return h.toString(16).padStart(8,'0')};
 const audGer=c=>AUD_GER[fnvH(c.nome+'|'+c.txt)]||null;
 function carregaAudios(){fetch('audios.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(m=>{if(!m||JSON.stringify(m)===JSON.stringify(AUD_GER))return;AUD_GER=m;cacheGrade={};try{renderFila();renderCli();renderProxAn()}catch(e){}}).catch(()=>{})}
@@ -717,6 +719,7 @@ carregaAudios();setInterval(carregaAudios,90000);
 let NOMES_VOZ={};function carregaNomesVoz(){fetch('nomes-voz.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(m=>{if(m)NOMES_VOZ=m}).catch(()=>{})}carregaNomesVoz();setInterval(carregaNomesVoz,20000);
 // A gravação com o nome do ouvinte pode chegar segundos antes do pedido tocar: procura direto no GitHub (chega antes do site) e no site, até a hora limite
 if(/[?&]teste\b/.test(location.search))window.__ped=p=>{addPed(p);cacheGrade={};renderFila();const t=quandoToca(p.id);return t?t-agora():null};
+if(/[?&]teste\b/.test(location.search))window.__qp=(p,par)=>{const q=quemPara(p);return fnvH(q.nome.toLowerCase()+'|'+(par?1:0)+(q.para?'|'+q.para.toLowerCase():''))};
 if(/[?&]teste\b/.test(location.search))window.__vn=(kv,ms)=>{ligado=true;NOMES_VOZ={};return vozNome(kv,agora()+ms)};
 async function vozNome(kv,limite){const cands=['https://raw.githubusercontent.com/ECONTEC-CONTABILIDADE/radio-econtec/Econtec_Radio/v/pn/'+kv+'.mp3','v/pn/'+kv+'.mp3'];
  while(ligado){if(NOMES_VOZ[kv])return NOMES_VOZ[kv].url;
@@ -832,8 +835,8 @@ async function tocaItem(it,off){
  if(it.k==='adC'){const stop=fundo();if(it.au)await tocarArquivo({url:it.au,ini:off,ref:it.t0,silencioso:true,ate:it.t0+it.dur*1000+400},pr);else await espera(it.t0+it.dur*1000-agora(),false);stop();return}
  if(it.k==='pedido'){const p=it.p,tr=p.tr;
   if(off<PED_INTRO-1){mostra(p.para?(/^ouvinte$/i.test(p.nome)?`Para ${p.para}`:`${p.nome} oferece para ${p.para}`):`Obrigado, ${p.nome}!`,tr.titulo,p.para?'Com muito carinho, aqui na Rádio ECONTEC':'Em nome da ECONTEC Contabilidade e de todos os nossos clientes','img/e-econtec.png','');const stop=fundo();
-   const kv=fnvH(String(p.nome).trim().replace(/\s+/g,' ').toLowerCase()+'|'+(tr.parecida?1:0)+(p.para?'|'+p.para.toLowerCase():''));
-   const comeco=off<2,uNome=comeco&&(p.para||!/^ouvinte$/i.test(String(p.nome).trim()))?await vozNome(kv,it.t0+6000):null;
+   const qp=quemPara(p),kv=fnvH(qp.nome.toLowerCase()+'|'+(tr.parecida?1:0)+(qp.para?'|'+qp.para.toLowerCase():''));
+   const comeco=off<2,uNome=comeco&&(qp.para||!/^ouvinte$/i.test(qp.nome))?await vozNome(kv,it.t0+6000):null;
    if(uNome){await tocarArquivo({url:uNome,silencioso:true},()=>{})}
    else if(comeco&&ligado){const ni=idxNome(p.nome);
     const fim=tr.parecida?'v/f-parecida.mp3':'v/f-obrigada.mp3';
@@ -1210,7 +1213,7 @@ async function geraRelatorio(){const n=+$('relDia').value,out=$('relOut');out.in
   return `<div class="relCli"><b>${esc(k)}</b><div class="relNums"><span><strong>${L.length}</strong>vezes no ar</span><span><strong>${on}</strong>aparelhos conectados</span><span><strong>${ouv}</strong>ouvindo na hora</span><span><strong>${pico}</strong>pico de ouvintes</span></div>${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório no WhatsApp do cliente</a>`:`<a class="zapCli" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório pelo WhatsApp</a>`}</div>`}).join('')+'<p class="note">Os números de audiência contam aparelhos com a rádio aberta no minuto do anúncio.</p>'}
 if(ADMIN)$('btnRel').addEventListener('click',geraRelatorio);
 
-const VERSAO=57;
+const VERSAO=58;
 function checaVersao(){fetch('index.html?nv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VERSAO=(\d+)/);if(m&&+m[1]>VERSAO){if(!ligado)location.reload();else novaVersao=true}}).catch(()=>{})}
 /* versão nova com a rádio tocando: atualiza sozinha numa vinheta (só com a tela aberta) e volta a tocar */
 let novaVersao=false;setInterval(()=>{if(!novaVersao||!ligado||document.hidden)return;try{const {it,off}=noAr(agora());if(it.k==='vin'&&off<3){sessionStorage.setItem('retomar','1');location.reload()}}catch(e){}},1000);
