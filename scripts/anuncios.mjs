@@ -129,3 +129,15 @@ else console.log('Sem mudanças');
  }
  if(mudou||!fs.existsSync('nomes-voz.json'))fs.writeFileSync('nomes-voz.json',JSON.stringify(mapa)+'\n');
 }
+
+// Ao vivo compartilhado: guarda no site os "Pular" do administrador (assinados), para quem entrar depois ouvir o mesmo ao vivo
+{
+ const t=await (await fetch('https://ntfy.sh/'+TOP+'-aovivo/json?poll=1&since=12h')).text();
+ let av={pulos:{}};try{av=JSON.parse(fs.readFileSync('aovivo.json','utf8'))}catch{}
+ let mudou=false;
+ for(const ln of t.split('\n')){if(!ln.trim())continue;let m;try{m=JSON.parse(ln)}catch{continue}if(m.event!=='message')continue;
+  try{const env=JSON.parse(m.message);let ok=false;for(const key of keys)if(await crypto.subtle.verify({name:'ECDSA',hash:'SHA-256'},key,Buffer.from(env.s,'base64'),new TextEncoder().encode(env.p))){ok=true;break}if(!ok)continue;
+   const o=JSON.parse(env.p),x=o&&o.pulo;if(!x||!x.id||av.pulos[x.id]||!(+x.ms>0&&+x.ms<20*6e4)||!(+x.ts>0))continue;av.pulos[String(x.id).slice(0,40)]={ts:+x.ts,ms:Math.round(+x.ms)};mudou=true}catch{}}
+ for(const [k,x] of Object.entries(av.pulos))if(Date.now()-x.ts>2*864e5){delete av.pulos[k];mudou=true}
+ if(mudou||!fs.existsSync('aovivo.json')){fs.writeFileSync('aovivo.json',JSON.stringify(av)+'\n');console.log('ao vivo: pulos',Object.keys(av.pulos).length)}
+}

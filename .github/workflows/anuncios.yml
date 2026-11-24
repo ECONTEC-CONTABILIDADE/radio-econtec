@@ -38,7 +38,7 @@ jobs:
             git add -A
             if ! git diff --cached --quiet; then
               URG=0
-              git diff --cached --name-only | grep -qE '^(musicas|clientes|cadastros|homenagem/|audios|nomes-voz|v/a/|v/pn/|pedidos/)' && URG=1
+              git diff --cached --name-only | grep -qE '^(aovivo|musicas|clientes|cadastros|homenagem/|audios|nomes-voz|v/a/|v/pn/|pedidos/)' && URG=1
               if [ "$URG" = 1 ] || [ $(( $(date +%s) - ULT )) -ge 600 ]; then
                 git commit -qm "Anúncios e pedidos atualizados" && \
                 git push -q origin HEAD:Econtec_Radio && ULT=$(date +%s) && \

@@ -377,7 +377,7 @@ body:not(.admin) #fila li:nth-child(n+6),body:not(.admin) #tocadas li:nth-child(
       <div class="bar"><b id="prog"></b></div>
       <div class="ctl">
         <button id="btnPlay">Ouvir ao vivo</button>
-        <button class="ghost adm" id="btnSkip" disabled>Pular (só admin)</button>
+        <button class="ghost adm" id="btnSkip" disabled>⏭ Pular (muda para todos)</button>
         <label class="vol">Volume <input id="vol" type="range" min="0" max="1" step="0.05" value="0.8" style="width:110px"></label>
       </div>
     </section>
@@ -548,7 +548,7 @@ const _q=location.search+location.hash;
 /* Administrador só pelo link de admin (?admin). O link de ouvinte é sempre ouvinte. */
 try{localStorage.removeItem('radioEcontec.admin')}catch(e){}
 const ADMIN=/[?&#]admin\b/.test(_q);
-if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 52</span>')}
+if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 53</span>')}
 const CLI_PADRAO=[
  {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'img/logo-econtec.png',zap:ZAP_ECONTEC},
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
@@ -671,7 +671,7 @@ function falar(txt,onProg){
 
 /* ---------- Programação AO VIVO: a mesma grade para todos, calculada pelo relógio ---------- */
 let ultimoId=null,itemAtual=null,ajuste=0;
-let relOff=0;const agora=()=>Date.now()+ajuste+relOff;
+let relOff=0,PUL=0;const agora=()=>Date.now()+ajuste+relOff+PUL;
 /* relógio do servidor: todos os aparelhos usam a mesma hora, não a do celular/computador */
 async function sincRelogio(){try{let ant=null;for(let i=0;i<14;i++){const t0=Date.now();const r=await fetch('manifest.webmanifest?t='+t0+i,{method:'HEAD',cache:'no-store'});const t1=Date.now();const d=Date.parse(r.headers.get('date'));if(!d)return;
   if(ant&&d>ant.d){const meio=(ant.t1+t0)/2;relOff=d-meio;store.set('relOff',relOff);return}ant={d,t1};if(i===0)relOff=d+500-(t0+t1)/2;await new Promise(z=>setTimeout(z,90))}}catch(e){}}
@@ -679,7 +679,7 @@ relOff=+store.get('relOff',0)||0;sincRelogio();setInterval(sincRelogio,10*6e4);
 if(/[?&]teste\b/.test(location.search))window.__t={idYT,grade:d=>grade(d),an:L=>aplicaAn(L,anTs),get anuncios(){return anuncios}};
 if(/[?&]teste\b/.test(location.search))window.__aj=v=>{ajuste=v;if(cancelar)cancelar();try{avisoHom()}catch(e){}};
 if(/[?&]teste\b/.test(location.search))setTimeout(()=>{window.__fe=falaEmendada},0);
-if(/[?&]teste\b/.test(location.search))window.__noAr=()=>{const n=noAr(agora());return n.it.k+':'+(n.it.c?n.it.c.nome:'')+':'+n.off.toFixed(1)};
+if(/[?&]teste\b/.test(location.search))window.__noAr=()=>{const n=noAr(agora());return n.it.k+':'+(n.it.c?n.it.c.nome:'')+':'+n.off.toFixed(1)+':'+(n.it.tr?n.it.tr.titulo:'')+' PUL='+PUL};
 if(/[?&]teste\b/.test(location.search))window.__prox=k=>{const ms=agora(),d=Math.floor((ms-FUSO)/DIA);const it=gradeViva(d).g.concat(gradeViva(d+1).g).find(i=>i.k===k&&i.t0>ms);return it?it.t0-ms:null};
 const DUR={"Be6ROem9ms8": 207, "rJnEBfvbUTg": 255, "uWX0O8ATY3k": 159, "oTREAvZbmME": 218, "v4k6JgC7UVA": 233, "UNNOHk60ojk": 205, "OPf0YbXqDm0": 270, "ZbZSe6N_BXs": 241, "hT_nvWreIhg": 283, "DUT5rEU6pqM": 218, "vx2u5uUu3DE": 267, "1w7OgIMMRc4": 303, "xFrGuyw1V8s": 233, "Gs069dndIYk": 215, "nqAvFx3NxUM": 229, "eCyMh-mZ1B0": 210, "ILADw1aretk": 159, "CKtHg1jBREY": 174, "2_xBCeBmaS8": 154, "2Q6eFRuYa2w": 210, "mQr7XemLs8s": 140, "l0SDN7W5lZg": 178, "14C28JSO-sg": 175, "Z1ZKaR-9Kt4": 204, "mvWXaz0Gtbo": 247, "MxwZ66L9RQI": 239, "rYKOuKaWEjg": 189, "VfjFppJSvD4": 152, "JybMBMTHWP8": 174, "KY_6FYsX6wo": 178, "vzEIwc0rG8Y": 180, "DyQ3McP4Two": 179, "cApl782ciSU": 177, "ICS6uKC93w0": 198, "ff3r10rCKFs": 183, "7fMttPxpcmg": 157, "rTJSWmgbVwA": 196, "Jzl_nrTkfIM": 175, "A8iwQscRxDY": 211, "WcTRQXtXJPs": 241, "69JAoslGYI8": 201, "DURGfr1oh30": 366, "mr09lDl_Tfk": 180, "9l8ghAxFCb8": 246, "DxqyyNHFN8Y": 194, "NRXBue4J50s": 268, "zsFSHg2hxbc": 340, "TPm6YnDNyj0": 195, "H1DEczvTjgE": 161, "XXO8a0465Bc": 217, "l205wwjGzz8": 216, "saalFn025fU": 253, "VbJhN-3AVl0": 222, "cDVR_Tf56pE": 201, "cOchidcyv9Q": 254, "fd3PJfv7SaY": 160, "S_SXl-ETXRI": 232, "6d6fIM54Vkk": 267, "h8PQQvNn6aI": 221, "1eWZ88eRFQs": 405, "MYk1vpmLyoY": 206, "MWh78SM5G7k": 283, "j9UbE1slI-Q": 164, "Pmt01TGsGGA": 247, "JzByVhWju88": 366, "JC63-PQ-O1w": 192, "z4j9BhlmSSU": 304, "W62-ZG9tPpI": 263, "F1yNwxLW1Cw": 231, "xzL7K7HD5tw": 218, "LfCDkut_j9M": 291, "dDQZrIb4kFw": 242, "kQnqwXY4VYQ": 224, "CuyTC8FLICY": 233, "7CzE8hUfVTY": 284, "g8psa0UBZKA": 201, "4zJ4i6Az2Ck": 165, "gUpGTRR4Tt4": 234, "PcBgfuB64yA": 252, "DjPtwYunRq4": 293, "tI9kSZgMLsc": 235, "trFdRPqjwyk": 254, "cvznde5nc_s": 180, "8Pilhg_dIQs": 200, "sQzT4VObtZs": 312, "nXLyy2ALJE4": 258, "xNo2kP7HJyw": 298, "8cS9Zmm5FiU": 251, "CgMC2VELSK0": 257, "6BaCNYU2YR0": 286, "2wF9mHPb21Y": 216, "JGwWNGJdvx8": 264, "TUVcZfQe-Kw": 231, "nfWlot6h_JM": 242, "rYEDA3JcQqw": 234, "dvgZkm1xWPE": 243, "H5v3kku4y6Q": 166, "4NRXx6U8ABQ": 263, "Zi_XLOBDo_Y": 296, "CevxZvSJLk8": 270, "bo_efYhYU2A": 217, "G7KNmW9a75Y": 202, "7wtfhZwyrcc": 217, "fJ9rUzIMcZQ": 360, "YlUKcNNmywk": 322, "6hzrDeceEKc": 280, "E54UIjXTw2E": 296, "kXYiU_JCYtU": 188, "IcrbM1l_BoI": 273, "JVpTp8IHdEg": 265, "ebXbLfLACGM": 234, "JRfuAukYTKg": 246, "9Sc-ir2UwGU": 223, "5NV6Rdv1a3I": 249, "eH3giaIzONA": 315, "fNFzfwLM72c": 250, "HNBCVM4KbUM": 193, "djV11Xbc914": 244, "WkYqQctOi9g": 205, "s1z2GHVvmRA": 290, "ecFJWZVVBZ4": 236, "irRKDM7sV08": 264, "HrpBSGaM_tc": 213, "aaLYhwadeE0": 213, "PLq2A_GJbDw": 220, "18C7NWFFxtQ": 210, "-UUe7g8-E0k": 192, "9Vt4XguN2-A": 155, "-ovQ3j_LG_c": 197, "0kiCQLdfgVg": 194, "qqEsIfVfrAg": 185, "vZcjAmfkemk": 198, "Muo3F10dAcw": 190, "v1zKuQQKCkg": 184, "tricJyqIJro": 182, "WuiNLPjTc_U": 146, "lxcpH6kvnmg": 252, "6eeIb4byI-A": 166, "L5JjSzX8Rc0": 177, "dl0Dp_FRMo4": 191, "ZIiQ1jMqhVM": 203, "Z5pWz_OR5Sg": 251, "dWpGsK8Md28": 210, "5IXPnPnoYns": 227, "uEtGTq92Cmk": 165, "r_d4ACuJysY": 153, "2FNiAPNK4Ig": 197, "8fN0xZd0g0E": 198, "eAIivxKZYZw": 192, "h_aRZwzjYxs": 191, "H_BClfupJtU": 176, "qTVbdTffP5k": 190, "FCMyTR1SJM8": 208, "tX7-EVaP_RY": 115, "nVfkHyglwS4": 212, "lBDDMrUCz1A": 165, "6RTg7ovfaLk": 181, "l2-aGJe8W4s": 188, "pRgCcgbjVDA": 163, "QTWYceBZuWw": 200, "BkpqU3gdjlw": 193, "O8qxqag_wgQ": 191, "tyJ-VnB8X20": 208, "VenplJMHYXY": 209, "BbITTjCAzT8": 210, "MLmQKEfknHg": 207, "AoN_js1CWXs": 238, "Jq4UXs-d4y4": 216, "kAWOczWcOCQ": 254, "yKf3vUpQ5R4": 191, "MKKOltqKF_o": 266, "pb-M2YOCXhc": 219, "MyFhjZZK79A": 209, "gXVPbXmV1I4": 197, "qR0ILZ7Y7Nk": 176, "Dx0WFJNRraI": 254, "GINyyLevweQ": 228, "b5q_2DS4C0o": 223, "yrBytCGH7sA": 170, "acfpoa3zsyE": 185, "3vYeQLJ2as4": 178, "pHhe-etuurE": 201, "bHT5GvYi6io": 168, "l20ieVOux_E": 165, "ZL2k1eon6fU": 180, "vuFTwfhHTcs": 144, "g61RF3IrD1Q": 172, "PvM_YAabhkk": 315, "g-FIuQFDAxI": 197, "yvsIGghXBNI": 178, "5FHkTfpU678": 194, "tQQRO2xgRBc": 246, "fp6p7-yxNeQ": 152, "cvdpUHnr_tY": 145, "s49rOuVY3s0": 138, "oo8gYKiMT9Y": 226, "VhoNChCLupg": 159, "4d2zANSugdQ": 236, "1F2n4qM1tRI": 195, "fPWSm5wZ8_M": 161, "QWS-yE-5dDc": 170, "0LrIOiJZB-4": 172, "RbEAo1ZCQ_4": 207, "YnS1dQAnyTk": 197, "YwvrtXaBvmQ": 196, "Qj-qS4aV0UY": 219, "Zl6X0BLV6bk": 200, "FWp3UQy-dqs": 197, "9tyOlgwEHJ0": 270, "xAE9OH258AM": 225, "T3Y6RRSDm4o": 317, "Tv-H2t6jSzs": 203, "qmKpwRr5Lj0": 246, "NPVrxWaCQXQ": 179, "CgkLC1mcCE0": 198, "MLJh6dCQejY": 178, "iYjz1Ap1VvU": 166, "n5wxZ_OBUXk": 195, "skGuNpYDzmc": 177, "9vrpUH4IPoA": 157, "LVjed2UKUWk": 201, "hjz6-opHCBc": 227, "H-hD0hZ9XOI": 228, "q5O5wapgQVQ": 191, "s8JQIyPWK8U": 220, "MbCd3Fs8Rok": 309, "jJUFi4aXEFA": 212, "oZgYN4qfpl4": 175, "PmeKh6jv0pc": 235, "X_xcYrECLks": 170, "hFCjGiawJi4": 195, "xxcJM0wYZGE": 153, "AevjWsReCtM": 153, "DWH349RfD7E": 201, "RNVLCr-Y7rQ": 212, "wW9Ob_xaKvY": 217, "gqFDr_jz09I": 174, "a-kSUQBKgSM": 195, "0J8nAzl2bv4": 181, "FnGfgb_YNE8": 275, "sAGvJR7eQ28": 302, "GwcvcTVbji0": 246, "Tr7mwAGTdK4": 191, "eKXKe7tFFHY": 239, "46w_wj1hXac": 191, "m96wah3ACi8": 216, "MxTf_K2vghM": 291, "FFinjdTI9FQ": 187, "N6hv3rcHQVs": 125, "CF8L6ZYIgPo": 118, "5VzfLRl_C1w": 147, "WqCYnnPDDfw": 249, "YVJijQIualA": 216, "OZEzHtEBe_Y": 178, "Ibi1ayJo93c": 310, "9Sk7RQtSl5g": 254, "QX8JCGTAoIw": 236, "UkM0EKE74NY": 220, "_S5VBOvr96c": 316, "BM-mnklMWCQ": 179, "ciSNk6Ofhs8": 206, "G3SHN7pmDHE": 301, "pp22cXMtAxg": 244, "2CPHbEIC6EM": 209, "6udKuPfczWM": 230, "HKQpGreFbQE": 266, "dQa8qlDPEVM": 239, "w44L_4nuB_I": 296, "cNmsncBEfdI": 216, "1ptHDftcCw4": 219, "-aAzuT84D78": 303, "qBBwXuEV4jA": 244, "PAUlCK8kuGU": 266, "cf_G9ZKRknY": 407, "b38vPWHCprQ": 191, "R53A721FcLE": 199, "M0MzT4IrDnY": 247, "dc6oADkbQSw": 293, "4DFBOuQQi1s": 306, "1W1peekJ98s": 290, "K9wXc0FWITM": 310, "SdkWBHLHTgg": 293, "u2FOGNSJfX8": 410, "wUbtaNooOJY": 276, "SMJAqPhkUj4": 418, "5tr_qRryQDg": 269, "Tqdi6BZUWr4": 300, "AKhEQ7zkdLM": 261, "Hi9y53ymQO4": 275, "8-NENGO7R1c": 312, "RKEtbWpraTo": 278, "lp-EO5I60KA": 290, "2Vv-BfVoq4g": 282, "orJSJGHjBLI": 241, "Il0S8BoucSA": 238, "y83x7MgzWOA": 223, "lY5V4hSLWY8": 211, "mrV8kK5t0V8": 213, "ekr2nIex040": 174, "fLexgOxsZu0": 200, "kPa7bsKwL-c": 253, "k2qgadSvNyU": 225, "a9cyG_yfh1k": 187, "suAR1PYFNYA": 189, "BC19kwABFwc": 263, "9HDEHj2yzew": 244, "XXYlFuWEuKI": 249, "YD9fxGkw5Pg": 232, "2fDzCWNS3ig": 234, "Mx92lTYxrJQ": 259, "ZGDGdRIxvd0": 200, "RB-RcX5DS5A": 266, "QtXby3twMmI": 316, "1G4isv_Fylg": 261, "yKNxeF4KMsY": 273, "VPRjCeoBqrI": 254, "U3ASj1L6_sY": 332, "hLQl3WQQoQ0": 285, "YQHsXMglC9A": 367, "WjqYTpE6Qdg": 240, "09R8_2nJtjg": 302, "SlPhMPnQ58k": 196, "aJOTlE1K90k": 271, "nIjVuRTm-dc": 269, "KRaWnd3LJfs": 280, "fcnDmrtj6Sk": 241, "weRHyjj34ZE": 197, "pRpeEdMmmQ0": 211, "vMLk_T0PPbk": 234, "6Mgqbai3fKo": 200, "MpW7HDYOCBU": 208, "v3SQTOZO36E": 245, "PL53fH-x0rw": 263, "NK88geNsUmQ": 272, "2FrCTr0crAo": 246, "3Q5ZnWOiRTY": 238, "pdDRHbYFBNQ": 215, "TynFsTZlGDU": 249, "Z1I_hdrRZxo": 215, "LBZiqoPojSQ": 250, "ApcIG_O3Czo": 363, "jp288zfsNTI": 224, "oXBWG4owmvE": 281, "NFADwNLNSd4": 206, "UueCjRrQLM4": 281, "hZg1r7BOXVA": 158, "y68mlZ6X2v0": 177, "bvIMBVBRpJU": 303},DV={'v/vinheta-numeros.mp3':8.5,'v/vinheta-servicos.mp3':9.4,'v/anuncio-econtec.mp3':17.5,'v/f-padaria.mp3':8.7,'v/f-autopecas.mp3':8.3},HORA=16,PADRAO=230;
 const GRADE=acervo.filter(x=>x.tipo==='yt'&&x.estilo!=='Eletrônica');
@@ -765,7 +765,7 @@ function avisoHom(){const el=$('homAviso');if(!el)return;const ms=agora(),d=Math
  else el.innerHTML='';el.hidden=!el.innerHTML}
 carregaHomenagem();setInterval(carregaHomenagem,5*6e4);
 carregaPedidosSite().then(buscaPedidos);setInterval(()=>{if(!document.hidden||ligado)buscaPedidos()},12000);
-const hhmm=ms=>{const x=new Date(ms-FUSO);return String(x.getUTCHours()).padStart(2,'0')+':'+String(x.getUTCMinutes()).padStart(2,'0')};
+const hhmm=ms=>{const x=new Date(ms-PUL-FUSO);return String(x.getUTCHours()).padStart(2,'0')+':'+String(x.getUTCMinutes()).padStart(2,'0')};
 const capa=tr=>tr&&tr.tipo==='yt'&&/^[\w-]{11}$/.test(tr.id)?`https://i.ytimg.com/vi/${tr.id}/hqdefault.jpg`:'';
 function descreve(it){
  if(it.hom&&it.k==='vin')return['🏆 Homenagem do dia','Especial '+it.hom.artista,'O artista mais pedido hoje na Rádio ECONTEC','img/e-econtec.png',''];
@@ -800,7 +800,7 @@ async function tocaItem(it,off){
  const [k,t,w,l,z]=descreve(it);mostra(k,t,w,l,z);const pr=x=>prog(x);prog(off/it.dur);
  const resto=()=>it.t0+it.dur*1000-agora();
  if(it.k==='vin'||it.k==='adE'){try{const {g,i}=noAr(it.t0+50);const nx=g[i+1];if(nx&&nx.k==='musica'&&nx.tr.tipo==='yt'&&yt&&yt.cueVideoById&&!modoLivre)yt.cueVideoById(nx.tr.id)}catch(e){}await tocarArquivo({url:it.k==='adE'?'v/anuncio-econtec.mp3':it.url,ini:off,ref:it.t0,ate:it.t0+it.dur*1000+400},pr);return}
- if(it.k==='hora'){const stop=fundo();const [h,m]=horaFalada(it.t0+11000);
+ if(it.k==='hora'){const stop=fundo();const [h,m]=horaFalada(it.t0-PUL+11000);
   if(off<10.5)await tocarArquivo({url:'v/f-hora.mp3',ini:off,silencioso:true},pr);
   if(ligado&&resto()>1500){await tocarArquivo({url:h,silencioso:true},()=>{});if(ligado)await tocarArquivo({url:m,silencioso:true},()=>{})}
   stop();return}
@@ -864,7 +864,25 @@ $('btnPlay').addEventListener('click',async()=>{
   ligado=true;document.body.classList.add('tocando');ctx.resume();ultimoId=null;$('btnPlay').textContent='Pausar';avisoSom(false);$('btnSkip').disabled=false;$('lamp').classList.add('live');$('lampTxt').textContent='Ao vivo';loop()}
  else{ligado=false;pausouManual=true;document.body.classList.remove('tocando');if(cancelar)cancelar();$('btnPlay').textContent='Ouvir ao vivo';$('btnSkip').disabled=true;$('lamp').classList.remove('live');$('lampTxt').textContent='Ao vivo (toque para ouvir)'}
 });
-$('btnSkip').addEventListener('click',()=>{if(!ADMIN)return;if(itemAtual){const r=itemAtual.t0+itemAtual.dur*1000-agora();if(r>0)ajuste+=r+100}if(cancelar)cancelar()});
+/* AO VIVO COMPARTILHADO: o "Pular" do administrador vale para TODOS os ouvintes na hora (mensagem assinada no ntfy + aovivo.json do plantão) */
+const AV_TOP=AN_TOP+'-aovivo';let PULOS={};
+const diaRadio=ms=>Math.floor((ms-FUSO-4*36e5)/DIA);
+function calcPul(){const d=diaRadio(Date.now()+relOff);let t=0;for(const k in PULOS){const x=PULOS[k];if(diaRadio(x.ts)===d)t+=x.ms}if(t!==PUL){PUL=t;return true}return false}
+function juntaPulos(o){let novo=false;for(const [id,x] of Object.entries(o||{})){if(!PULOS[id]&&x&&+x.ms>0&&+x.ms<20*6e4&&+x.ts>0){PULOS[id]={ts:+x.ts,ms:Math.round(+x.ms)};novo=true}}
+ if(novo&&calcPul()){if(cancelar&&ligado)cancelar();try{renderFila()}catch(e){}}}
+async function verificaEnv(env){try{if(!env||typeof env.p!=='string'||typeof env.s!=='string')return null;
+ anPubKey=anPubKey||await Promise.all(AN_PUBS.map(k=>crypto.subtle.importKey('jwk',{kty:'EC',crv:'P-256',x:k.x,y:k.y},AN_EC,false,['verify'])));
+ for(const k of anPubKey)if(await crypto.subtle.verify({name:'ECDSA',hash:'SHA-256'},k,b64d(env.s),new TextEncoder().encode(env.p)))return JSON.parse(env.p);return null}catch(e){return null}}
+async function msgPulo(txt){try{const env=JSON.parse(txt);const o=await verificaEnv(env);if(o&&o.pulo&&o.pulo.id)juntaPulos({[o.pulo.id]:o.pulo})}catch(e){}}
+async function buscaPulos(){try{const j=await fetch('aovivo.json',{cache:'no-store'}).then(r=>r.ok?r.json():null);if(j&&j.pulos)juntaPulos(j.pulos)}catch(e){}
+ try{if(!AN_PUBS.length)await carregaChaves();const t=await fetch('https://ntfy.sh/'+AV_TOP+'/json?poll=1&since=12h',{cache:'no-store'}).then(r=>r.text());for(const ln of t.split('\n')){if(!ln.trim())continue;let m;try{m=JSON.parse(ln)}catch(e){continue}if(m.event==='message')await msgPulo(m.message)}}catch(e){}}
+function ouveAoVivo(){try{const es=new EventSource('https://ntfy.sh/'+AV_TOP+','+AN_TOP+'/sse');es.onmessage=e=>{try{const m=JSON.parse(e.data);if(m.event!=='message')return;if(m.topic===AV_TOP)msgPulo(m.message);else if(m.topic===AN_TOP)buscaNtfy()}catch(x){}}}catch(e){}}
+buscaPulos();ouveAoVivo();setInterval(buscaPulos,60000);setInterval(()=>{if(calcPul()){if(cancelar&&ligado)cancelar();try{renderFila()}catch(e){}}},60000);
+$('btnSkip').addEventListener('click',async()=>{if(!ADMIN||!itemAtual)return;const r=itemAtual.t0+itemAtual.dur*1000-agora();if(r<=500)return;
+ const k=await pegaChave();if(!k){avisoAdm('Este aparelho ainda não está liberado para mudar a rádio de todos. Mande o código dele para o Claude.',true);return}
+ const pulo={id:Date.now().toString(36)+Math.random().toString(36).slice(2,7),ts:Date.now()+relOff,ms:Math.round(r+150)};const p=JSON.stringify({pulo});
+ const sg=b64e(await crypto.subtle.sign({name:'ECDSA',hash:'SHA-256'},k,new TextEncoder().encode(p)));juntaPulos({[pulo.id]:pulo});
+ try{await fetch('https://ntfy.sh/'+AV_TOP,{method:'POST',body:JSON.stringify({p,s:sg})})}catch(e){avisoAdm('Não consegui avisar os ouvintes (sem internet?). Tente de novo.',true)}});
 $('vol').addEventListener('input',e=>{try{yt&&yt.setVolume(Math.round(+e.target.value*100))}catch(x){}if(volArq)volArq.volume=+e.target.value;if(master)master.gain.setTargetAtTime(+e.target.value,ctx.currentTime,.05)});
 
 /* ---------- Robô de pedidos ---------- */
@@ -1106,7 +1124,7 @@ async function geraRelatorio(){const n=+$('relDia').value,out=$('relOut');out.in
   return `<div class="relCli"><b>${esc(k)}</b><div class="relNums"><span><strong>${L.length}</strong>vezes no ar</span><span><strong>${on}</strong>aparelhos conectados</span><span><strong>${ouv}</strong>ouvindo na hora</span><span><strong>${pico}</strong>pico de ouvintes</span></div>${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório no WhatsApp do cliente</a>`:`<a class="zapCli" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório pelo WhatsApp</a>`}</div>`}).join('')+'<p class="note">Os números de audiência contam aparelhos com a rádio aberta no minuto do anúncio.</p>'}
 if(ADMIN)$('btnRel').addEventListener('click',geraRelatorio);
 
-const VERSAO=52;
+const VERSAO=53;
 function checaVersao(){fetch('index.html?nv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VERSAO=(\d+)/);if(m&&+m[1]>VERSAO){if(!ligado)location.reload();else novaVersao=true}}).catch(()=>{})}
 /* versão nova com a rádio tocando: atualiza sozinha numa vinheta (só com a tela aberta) e volta a tocar */
 let novaVersao=false;setInterval(()=>{if(!novaVersao||!ligado||document.hidden)return;try{const {it,off}=noAr(agora());if(it.k==='vin'&&off<3){sessionStorage.setItem('retomar','1');location.reload()}}catch(e){}},1000);
