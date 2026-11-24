@@ -317,6 +317,32 @@ body:not([data-aba="inicio"]) main .wrap{min-height:60vh}
  header.band{position:relative!important}
 }
 @media(min-width:861px){.tabbar{left:50%!important;right:auto!important;transform:translateX(-50%);width:min(760px,100%);border-radius:22px 22px 0 0;border:1px solid #f0c14b44;border-bottom:0}.tabbar .abaBtn{font-size:13px!important;min-height:58px}.tabbar .abaIco{font-size:23px}}
+
+/* Ouvinte: tela simples e grande (pedido 24/11: muitos ouvintes idosos) */
+.pedLbl{display:block;font-weight:800;font-size:17px;color:#ffd978;margin:4px 0 -2px}.pedDica{margin:2px 0 -4px;color:#cdb8b8;font-size:15px}
+body:not(.admin){font-size:18px}
+body:not(.admin) main>.wrap>.grid{order:-1}
+body:not(.admin) .tabbar{grid-template-columns:repeat(3,1fr)!important}
+body:not(.admin) .tabbar .abaBtn{font-size:15px;min-height:66px;gap:4px}
+body:not(.admin) .tabbar .abaIco{font-size:28px;line-height:1}
+body:not(.admin) .menu.abasTopo .abaBtn{font-size:18px;padding:12px 24px}
+body:not(.admin) #btnPlay{min-height:78px;font-size:25px;padding:0 36px;width:100%;max-width:440px;justify-content:center}
+body:not(.admin) .ctl{flex-direction:column;align-items:center;gap:14px}
+body:not(.admin) .vol{font-size:17px}body:not(.admin) .vol input{width:180px!important;height:30px}
+body:not(.admin) #npTitle{font-size:28px}body:not(.admin) #npWho,body:not(.admin) #npKind{font-size:17px}
+body:not(.admin) .pedCard input{font-size:20px;min-height:62px}
+body:not(.admin) .pedCard h3{font-size:26px}
+body:not(.admin) #btnPed{font-size:23px;min-height:70px}
+body:not(.admin) .chip{font-size:18px;min-height:52px}
+body:not(.admin) .chat .msg{font-size:18px}
+body:not(.admin) .heroLogo img{max-width:150px}
+body:not(.admin) .hero h2{font-size:24px}
+body:not(.admin) .q li{font-size:17px}
+body:not(.admin) .zapCli,body:not(.admin) .heroPed{font-size:21px;min-height:64px}
+body:not(.admin) .note{font-size:16px}
+body:not(.admin) .chips{flex-wrap:wrap;overflow:visible}
+body:not(.admin) .hero .heroLogo,body:not(.admin) .hero .heroTag,body:not(.admin) .hero h2,body:not(.admin) .hero .heroTxt>p{display:none}
+body:not(.admin) #fila li:nth-child(n+5),body:not(.admin) #tocadas li:nth-child(n+6),body:not(.admin) #programacao>.note{display:none}
 </style>
 </head>
 <body>
@@ -359,11 +385,13 @@ body:not([data-aba="inicio"]) main .wrap{min-height:60vh}
     <section class="card pedCard" id="pedir" data-ab="pedir" data-aa="pedir" aria-label="Pedidos">
       <h3>Peça sua música</h3>
       <form id="fPed">
+        <label class="pedLbl" for="pNome">1. Escreva o seu nome</label>
         <input id="pNome" placeholder="Seu nome" maxlength="40" autocomplete="off">
-        <div class="sugWrap"><input id="pMus" placeholder="Busque pelo nome da música ou do artista" maxlength="80" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="sug"><div id="sug" role="listbox" hidden></div></div>
-        <div class="chips" id="chips"></div>
+        <label class="pedLbl" for="pMus">2. Escreva a música ou o cantor</label>
+        <div class="sugWrap"><input id="pMus" placeholder="Ex.: Evidências ou Chitãozinho" maxlength="80" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="sug"><div id="sug" role="listbox" hidden></div></div>
+        <p class="pedDica">Ou toque num estilo:</p><div class="chips" id="chips"></div>
         
-        <button type="button" id="btnPed">Pedir esta música</button>
+        <button type="button" id="btnPed">🎵 Pedir a música</button>
       </form>
       <div id="meuPed" class="meuPed" hidden></div>
       <div class="chat" id="chat" aria-live="polite"></div>
@@ -371,7 +399,7 @@ body:not([data-aba="inicio"]) main .wrap{min-height:60vh}
   </div>
 
   <div class="cols">
-    <section class="card" id="programacao" data-ab="programacao" data-aa="inicio pedir">
+    <section class="card" id="programacao" data-ab="inicio" data-aa="inicio pedir">
       <h3>A seguir no ao vivo</h3>
       <div id="homAviso" class="meuPed" hidden></div>
       <ol class="q" id="fila"></ol>
@@ -458,7 +486,7 @@ body:not([data-aba="inicio"]) main .wrap{min-height:60vh}
     </section>
   </div>
 
-  <section class="card redesCard" id="redes" data-ab="redes" data-aa="ajustes" aria-label="Redes sociais">
+  <section class="card redesCard" id="redes" data-ab="anunciantes" data-aa="ajustes" aria-label="Redes sociais">
     <h3>📲 Siga a ECONTEC nas redes</h3>
     <p class="note" style="margin:0">Novidades, dicas de contabilidade e os bastidores da Rádio ECONTEC.</p>
     <div class="redesLista grande"></div>
@@ -521,7 +549,7 @@ const _q=location.search+location.hash;
 /* Administrador só pelo link de admin (?admin). O link de ouvinte é sempre ouvinte. */
 try{localStorage.removeItem('radioEcontec.admin')}catch(e){}
 const ADMIN=/[?&#]admin\b/.test(_q);
-if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 50</span>')}
+if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 51</span>')}
 const CLI_PADRAO=[
  {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'img/logo-econtec.png',zap:ZAP_ECONTEC},
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
@@ -884,7 +912,7 @@ try{const mn=store.get('meuNome','');if(mn&&!$('pNome').value)$('pNome').value=m
 document.querySelectorAll('[data-pedir]').forEach(b=>b.addEventListener('click',()=>{vaiAba('pedir');history.replaceState(null,'','#pedir');const c=document.querySelector('.pedCard');c.scrollIntoView({behavior:'smooth',block:'start'});c.classList.add('destaque');setTimeout(()=>c.classList.remove('destaque'),2200);setTimeout(()=>{const n=$('pNome');(n.value.trim()?$('pMus'):n).focus({preventScroll:true})},500)}));
 try{const vis=new Set();const io=new IntersectionObserver(es=>{es.forEach(e=>e.isIntersecting?vis.add(e.target):vis.delete(e.target));document.body.classList.toggle('pedVisivel',vis.size>0)},{threshold:.25});io.observe(document.querySelector('.pedCard'));io.observe(document.querySelector('.heroPed'))}catch(e){}
 $('btnPed').addEventListener('click',enviarPedido);$('fPed').addEventListener('submit',e=>{e.preventDefault();enviarPedido()});$('fPed').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.tagName==='INPUT'&&e.target.type!=='file'){e.preventDefault();enviarPedido()}});
-bot('Olá! Sou o robô da Rádio ECONTEC. Peça uma música pelo nome, artista ou estilo. O pedido toca ao vivo para todos os ouvintes, com o seu nome!');
+bot(ADMIN?'Olá! Sou o robô da Rádio ECONTEC. Peça uma música pelo nome, artista ou estilo. O pedido toca ao vivo para todos os ouvintes, com o seu nome!':'Escreva seu nome e a música, e toque em Pedir. A locutora vai falar o seu nome! 😊');
 
 /* ---------- Clientes ---------- */
 const b64e=buf=>btoa(String.fromCharCode(...new Uint8Array(buf))),b64d=t=>Uint8Array.from(atob(t),c=>c.charCodeAt(0));
@@ -1015,9 +1043,9 @@ function renderRedes(){const r=(cfgAtual&&cfgAtual.redes)||{};const itens=[];
   el.innerHTML=itens.map(([k,u,t])=>{const [n,cor,p]=ICO[k];return`<a class="rede" href="${esc(u)}" target="_blank" rel="noopener" style="--cor:${cor}" aria-label="${n}${g?'':' da ECONTEC'}"><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor">${p}</g></svg>${g?`<span><b>${n}</b><small>${esc(t)}</small></span>`:''}</a>`}).join('')})}
 renderRedes();
 /* abas: navegação no estilo app de rádio */
-const ABAS_OUV=[['inicio','🏠','Início'],['pedir','🎵','Pedir'],['programacao','📋','Programação'],['anunciantes','📣','Anúncios'],['redes','📲','Redes']];
+const ABAS_OUV=[['inicio','📻','Ouvir'],['pedir','🎵','Pedir música'],['anunciantes','📣','Anúncios']];
 const ABAS_ADM=[['inicio','📻','Ao vivo'],['pedir','🎵','Pedidos'],['anunciantes','📣','Anúncios'],['painel','📊','Painel'],['ajustes','⚙️','Ajustes']];
-const ABAS=ADMIN?ABAS_ADM:ABAS_OUV,ALIAS={aoVivo:'inicio',redes:ADMIN?'ajustes':'redes'};
+const ABAS=ADMIN?ABAS_ADM:ABAS_OUV,ALIAS={aoVivo:'inicio',redes:ADMIN?'ajustes':'anunciantes',programacao:'inicio'};
 let abaAtual='';
 function vaiAba(a,semRolar){if(!ABAS.some(x=>x[0]===a))a='inicio';abaAtual=a;document.body.dataset.aba=a;
  document.querySelectorAll('[data-ab]').forEach(el=>{const l=(ADMIN?el.dataset.aa:el.dataset.ab).split(' ');el.hidden=!l.includes(a)});
@@ -1077,7 +1105,7 @@ async function geraRelatorio(){const n=+$('relDia').value,out=$('relOut');out.in
   return `<div class="relCli"><b>${esc(k)}</b><div class="relNums"><span><strong>${L.length}</strong>vezes no ar</span><span><strong>${on}</strong>aparelhos conectados</span><span><strong>${ouv}</strong>ouvindo na hora</span><span><strong>${pico}</strong>pico de ouvintes</span></div>${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório no WhatsApp do cliente</a>`:`<a class="zapCli" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório pelo WhatsApp</a>`}</div>`}).join('')+'<p class="note">Os números de audiência contam aparelhos com a rádio aberta no minuto do anúncio.</p>'}
 if(ADMIN)$('btnRel').addEventListener('click',geraRelatorio);
 
-const VERSAO=50;
+const VERSAO=51;
 function checaVersao(){fetch('index.html?nv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VERSAO=(\d+)/);if(m&&+m[1]>VERSAO){if(!ligado)location.reload();else novaVersao=true}}).catch(()=>{})}
 /* versão nova com a rádio tocando: atualiza sozinha numa vinheta (só com a tela aberta) e volta a tocar */
 let novaVersao=false;setInterval(()=>{if(!novaVersao||!ligado||document.hidden)return;try{const {it,off}=noAr(agora());if(it.k==='vin'&&off<3){sessionStorage.setItem('retomar','1');location.reload()}}catch(e){}},1000);
