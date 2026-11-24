@@ -15,7 +15,7 @@ const agora=new Date().toISOString();
 if(melhor&&melhor.ts>(meta.ts||0)){
  fs.writeFileSync('clientes.json','[\n'+melhor.lista.map(c=>' '+JSON.stringify(norm(c))).join(',\n')+'\n]\n');
  if(melhor.cfg&&typeof melhor.cfg==='object'){const p=melhor.cfg.precos||{},t=(v,n)=>String(v||'').slice(0,n);
-  fs.writeFileSync('config.json',JSON.stringify({ts:melhor.ts,precos:{Essencial:t(p.Essencial,40),Destaque:t(p.Destaque,40),Patrocinador:t(p.Patrocinador,40)},promo:t(melhor.cfg.promo,120),planosOn:!!melhor.cfg.planosOn,livre:melhor.cfg.livre==null||isNaN(+melhor.cfg.livre)?30:Math.max(0,Math.min(60,Math.round(+melhor.cfg.livre))),redes:Object.fromEntries(['instagram','facebook','youtube','tiktok','linkedin','site'].map(k=>[k,t((melhor.cfg.redes||{})[k],120)]))})+'\n')}
+  fs.writeFileSync('config.json',JSON.stringify({ts:melhor.ts,precos:{Essencial:t(p.Essencial,40),Destaque:t(p.Destaque,40),Patrocinador:t(p.Patrocinador,40)},promo:t(melhor.cfg.promo,120),planosOn:!!melhor.cfg.planosOn,livre:melhor.cfg.livre==null||isNaN(+melhor.cfg.livre)?10:Math.max(0,Math.min(60,Math.round(+melhor.cfg.livre))),redes:Object.fromEntries(['instagram','facebook','youtube','tiktok','linkedin','site'].map(k=>[k,t((melhor.cfg.redes||{})[k],120)]))})+'\n')}
  meta={ts:melhor.ts,verificado:agora};fs.writeFileSync('clientes-meta.json',JSON.stringify(meta)+'\n');console.log('Anúncios atualizados',melhor.ts);
 }else if(!meta.verificado||Date.now()-Date.parse(meta.verificado)>6*864e5){meta.verificado=agora;fs.writeFileSync('clientes-meta.json',JSON.stringify(meta)+'\n');console.log('Sem mudanças (registro semanal)')}
 else console.log('Sem mudanças');

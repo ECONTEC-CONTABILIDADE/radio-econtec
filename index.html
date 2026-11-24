@@ -414,7 +414,7 @@ body:not([data-aba="inicio"]) main .wrap{min-height:60vh}
       <p class="note" style="margin:0">Os sucessos tocam pelo YouTube, que às vezes mostra anúncios dele. As músicas instrumentais livres tocam direto da rádio, sem nenhum anúncio. Escolha quanto da programação fica com cada uma. Vale para todos os ouvintes.</p>
       <form id="fMix" class="admForm">
         <label for="mixLivre" id="mixLbl">Músicas sem anúncio: 30%</label>
-        <input id="mixLivre" type="range" min="0" max="60" step="10" value="30">
+        <input id="mixLivre" type="range" min="0" max="60" step="10" value="10">
         <p class="note" id="mixInfo" style="margin:4px 0 0"></p>
         <div class="row"><button type="button" id="btnMix">Salvar para todos</button></div>
       </form>
@@ -497,7 +497,7 @@ const MUS=[
  ['monkeys-spinning-monkeys','Monkeys Spinning Monkeys','Divertida'],['sneaky-snitch','Sneaky Snitch','Divertida'],['life-of-riley','Life of Riley','Pop'],['wallpaper','Wallpaper','Chill'],['pixelland','Pixelland','Eletrônica'],['airport-lounge','Airport Lounge','Lounge'],['hustle','Hustle','Funk'],['cool-vibes','Cool Vibes','Groove'],['easy-lemon','Easy Lemon','Pop'],['smooth-lovin','Smooth Lovin','Soul'],['vivacity','Vivacity','Pop'],['inspired','Inspired','Pop'],['jazz-brunch','Jazz Brunch','Jazz'],['pamgaea','Pamgaea','Latina'],['cut-and-run','Cut and Run','Rock'],['off-to-osaka','Off to Osaka','Pop'],['bushwick-tarantella','Bushwick Tarantella','Folk'],['merry-go','Merry Go','Divertida'],['shiny-tech','Shiny Tech','Eletrônica'],['salty-ditty','Salty Ditty','Swing'],['breaktime','Breaktime','Groove'],['blue-feather','Blue Feather','Chill'],['rhinoceros','Rhinoceros','Rock'],['hackbeat','Hackbeat','Eletrônica'],['funky-chunk','Funky Chunk','Funk'],['upbeat-forever','Upbeat Forever','Pop'],['fretless','Fretless','Chill'],['laid-back-guitars','Laid Back Guitars','Acústica'],['fig-leaf-rag','Fig Leaf Rag','Ragtime'],['too-cool','Too Cool','Groove']
 ];
 const DL={"airport-lounge":307,"blue-feather":278,"bossa-antigua":283,"breaktime":126,"bushwick-tarantella":203,"carefree":205,"chill-wave":240,"cool-vibes":218,"cut-and-run":214,"daily-beetle":316,"disco-medusae":221,"easy-lemon":126,"electrodoodle":166,"fig-leaf-rag":209,"fretless":336,"funkorama":201,"funky-chunk":239,"gonna-start":190,"groove-grove":205,"hackbeat":242,"hep-cats":250,"hustle":120,"inspired":286,"island-meet-and-greet":216,"jazz-brunch":323,"laid-back-guitars":244,"latin-industries":200,"life-of-riley":235,"local-forecast":189,"malt-shop-bop":166,"merry-go":120,"monkeys-spinning-monkeys":125,"night-on-the-docks":174,"off-to-osaka":109,"pamgaea":168,"pixelland":233,"raving-energy":267,"rhinoceros":203,"rollin-at-5":130,"salty-ditty":128,"samba-isobel":250,"shiny-tech":222,"smooth-lovin":259,"sneaky-snitch":136,"too-cool":181,"upbeat-forever":194,"vivacity":231,"volatile-reaction":165,"wallpaper":220,"werq":162};
-let MIXL=30;const LIVRES=MUS.map(([f,t,e])=>({id:f,tipo:'livre',titulo:t,artista:'Kevin MacLeod',estilo:e,url:'m/'+f+'.mp3'}));
+let MIXL=10;const LIVRES=MUS.map(([f,t,e])=>({id:f,tipo:'livre',titulo:t,artista:'Kevin MacLeod',estilo:e,url:'m/'+f+'.mp3'}));
 let falhasYT=0,modoLivre=false,avisouLivre=false;
 const acervo=CAT.map(([id,a,t,e])=>({id,tipo:'yt',titulo:t,artista:a,estilo:e}));
 const ESTILOS=[...new Set(acervo.map(x=>x.estilo))];
@@ -512,7 +512,7 @@ const _q=location.search+location.hash;
 /* Administrador só pelo link de admin (?admin). O link de ouvinte é sempre ouvinte. */
 try{localStorage.removeItem('radioEcontec.admin')}catch(e){}
 const ADMIN=/[?&#]admin\b/.test(_q);
-if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 36</span>')}
+if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 37</span>')}
 const CLI_PADRAO=[
  {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'img/logo-econtec.png',zap:ZAP_ECONTEC},
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
@@ -657,7 +657,7 @@ function grade(d){
  let t=d*DIA+FUSO,b=0,iv=0;
  const add=(k,dur,x)=>{it.push(Object.assign({k,t0:t,dur,id:d+':'+it.length},x));t+=dur*1000};
  const vin=()=>{const u=VINHETAS[iv++%VINHETAS.length];add('vin',DV[u]||11,{url:u})};
- const ultL=[];const musica=()=>{if(MIXL>0&&r()<MIXL/100){let ops=LIVRES.filter(x=>!ultL.includes(x));if(!ops.length)ops=LIVRES;const lv=ops[Math.floor(r()*ops.length)];ultL.push(lv);if(ultL.length>Math.min(30,LIVRES.length-3))ultL.shift();add('musica',DL[lv.id]||200,{tr:lv});return}const ue=ult.slice(-2).map(x=>x.estilo),ua=ult.slice(-8).map(x=>x.artista);let ops=GRADE.filter(x=>!ult.includes(x)&&!ue.includes(x.estilo)&&!ua.includes(x.artista));if(!ops.length)ops=GRADE.filter(x=>!ult.slice(-40).includes(x));if(!ops.length)ops=GRADE;const pw=ops.flatMap(x=>hit.includes(x.estilo)?[x,x]:[x]);const tr=pw[Math.floor(r()*pw.length)];ult.push(tr);if(ult.length>120)ult.shift();add('musica',DUR[tr.id]||PADRAO,{tr})};
+ const ultL=[];let antLivre=false;const musica=()=>{const sorteio=r();if(MIXL>0&&!antLivre&&sorteio<MIXL/100){antLivre=true;let ops=LIVRES.filter(x=>!ultL.includes(x));if(!ops.length)ops=LIVRES;const lv=ops[Math.floor(r()*ops.length)];ultL.push(lv);if(ultL.length>Math.min(30,LIVRES.length-3))ultL.shift();add('musica',DL[lv.id]||200,{tr:lv});return}antLivre=false;const ue=ult.slice(-2).map(x=>x.estilo),ua=ult.slice(-8).map(x=>x.artista);let ops=GRADE.filter(x=>!ult.includes(x)&&!ue.includes(x.estilo)&&!ua.includes(x.artista));if(!ops.length)ops=GRADE.filter(x=>!ult.slice(-40).includes(x));if(!ops.length)ops=GRADE;const pw=ops.flatMap(x=>hit.includes(x.estilo)?[x,x]:[x]);const tr=pw[Math.floor(r()*pw.length)];ult.push(tr);if(ult.length>120)ult.shift();add('musica',DUR[tr.id]||PADRAO,{tr})};
  while(t<fim){
   vin();add('hora',HORA);add('adE',DV['v/anuncio-econtec.mp3']);
   if(outros.length){const c=outros[(d*31+b)%outros.length];const g=audGer(c),au=c.audio||AUDIO_CLI[c.nome]||(g&&g.url);add('adC',au?(DV[au]||(g&&g.dur)||12):Math.max(6,c.txt.length*.075+1.5),{c,au})}
@@ -937,7 +937,7 @@ setInterval(renderProxAn,30000);setTimeout(renderProxAn,1500);
 /* planos e preços da página Anuncie (publicados junto com os anúncios, assinados) */
 let cfgAtual=null,cfgTs=-1;
 const REDES=['instagram','facebook','youtube','tiktok','linkedin','site'];
-function normCfg(c){c=c||{};const p=c.precos||{},r=c.redes||{};const s=(v,n)=>String(v||'').trim().slice(0,n);return{precos:{Essencial:s(p.Essencial,40),Destaque:s(p.Destaque,40),Patrocinador:s(p.Patrocinador,40)},promo:s(c.promo,120),planosOn:!!c.planosOn,livre:c.livre==null||isNaN(+c.livre)?30:Math.max(0,Math.min(60,Math.round(+c.livre))),redes:Object.fromEntries(REDES.map(k=>[k,s(r[k],120)]))}}
+function normCfg(c){c=c||{};const p=c.precos||{},r=c.redes||{};const s=(v,n)=>String(v||'').trim().slice(0,n);return{precos:{Essencial:s(p.Essencial,40),Destaque:s(p.Destaque,40),Patrocinador:s(p.Patrocinador,40)},promo:s(c.promo,120),planosOn:!!c.planosOn,livre:c.livre==null||isNaN(+c.livre)?10:Math.max(0,Math.min(60,Math.round(+c.livre))),redes:Object.fromEntries(REDES.map(k=>[k,s(r[k],120)]))}}
 function aplicaCfg(c,ts){if(!c||ts<cfgTs)return;cfgAtual=normCfg(c);cfgTs=ts;if(cfgAtual.livre!==MIXL){MIXL=cfgAtual.livre;cacheGrade={};cacheViva={};try{renderFila();renderProxAn()}catch(e){}}renderRedes();const al=document.querySelector('.anuncieLink');if(al&&cfgAtual.planosOn){al.textContent='📣 Quer anunciar aqui? Conheça os planos';al.href='anuncie.html'}if(!ADMIN)return;if($('mixLivre')&&document.activeElement!==$('mixLivre')){$('mixLivre').value=cfgAtual.livre;mixTxt()}
  for(const k of REDES){const el=$('rd'+k[0].toUpperCase()+k.slice(1));if(el&&document.activeElement!==el)el.value=cfgAtual.redes[k]}
  const m={prEss:'Essencial',prDes:'Destaque',prPat:'Patrocinador'};for(const [id,k] of Object.entries(m)){const el=$(id);if(el&&document.activeElement!==el)el.value=cfgAtual.precos[k]}
@@ -1034,7 +1034,7 @@ async function geraRelatorio(){const n=+$('relDia').value,out=$('relOut');out.in
   return `<div class="relCli"><b>${esc(k)}</b><div class="relNums"><span><strong>${L.length}</strong>vezes no ar</span><span><strong>${on}</strong>aparelhos conectados</span><span><strong>${ouv}</strong>ouvindo na hora</span><span><strong>${pico}</strong>pico de ouvintes</span></div>${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório no WhatsApp do cliente</a>`:`<a class="zapCli" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório pelo WhatsApp</a>`}</div>`}).join('')+'<p class="note">Os números de audiência contam aparelhos com a rádio aberta no minuto do anúncio.</p>'}
 if(ADMIN)$('btnRel').addEventListener('click',geraRelatorio);
 
-const VERSAO=36;
+const VERSAO=37;
 function checaVersao(){fetch('index.html?nv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VERSAO=(\d+)/);if(m&&+m[1]>VERSAO&&!ligado)location.reload()}).catch(()=>{})}
 checaVersao();setInterval(checaVersao,5*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checaVersao()});
 
