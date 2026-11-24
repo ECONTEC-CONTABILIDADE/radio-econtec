@@ -394,6 +394,9 @@ body:not([data-aba="inicio"]) main .wrap{min-height:60vh}
         <textarea id="cTxt" placeholder="Texto do anúncio" maxlength="400" required></textarea>
         <label for="cZap">WhatsApp do cliente (com DDD)</label>
         <input id="cZap" placeholder="ex.: 64 9 8419-2320" maxlength="20" inputmode="tel" autocomplete="off">
+        <label for="cVid">🎬 Vídeo do anunciante (opcional, link do YouTube)</label>
+        <input id="cVid" placeholder="ex.: https://youtu.be/... ou link de um Shorts" maxlength="200" autocomplete="off">
+        <p class="note" style="margin:2px 0 0">Com vídeo, no horário do anúncio a rádio mostra o vídeo do cliente para todos (até 60 segundos), com o nome e o WhatsApp na tela.</p>
         <div class="row"><label class="file">Logo (opcional)<input id="cLogo" type="file" accept="image/*"></label><button type="button" id="btnCli">Adicionar anúncio</button><button type="button" class="lite" id="btnCliCanc" hidden>Cancelar edição</button></div>
       </form>
       <p class="note">Toque no WhatsApp para falar direto com o anunciante. Durante cada anúncio também aparece o botão do WhatsApp na tela.</p>
@@ -517,7 +520,7 @@ const _q=location.search+location.hash;
 /* Administrador só pelo link de admin (?admin). O link de ouvinte é sempre ouvinte. */
 try{localStorage.removeItem('radioEcontec.admin')}catch(e){}
 const ADMIN=/[?&#]admin\b/.test(_q);
-if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 39</span>')}
+if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 40</span>')}
 const CLI_PADRAO=[
  {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'img/logo-econtec.png',zap:ZAP_ECONTEC},
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
@@ -526,7 +529,8 @@ const CLI_PADRAO=[
 let cacheGrade={};
 /* Anúncios: valem para todos. Fonte = clientes.json do site + publicação assinada do administrador (ntfy.sh) */
 let AN_PUBS=[];const AN_EC={name:'ECDSA',namedCurve:'P-256'},AN_TOP='radio-econtec-anuncios-q7k2m9x4';
-const normA=c=>{const o={nome:String(c.nome||''),txt:String(c.txt||''),logo:String(c.logo||''),zap:String(c.zap||'').replace(/\D/g,''),audio:String(c.audio||'')};for(const k of ['ig','tt','mail'])if(c[k])o[k]=String(c[k]).slice(0,80);if(c.cancelado)o.cancelado=true;return o};
+const normA=c=>{const o={nome:String(c.nome||''),txt:String(c.txt||''),logo:String(c.logo||''),zap:String(c.zap||'').replace(/\D/g,''),audio:String(c.audio||'')};for(const k of ['ig','tt','mail'])if(c[k])o[k]=String(c[k]).slice(0,80);if(/^[\w-]{11}$/.test(c.vid||'')){o.vid=c.vid;o.vdur=Math.max(10,Math.min(420,Math.round(+c.vdur||30)))}if(c.cancelado)o.cancelado=true;return o};
+const idYT=t=>{const m=String(t||'').match(/(?:youtu\.be\/|[?&]v=|\/shorts\/|\/embed\/|\/live\/)([\w-]{11})/)||String(t||'').trim().match(/^([\w-]{11})$/);return m?m[1]:''};const VID_MAX=60;
 let anuncios=CLI_PADRAO.map(normA),anTs=-1;
 {const c=store.get('anuncios',null);if(c&&Array.isArray(c.lista)&&c.lista.length){anuncios=c.lista.map(normA);anTs=c.ts||0}}
 let clientes=anuncios.filter(c=>!c.cancelado);
@@ -570,11 +574,11 @@ let yt=null,ytOk=null;const ytPronto=new Promise(r=>ytOk=r);
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&quer){quer=false;aplica()}})}
 window.onYouTubeIframeAPIReady=()=>{yt=new YT.Player('yt',{width:'100%',height:'100%',playerVars:{playsinline:1,rel:0,modestbranding:1,controls:0,disablekb:1,origin:location.origin},events:{onReady:()=>ytOk(),onStateChange:e=>ytEv&&ytEv('st',e.data),onError:e=>ytEv&&ytEv('err',e.data)}})};
 let ytEv=null,ytPrimado=null;
-function tocarYT(tr,onProg,ini,ate,ref){
+function tocarYT(tr,onProg,ini,ate,ref,durReal){
  return new Promise(async res=>{
   let done=false,tocou=false;const fim=()=>{if(done)return;done=true;clearInterval(iv);clearTimeout(to);ytEv=null;try{yt.stopVideo()}catch(e){}$('ytwrap').classList.remove('on');res(tocou)};
   cancelar=fim;
-  const to=setTimeout(()=>{if(!tocou)fim()},16000);const espDur=DUR[tr.id]||ate||0;let emAd=false,kindAntes='';
+  const to=setTimeout(()=>{if(!tocou)fim()},16000);const espDur=durReal||DUR[tr.id]||ate||0;let emAd=false,kindAntes='';
   await Promise.race([ytPronto,new Promise(r=>setTimeout(r,12000))]);
   if(done)return;if(!yt||!yt.loadVideoById){bot('O player do YouTube não carregou. Verifique a internet.',true);fim();return}
   $('ytwrap').classList.add('on');
@@ -643,6 +647,7 @@ let relOff=0;const agora=()=>Date.now()+ajuste+relOff;
 async function sincRelogio(){try{let ant=null;for(let i=0;i<14;i++){const t0=Date.now();const r=await fetch('manifest.webmanifest?t='+t0+i,{method:'HEAD',cache:'no-store'});const t1=Date.now();const d=Date.parse(r.headers.get('date'));if(!d)return;
   if(ant&&d>ant.d){const meio=(ant.t1+t0)/2;relOff=d-meio;store.set('relOff',relOff);return}ant={d,t1};if(i===0)relOff=d+500-(t0+t1)/2;await new Promise(z=>setTimeout(z,90))}}catch(e){}}
 relOff=+store.get('relOff',0)||0;sincRelogio();setInterval(sincRelogio,10*6e4);
+if(/[?&]teste\b/.test(location.search))window.__t={idYT,grade:d=>grade(d),an:L=>aplicaAn(L,anTs),get anuncios(){return anuncios}};
 if(/[?&]teste\b/.test(location.search))window.__aj=v=>{ajuste=v;if(cancelar)cancelar();try{avisoHom()}catch(e){}};
 if(/[?&]teste\b/.test(location.search))setTimeout(()=>{window.__fe=falaEmendada},0);
 if(/[?&]teste\b/.test(location.search))window.__noAr=()=>{const n=noAr(agora());return n.it.k+':'+(n.it.c?n.it.c.nome:'')+':'+n.off.toFixed(1)};
@@ -666,7 +671,7 @@ function grade(d){
  const ultL=[];let antLivre=false;const musica=()=>{const sorteio=r();if(MIXL>0&&!antLivre&&sorteio<MIXL/100){antLivre=true;let ops=LIVRES.filter(x=>!ultL.includes(x));if(!ops.length)ops=LIVRES;const lv=ops[Math.floor(r()*ops.length)];ultL.push(lv);if(ultL.length>Math.min(30,LIVRES.length-3))ultL.shift();add('musica',DL[lv.id]||200,{tr:lv});return}antLivre=false;const ue=ult.slice(-2).map(x=>x.estilo),ua=ult.slice(-8).map(x=>x.artista);let ops=GRADE.filter(x=>!ult.includes(x)&&!ue.includes(x.estilo)&&!ua.includes(x.artista));if(!ops.length)ops=GRADE.filter(x=>!ult.slice(-40).includes(x));if(!ops.length)ops=GRADE;const pw=ops.flatMap(x=>hit.includes(x.estilo)?[x,x]:[x]);const tr=pw[Math.floor(r()*pw.length)];ult.push(tr);if(ult.length>120)ult.shift();add('musica',DUR[tr.id]||PADRAO,{tr})};
  while(t<fim){
   vin();add('hora',HORA);add('adE',DV['v/anuncio-econtec.mp3']);
-  if(outros.length){const c=outros[(d*31+b)%outros.length];const g=audGer(c),au=c.audio||AUDIO_CLI[c.nome]||(g&&g.url);add('adC',au?(DV[au]||(g&&g.dur)||12):Math.max(6,c.txt.length*.075+1.5),{c,au})}
+  if(outros.length){const c=outros[(d*31+b)%outros.length];const g=audGer(c),au=c.audio||AUDIO_CLI[c.nome]||(g&&g.url);if(c.vid)add('adC',Math.min(VID_MAX,c.vdur||30),{c,au,vid:c.vid});else add('adC',au?(DV[au]||(g&&g.dur)||12):Math.max(6,c.txt.length*.075+1.5),{c,au})}
   for(let m=0;m<5;m++){musica();if(m<4)vin()}
   b++;
  }
@@ -725,7 +730,7 @@ function descreve(it){
  if(it.k==='vin')return['Vinheta','Rádio ECONTEC','ECONTEC Contabilidade: sua empresa em dia','img/e-econtec.png',''];
  if(it.k==='hora')return['Hora certa',hhmm(it.t0+11000),'Oferecimento ECONTEC Contabilidade','img/e-econtec.png',''];
  if(it.k==='adE')return['Anúncio','ECONTEC Contabilidade','Imposto, folha, abertura de empresa: fale com a ECONTEC','img/e-econtec.png',ZAP_ECONTEC];
- if(it.k==='adC')return['Anúncio',it.c.nome,it.c.txt,it.c.logo,it.c.zap];
+ if(it.k==='adC')return[it.vid?'Anúncio em vídeo':'Anúncio',it.c.nome,it.c.txt,it.c.logo,it.c.zap];
  if(it.k==='pedido')return['Pedido de '+it.p.nome,it.p.tr.titulo,it.p.tr.artista,capa(it.p.tr),''];
  if(it.tr.tipo==='livre')return['Ao vivo · '+it.tr.estilo+' · sem intervalo',it.tr.titulo,'Kevin MacLeod (incompetech.com) · Licença CC BY 4.0','img/e-econtec.png',''];
  return['Ao vivo · '+it.tr.estilo,it.tr.titulo,it.tr.artista,capa(it.tr),''];
@@ -754,6 +759,7 @@ async function tocaItem(it,off){
   if(off<10.5)await tocarArquivo({url:'v/f-hora.mp3',ini:off,silencioso:true},pr);
   if(ligado&&resto()>1500){await tocarArquivo({url:h,silencioso:true},()=>{});if(ligado)await tocarArquivo({url:m,silencioso:true},()=>{})}
   stop();return}
+ if(it.k==='adC'&&it.vid&&!modoLivre){mostra('Anúncio em vídeo',it.c.nome,it.c.txt,it.c.logo,it.c.zap);const ok=await tocarYT({id:it.vid,tipo:'yt'},pr,off,it.dur,it.t0,it.c.vdur);if(ok||!ligado||it.t0+it.dur*1000-agora()<3000)return}
  if(it.k==='adC'){const stop=fundo();if(it.au)await tocarArquivo({url:it.au,ini:off,ref:it.t0,silencioso:true,ate:it.t0+it.dur*1000+400},pr);else await espera(it.t0+it.dur*1000-agora(),false);stop();return}
  if(it.k==='pedido'){const p=it.p,tr=p.tr;
   if(off<PED_INTRO-1){mostra(`Obrigado, ${p.nome}!`,tr.titulo,'Em nome da ECONTEC Contabilidade e de todos os nossos clientes','img/e-econtec.png','');const stop=fundo();
@@ -896,7 +902,7 @@ async function publica(lista,msg,cfg){cfg=cfg||cfgAtual;if(publicando)return fal
  finally{publicando=false;document.body.classList.remove('publicando')}}
 function renderCli(){
  const L=ADMIN?anuncios.map((c,i)=>Object.assign({},c,{_i:i})):clientes;
- $('clientes').innerHTML=L.map(c=>`<div class="cl${c.cancelado?' cancelado':''}"><div class="lg">${c.logo?`<img src="${esc(c.logo)}" alt="">`:esc(c.nome[0]||'?')}</div><div><b>${esc(c.nome)}</b>${c.cancelado?' <span class="tagCanc">Cancelado</span>':''}${ADMIN&&!c.cancelado&&!ehBase(c)&&!(c.audio||AUDIO_CLI[c.nome])?(audGer(c)?' <span class="tagGrav">🎙️ Voz Francisca</span>':' <span class="tagGrav">⏳ Gerando a voz (até 2 min)</span>'):''}<p>${esc(c.txt)}</p>${redesCli(c)}${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.2c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.9s.7-2.1 1-2.4c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .5l-.4.6-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l2 .9c.3.1.5.2.5.3.1.1.1.7-.1 1.3z"/></svg>Chamar no WhatsApp <span>${esc(zapFmt(c.zap))}</span></a>`:''}</div>${ADMIN?`<div style="display:grid;gap:6px">${c.cancelado?`<button type="button" class="btnEd" data-reat="${c._i}">Reativar</button>`:`<button type="button" class="btnOuvir" data-ouvir="${c._i}">▶ Ouvir</button><button type="button" class="btnEd" data-ed="${c._i}">Editar</button><button type="button" class="btnPausa" data-pausa="${c._i}">Cancelar</button>`}<button type="button" class="btnCanc" data-exc="${c._i}">Excluir</button></div>`:''}</div>`).join('')||'<p class="note">Nenhum anúncio no momento.</p>';
+ $('clientes').innerHTML=L.map(c=>`<div class="cl${c.cancelado?' cancelado':''}"><div class="lg">${c.logo?`<img src="${esc(c.logo)}" alt="">`:esc(c.nome[0]||'?')}</div><div><b>${esc(c.nome)}</b>${c.cancelado?' <span class="tagCanc">Cancelado</span>':''}${ADMIN&&!c.cancelado&&!ehBase(c)&&!(c.audio||AUDIO_CLI[c.nome])?(audGer(c)?' <span class="tagGrav">🎙️ Voz Francisca</span>':' <span class="tagGrav">⏳ Gerando a voz (até 2 min)</span>'):''}<p>${esc(c.txt)}</p>${c.vid?`<div class="redesCli"><a href="https://youtu.be/${esc(c.vid)}" target="_blank" rel="noopener">🎬 Vídeo do anúncio</a></div>`:''}${redesCli(c)}${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.2c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.9s.7-2.1 1-2.4c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .5l-.4.6-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l2 .9c.3.1.5.2.5.3.1.1.1.7-.1 1.3z"/></svg>Chamar no WhatsApp <span>${esc(zapFmt(c.zap))}</span></a>`:''}</div>${ADMIN?`<div style="display:grid;gap:6px">${c.cancelado?`<button type="button" class="btnEd" data-reat="${c._i}">Reativar</button>`:`<button type="button" class="btnOuvir" data-ouvir="${c._i}">▶ Ouvir</button><button type="button" class="btnEd" data-ed="${c._i}">Editar</button><button type="button" class="btnPausa" data-pausa="${c._i}">Cancelar</button>`}<button type="button" class="btnCanc" data-exc="${c._i}">Excluir</button></div>`:''}</div>`).join('')||'<p class="note">Nenhum anúncio no momento.</p>';
 }
 $('clientes').addEventListener('click',async e=>{if(!ADMIN||publicando)return;const d=e.target.dataset;const L=anuncios.map(c=>Object.assign({},c));
  if(d.ouvir!==undefined){ouvirAn(anuncios[+d.ouvir],e.target);return}
@@ -905,7 +911,7 @@ $('clientes').addEventListener('click',async e=>{if(!ADMIN||publicando)return;co
  if(d.exc!==undefined){const b=e.target;if(!b.classList.contains('conf')){b.classList.add('conf');b.textContent='Confirmar exclusão?';setTimeout(()=>{if(b.isConnected){b.classList.remove('conf');b.textContent='Excluir'}},4000);return}
   const i=+d.exc,c=L[i];if(!c)return;if(editando===i)fechaEdicao();L.splice(i,1);await publica(L,'Anúncio de '+c.nome+' excluído.');return}
  if(d.ed!==undefined){const i=+d.ed,c=anuncios[i];if(!c)return;editando=i;
-  $('cNome').value=c.nome;$('cTxt').value=c.txt;$('cZap').value=c.zap?zapFmt(c.zap):'';$('btnCli').textContent='Salvar alterações';$('fCliTit').textContent='Editando: '+c.nome;$('btnCliCanc').hidden=false;
+  $('cNome').value=c.nome;$('cTxt').value=c.txt;$('cZap').value=c.zap?zapFmt(c.zap):'';$('cVid').value=c.vid?'https://youtu.be/'+c.vid:'';$('btnCli').textContent='Salvar alterações';$('fCliTit').textContent='Editando: '+c.nome;$('btnCliCanc').hidden=false;
   $('fCli').scrollIntoView({behavior:'smooth',block:'center'});$('cTxt').focus()}});
 function fechaEdicao(){editando=null;cadUsando=null;$('fCli').reset();$('btnCli').textContent='Adicionar anúncio';$('fCliTit').textContent='Novo anúncio';$('btnCliCanc').hidden=true}
 $('btnCliCanc').addEventListener('click',fechaEdicao);
@@ -919,14 +925,15 @@ function renderCad(){const box=$('cadRec');if(!ADMIN){box.hidden=true;return}con
  const L=cadastros.filter(c=>!vistos.includes(c.id));box.hidden=false;
  box.innerHTML=`<h4>📥 Cadastros recebidos dos clientes ${L.length?`<span class="tagGrav">${L.length} novo${L.length>1?'s':''}</span>`:''}</h4><p class="note" style="margin:0 0 6px">Chegam pela página <a href="cadastro.html" target="_blank" rel="noopener">Divulgação gratuita</a>. Toque em "Colocar no ar" para conferir e publicar.</p>`+(L.length?L.map(c=>`<div class="cl"><div class="lg">${c.logo?`<img src="${esc(c.logo)}" alt="">`:esc((c.nome||'?')[0])}</div><div><b>${esc(c.nome)}</b>${usados.has(String(c.nome).trim().toLowerCase())?' <span class="tagGrav">Já está no ar</span>':''}<p>${esc(c.desc||'')}</p><p>📱 ${esc(zapFmt(c.zap))}${c.quem?' · enviado por '+esc(c.quem):''} · ${new Date(c.ts).toLocaleDateString('pt-BR')}</p>${redesCli(c)}</div><div><button type="button" data-cadusa="${esc(c.id)}">✅ Colocar no ar</button><button type="button" class="lite" data-cadok="${esc(c.id)}">Dispensar</button></div></div>`).join(''):'<p class="note">Nenhum cadastro novo.</p>')}
 $('cadRec').addEventListener('click',e=>{const d=e.target.dataset;if(d.cadok){const v=store.get('cadVistos',[]);v.push(d.cadok);store.set('cadVistos',v.slice(-400));renderCad();return}
- if(d.cadusa){const c=cadastros.find(x=>x.id===d.cadusa);if(!c)return;fechaEdicao();cadUsando=c;$('cNome').value=c.nome;$('cTxt').value=c.txt||c.desc||'';$('cZap').value=zapFmt(c.zap);$('fCliTit').textContent='Cadastro de '+c.nome+' (confira o texto e toque em Adicionar)';$('fCli').scrollIntoView({behavior:'smooth',block:'center'});$('cTxt').focus()}});
+ if(d.cadusa){const c=cadastros.find(x=>x.id===d.cadusa);if(!c)return;fechaEdicao();cadUsando=c;$('cNome').value=c.nome;$('cTxt').value=c.txt||c.desc||'';$('cZap').value=zapFmt(c.zap);$('cVid').value=c.video||'';$('fCliTit').textContent='Cadastro de '+c.nome+' (confira o texto e toque em Adicionar)';$('fCli').scrollIntoView({behavior:'smooth',block:'center'});$('cTxt').focus()}});
 if(ADMIN){setTimeout(carregaCad,1500);setInterval(carregaCad,60000)}
 function reduzLogo(f){return new Promise(ok=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,160/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=Math.round(im.width*k);cv.height=Math.round(im.height*k);cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);ok(cv.toDataURL('image/png'))};im.onerror=()=>ok('');im.src=r.result};r.onerror=()=>ok('');r.readAsDataURL(f)})}
 async function enviarCli(){if(!ADMIN||publicando)return;const nome=$('cNome').value.trim(),txt=$('cTxt').value.trim();if(!nome||!txt){bot('Para salvar um anúncio, preencha o nome do cliente e o texto.',true);return}const zap=$('cZap').value.replace(/\D/g,''),f=$('cLogo').files[0];
  if(ofensivo(txt)){alertMsg('O texto do anúncio tem palavras bloqueadas pelo filtro.');return}
  const logo=f?await reduzLogo(f):'';const L=anuncios.map(c=>Object.assign({},c));let msg;
- if(editando!==null&&L[editando]){const o=L[editando];const novoTxt=o.txt!==txt;Object.assign(o,{nome,txt,zap,logo:logo||o.logo});if(novoTxt)o.audio='';msg='Anúncio de '+nome+' alterado.'}
- else{const o={nome,txt,zap,logo};const cu=cadUsando;if(cu){if(!o.logo&&cu.logo)o.logo=cu.logo;for(const k of ['ig','tt','mail'])if(cu[k])o[k]=cu[k]}L.push(o);msg='Anúncio de '+nome+' adicionado.'}
+ const vtxt=$('cVid').value.trim(),vid=idYT(vtxt);if(vtxt&&!vid){alertMsg('Não reconheci o link do vídeo. Cole o link do YouTube (youtube.com/watch?v=..., youtu.be/... ou Shorts).');return}let vdur=0;if(vid){vdur=await duracaoYT(vid)}
+ if(editando!==null&&L[editando]){const o=L[editando];const novoTxt=o.txt!==txt;Object.assign(o,{nome,txt,zap,logo:logo||o.logo});if(vid){o.vid=vid;o.vdur=vdur}else{delete o.vid;delete o.vdur}if(novoTxt)o.audio='';msg='Anúncio de '+nome+' alterado.'}
+ else{const o={nome,txt,zap,logo};if(vid){o.vid=vid;o.vdur=vdur}const cu=cadUsando;if(cu){if(!o.logo&&cu.logo)o.logo=cu.logo;for(const k of ['ig','tt','mail'])if(cu[k])o[k]=cu[k]}L.push(o);msg='Anúncio de '+nome+' adicionado.'}
  if(await publica(L,msg)){if(cadUsando){const v=store.get('cadVistos',[]);v.push(cadUsando.id);store.set('cadVistos',v.slice(-400))}fechaEdicao();$('fCli').reset();renderCad()}}
 $('btnCli').addEventListener('click',enviarCli);$('fCli').addEventListener('submit',e=>{e.preventDefault();enviarCli()});
 function alertMsg(t){bot(t,true)}
@@ -1048,7 +1055,7 @@ async function geraRelatorio(){const n=+$('relDia').value,out=$('relOut');out.in
   return `<div class="relCli"><b>${esc(k)}</b><div class="relNums"><span><strong>${L.length}</strong>vezes no ar</span><span><strong>${on}</strong>aparelhos conectados</span><span><strong>${ouv}</strong>ouvindo na hora</span><span><strong>${pico}</strong>pico de ouvintes</span></div>${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório no WhatsApp do cliente</a>`:`<a class="zapCli" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório pelo WhatsApp</a>`}</div>`}).join('')+'<p class="note">Os números de audiência contam aparelhos com a rádio aberta no minuto do anúncio.</p>'}
 if(ADMIN)$('btnRel').addEventListener('click',geraRelatorio);
 
-const VERSAO=39;
+const VERSAO=40;
 function checaVersao(){fetch('index.html?nv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VERSAO=(\d+)/);if(m&&+m[1]>VERSAO&&!ligado)location.reload()}).catch(()=>{})}
 checaVersao();setInterval(checaVersao,5*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checaVersao()});
 

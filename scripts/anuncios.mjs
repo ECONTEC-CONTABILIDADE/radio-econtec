@@ -1,7 +1,7 @@
 // Copia para o site (clientes.json) a última lista de anúncios publicada e assinada pelo administrador.
 import fs from 'node:fs';
 const TOP='radio-econtec-anuncios-q7k2m9x4';
-const norm=c=>{const o={nome:String(c.nome||''),txt:String(c.txt||''),logo:String(c.logo||''),zap:String(c.zap||'').replace(/\D/g,''),audio:String(c.audio||'')};for(const k of ['ig','tt','mail'])if(c[k])o[k]=String(c[k]).slice(0,80);if(c.cancelado)o.cancelado=true;return o};
+const norm=c=>{const o={nome:String(c.nome||''),txt:String(c.txt||''),logo:String(c.logo||''),zap:String(c.zap||'').replace(/\D/g,''),audio:String(c.audio||'')};for(const k of ['ig','tt','mail'])if(c[k])o[k]=String(c[k]).slice(0,80);if(/^[\w-]{11}$/.test(c.vid||'')){o.vid=c.vid;o.vdur=Math.max(10,Math.min(420,Math.round(+c.vdur||30)))}if(c.cancelado)o.cancelado=true;return o};
 let meta={ts:0};try{meta=JSON.parse(fs.readFileSync('clientes-meta.json','utf8'))}catch{}
 const chaves=JSON.parse(fs.readFileSync('chaves-admin.json','utf8'));
 const keys=await Promise.all(chaves.map(k=>crypto.subtle.importKey('jwk',{kty:'EC',crv:'P-256',x:k.x,y:k.y},{name:'ECDSA',namedCurve:'P-256'},false,['verify'])));
@@ -99,7 +99,7 @@ else console.log('Sem mudanças');
   let p;try{p=m.attachment?await (await fetch(m.attachment.url)).json():JSON.parse(m.message)}catch{continue}
   if(!p||typeof p.nome!=='string'||!p.nome.trim())continue;
   const logo=typeof p.logo==='string'&&/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(p.logo)&&p.logo.length<120000?p.logo:'';
-  cad.push({id:m.id,ts:m.time*1000,nome:s(p.nome,60),zap:s(String(p.zap||'').replace(/\D/g,''),15),mail:s(p.mail,80),ig:s(p.ig,60),tt:s(p.tt,60),desc:s(p.desc,220),quem:s(p.quem,50),txt:s(p.txt,400),logo});ids.add(m.id);novos++}
+  cad.push({id:m.id,ts:m.time*1000,nome:s(p.nome,60),zap:s(String(p.zap||'').replace(/\D/g,''),15),mail:s(p.mail,80),ig:s(p.ig,60),tt:s(p.tt,60),desc:s(p.desc,220),video:s(p.video,200),quem:s(p.quem,50),txt:s(p.txt,400),logo});ids.add(m.id);novos++}
  cad=cad.filter(c=>Date.now()-c.ts<120*864e5).sort((a,b)=>a.ts-b.ts).slice(-300);
  if(novos){fs.writeFileSync('cadastros.json','[\n'+cad.map(c=>' '+JSON.stringify(c)).join(',\n')+'\n]\n');console.log('cadastros novos',novos)}
 }

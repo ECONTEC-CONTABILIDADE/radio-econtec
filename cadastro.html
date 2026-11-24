@@ -102,6 +102,8 @@ textarea{min-height:96px;resize:vertical}
     <div><label for="ig">Instagram <span class="op">(opcional)</span></label><input id="ig" maxlength="60" placeholder="@suaempresa"></div>
     <div><label for="tt">TikTok <span class="op">(opcional)</span></label><input id="tt" maxlength="60" placeholder="@suaempresa"></div>
    </div>
+   <label for="video">🎬 Vídeo da empresa <span class="op">(opcional, link do YouTube)</span></label>
+   <input id="video" maxlength="200" placeholder="ex.: https://youtu.be/... ou link de um Shorts">
    <label for="desc">Breve descrição dos produtos ou serviços *</label>
    <textarea id="desc" maxlength="220" placeholder="ex.: Pães quentinhos toda hora, bolos e salgados para festas. Entregamos em toda a cidade."></textarea>
    <div class="cont"><span id="cont">0</span>/220</div>
@@ -145,7 +147,7 @@ const arroba=s=>{s=String(s||'').trim().replace(/^https?:\/\/(www\.)?(instagram\
 let logo='';
 function reduzLogo(f){return new Promise(ok=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,320/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=Math.round(im.width*k);cv.height=Math.round(im.height*k);const g=cv.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,cv.width,cv.height);g.drawImage(im,0,0,cv.width,cv.height);ok(cv.toDataURL('image/jpeg',.85))};im.onerror=()=>ok('');im.src=r.result};r.onerror=()=>ok('');r.readAsDataURL(f)})}
 $('logo').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;logo=await reduzLogo(f);$('logoTxt').textContent=logo?'Logomarca escolhida ✔ (toque para trocar)':'Não consegui abrir essa imagem. Tente outra.';atualiza()});
-function dados(){return{nome:$('nome').value.trim(),zap:$('zap').value.replace(/\D/g,''),mail:$('mail').value.trim(),ig:arroba($('ig').value),tt:arroba($('tt').value),desc:$('desc').value.trim(),quem:$('quem').value.trim()}}
+function dados(){return{nome:$('nome').value.trim(),zap:$('zap').value.replace(/\D/g,''),mail:$('mail').value.trim(),ig:arroba($('ig').value),tt:arroba($('tt').value),desc:$('desc').value.trim(),video:$('video').value.trim(),quem:$('quem').value.trim()}}
 function atualiza(){const d=dados();$('cont').textContent=$('desc').value.length;
  for(const [cap,vazio] of [[$('pCapa'),(d.nome[0]||'?').toUpperCase()],[$('logoPv'),'+']]){if(logo){cap.innerHTML='';const i=new Image();i.src=logo;i.alt='';cap.append(i)}else cap.textContent=vazio}
  $('pNome').textContent=d.nome||'Nome da sua empresa';
@@ -165,7 +167,7 @@ $('f').addEventListener('submit',async ev=>{ev.preventDefault();erro('');const d
  const corpo=Object.assign({},d,{logo,txt:locucao(d),ts:Date.now()});
  let ok=false;for(let i=0;i<3&&!ok;i++){try{const r=await fetch('https://ntfy.sh/'+TOP,{method:'PUT',headers:{'Filename':'cadastro.json'},body:JSON.stringify(corpo)});ok=r.ok}catch(e){await new Promise(r=>setTimeout(r,1500))}}
  b.disabled=false;b.textContent='📨 Enviar para a ECONTEC';
- const msg='Olá, ECONTEC! Quero divulgar minha empresa na Rádio ECONTEC.\n\n🏢 '+d.nome+'\n📱 WhatsApp: '+zapFmt(d.zap)+(d.mail?'\n✉️ '+d.mail:'')+(d.ig?'\n📸 Instagram: '+d.ig:'')+(d.tt?'\n🎵 TikTok: '+d.tt:'')+'\n📝 '+d.desc+(d.quem?'\n\nEnviado por: '+d.quem:'')+(logo?'\n\n(A logomarca foi enviada pelo formulário.)':'');
+ const msg='Olá, ECONTEC! Quero divulgar minha empresa na Rádio ECONTEC.\n\n🏢 '+d.nome+'\n📱 WhatsApp: '+zapFmt(d.zap)+(d.mail?'\n✉️ '+d.mail:'')+(d.ig?'\n📸 Instagram: '+d.ig:'')+(d.tt?'\n🎵 TikTok: '+d.tt:'')+(d.video?'\n🎬 Vídeo: '+d.video:'')+'\n📝 '+d.desc+(d.quem?'\n\nEnviado por: '+d.quem:'')+(logo?'\n\n(A logomarca foi enviada pelo formulário.)':'');
  $('okZap').href='https://wa.me/'+ZAP+'?text='+encodeURIComponent(msg);
  if(!ok){erro('A internet falhou. Toque no botão verde para mandar os dados pelo WhatsApp.');$('f').hidden=true;$('ok').classList.add('on');$('ok').querySelector('h2').textContent='Quase lá! Envie pelo WhatsApp';return}
  $('f').hidden=true;$('ok').classList.add('on');$('ok').scrollIntoView({behavior:'smooth',block:'center'})});
