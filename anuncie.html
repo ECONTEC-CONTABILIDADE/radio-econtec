@@ -42,6 +42,7 @@ h2{font-family:Outfit,sans-serif;font-size:28px;text-align:center;margin:40px 0 
 .final{text-align:center;margin-top:40px;padding:26px;border-radius:24px;background:#1a0f10cc;border:1px solid #f0c14b44}
 footer{text-align:center;color:#bfa9a9;font-size:13px;margin-top:30px}
 footer a{color:#ffd978}
+.promo{margin:0 0 14px;padding:14px 18px;border-radius:16px;background:linear-gradient(90deg,#f0c14b,#ffd978);color:#2a1a00;font-weight:800;font-size:18px;text-align:center}
 </style>
 </head>
 <body>
@@ -63,6 +64,7 @@ footer a{color:#ffd978}
 </div>
 
 <h2>Planos</h2>
+<div id="promo" class="promo" hidden></div>
 <div class="planos">
   <div class="plano"><h3>Essencial</h3><div class="preco">Consulte o valor</div><ul><li>Anúncio na programação, todos os dias</li><li>Nome e WhatsApp na área de anunciantes</li><li>Texto lido pela voz da rádio</li></ul><a href="#" data-plano="Essencial" target="_blank" rel="noopener">Quero este plano</a></div>
   <div class="plano dest"><h3>Destaque</h3><div class="preco">Consulte o valor</div><ul><li>Tudo do Essencial</li><li>Locução profissional da Betina com fundo musical</li><li>Sua logo na tela durante o anúncio</li><li>Relatório mensal no WhatsApp</li></ul><a href="#" data-plano="Destaque" target="_blank" rel="noopener">Quero este plano</a></div>
@@ -89,6 +91,9 @@ const link=t=>'https://wa.me/'+ZAP+'?text='+encodeURIComponent(t);
 const base='Olá, ECONTEC! Quero anunciar a minha empresa na Rádio ECONTEC.';
 document.getElementById('ctaTopo').href=link(base);document.getElementById('ctaFim').href=link(base);
 document.querySelectorAll('[data-plano]').forEach(a=>a.href=link(base+' Tenho interesse no plano '+a.dataset.plano+'.'));
+fetch('config.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(c=>{if(!c)return;const p=c.precos||{};
+ document.querySelectorAll('.plano').forEach(el=>{const n=el.querySelector('h3').textContent.trim(),v=(p[n]||'').trim();if(v)el.querySelector('.preco').textContent=v});
+ if(c.promo){const b=document.getElementById('promo');b.textContent='🔥 '+c.promo;b.hidden=false}}).catch(()=>{});
 </script>
 </body>
 </html>
