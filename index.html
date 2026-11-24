@@ -44,6 +44,12 @@ header .zapbtn{margin-left:auto}
 .fig{position:relative;flex:1;min-height:190px;border-radius:12px;background:#062a2a;overflow:hidden}
 .fig>canvas{position:absolute;inset:0;width:100%;height:100%}
 .fig{min-height:clamp(220px,30vw,340px)}#ytwrap{position:absolute;inset:0;visibility:hidden;background:#000}#ytwrap.on{visibility:visible}#ytwrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.vidBtns{position:absolute;right:10px;bottom:10px;display:flex;gap:8px;z-index:3}
+.vidBtns button{background:#000000b3;color:#fff;border:1px solid #ffffff55;border-radius:999px;padding:9px 14px;font:700 14px Inter,system-ui,sans-serif;cursor:pointer;backdrop-filter:blur(4px)}
+.vidBtns button:hover{background:#a50f26}
+body.vidGrande .fig{position:fixed!important;inset:0!important;z-index:9999;border-radius:0!important;min-height:0!important;background:#000}
+body.vidGrande{overflow:hidden}body.vidGrande .tabbar,body.vidGrande #fabPed,body.vidGrande #mini,body.vidGrande #vouAdm{display:none!important}body.vidGrande .vidBtns{bottom:max(16px,env(safe-area-inset-bottom));right:16px}body.vidGrande .vidBtns button{font-size:16px;padding:12px 18px}
+.fig:fullscreen{border-radius:0;background:#000}
 .np{display:flex;gap:16px;align-items:center}
 .np .logo{width:76px;height:76px;border-radius:12px;background:#ffffff14;display:grid;place-items:center;flex:none;overflow:hidden;font-family:Outfit;font-weight:700;font-size:28px;color:var(--acc)}
 .e3d{position:relative;display:grid;place-items:center;border-radius:18px;background:radial-gradient(120% 120% at 25% 15%,#2fd6b0 0%,#0f8f78 45%,#06463c 100%);box-shadow:inset 0 2px 0 #ffffff55,inset 0 -6px 12px #00000055,0 10px 22px #00000066,0 3px 0 #04352d;transform:perspective(300px) rotateX(10deg) rotateY(-14deg);animation:e3dflo 6s ease-in-out infinite;overflow:hidden}
@@ -329,7 +335,7 @@ body:not([data-aba="inicio"]) main .wrap{min-height:60vh}
   </section>
   <div class="grid">
     <section class="deck" id="aoVivo" data-ab="inicio" data-aa="inicio" aria-label="Aparelho da rádio">
-      <div class="fig"><canvas id="viz"></canvas><button type="button" id="figIdle" aria-label="Ouvir a rádio ao vivo"><img src="img/logo-econtec.png" alt=""><span>▶ Toque para ouvir ao vivo</span></button><div id="ytwrap"><div id="yt"></div></div></div>
+      <div class="fig"><canvas id="viz"></canvas><button type="button" id="figIdle" aria-label="Ouvir a rádio ao vivo"><img src="img/logo-econtec.png" alt=""><span>▶ Toque para ouvir ao vivo</span></button><div id="ytwrap"><div id="yt"></div><div class="vidBtns"><button type="button" id="vidTam" aria-label="Aumentar o vídeo">⤢ Aumentar vídeo</button><button type="button" id="vidCheia" aria-label="Tela cheia" hidden>⛶ Tela cheia</button></div></div></div>
       <div class="np">
         <div class="logo marca" id="npLogo"><img src="img/e-econtec.png" alt=""></div>
         <div><div class="kind" id="npKind">Aperte "Ligar a rádio"</div><h2 id="npTitle">Rádio ECONTEC</h2><div class="who" id="npWho">Só sucesso, vinhetas e os nossos clientes, 24 horas</div></div>
@@ -490,7 +496,7 @@ const _q=location.search+location.hash;
 /* Administrador só pelo link de admin (?admin). O link de ouvinte é sempre ouvinte. */
 try{localStorage.removeItem('radioEcontec.admin')}catch(e){}
 const ADMIN=/[?&#]admin\b/.test(_q);
-if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 33</span>')}
+if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 34</span>')}
 const CLI_PADRAO=[
  {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'img/logo-econtec.png',zap:ZAP_ECONTEC},
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
@@ -532,6 +538,14 @@ function rng(s){return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296}}
 let tocandoArq=false,volArq=null;
 function volume(){return +$('vol').value}
 let yt=null,ytOk=null;const ytPronto=new Promise(r=>ytOk=r);
+/* Botões do vídeo: aumentar/diminuir (funciona em qualquer aparelho) e tela cheia (onde o navegador permite) */
+{const fig=document.querySelector('.fig'),bT=$('vidTam'),bC=$('vidCheia');let quer=false;
+ const aplica=()=>{const on=$('ytwrap').classList.contains('on')&&quer;document.body.classList.toggle('vidGrande',on);bT.textContent=quer?'⤡ Diminuir vídeo':'⤢ Aumentar vídeo';bT.setAttribute('aria-label',quer?'Diminuir o vídeo':'Aumentar o vídeo')};
+ bT.addEventListener('click',()=>{quer=!quer;if(!quer&&document.fullscreenElement)document.exitFullscreen().catch(()=>{});aplica()});
+ if(document.fullscreenEnabled&&fig.requestFullscreen){bC.hidden=false;bC.addEventListener('click',()=>{if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});else fig.requestFullscreen().then(()=>{try{screen.orientation.lock('landscape').catch(()=>{})}catch(e){}}).catch(()=>{quer=true;aplica()})});
+  document.addEventListener('fullscreenchange',()=>{bC.textContent=document.fullscreenElement?'✕ Sair da tela cheia':'⛶ Tela cheia'})}
+ new MutationObserver(aplica).observe($('ytwrap'),{attributes:true,attributeFilter:['class']});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&quer){quer=false;aplica()}})}
 window.onYouTubeIframeAPIReady=()=>{yt=new YT.Player('yt',{width:'100%',height:'100%',playerVars:{playsinline:1,rel:0,modestbranding:1,controls:0,disablekb:1,origin:location.origin},events:{onReady:()=>ytOk(),onStateChange:e=>ytEv&&ytEv('st',e.data),onError:e=>ytEv&&ytEv('err',e.data)}})};
 let ytEv=null,ytPrimado=null;
 function tocarYT(tr,onProg,ini,ate,ref){
@@ -990,7 +1004,7 @@ async function geraRelatorio(){const n=+$('relDia').value,out=$('relOut');out.in
   return `<div class="relCli"><b>${esc(k)}</b><div class="relNums"><span><strong>${L.length}</strong>vezes no ar</span><span><strong>${on}</strong>aparelhos conectados</span><span><strong>${ouv}</strong>ouvindo na hora</span><span><strong>${pico}</strong>pico de ouvintes</span></div>${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório no WhatsApp do cliente</a>`:`<a class="zapCli" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório pelo WhatsApp</a>`}</div>`}).join('')+'<p class="note">Os números de audiência contam aparelhos com a rádio aberta no minuto do anúncio.</p>'}
 if(ADMIN)$('btnRel').addEventListener('click',geraRelatorio);
 
-const VERSAO=33;
+const VERSAO=34;
 function checaVersao(){fetch('index.html?nv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VERSAO=(\d+)/);if(m&&+m[1]>VERSAO&&!ligado)location.reload()}).catch(()=>{})}
 checaVersao();setInterval(checaVersao,5*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checaVersao()});
 
