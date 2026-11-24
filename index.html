@@ -464,7 +464,7 @@ const _q=location.search+location.hash;
 /* Administrador só pelo link de admin (?admin). O link de ouvinte é sempre ouvinte. */
 try{localStorage.removeItem('radioEcontec.admin')}catch(e){}
 const ADMIN=/[?&#]admin\b/.test(_q);
-if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 26</span>')}
+if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 27</span>')}
 const CLI_PADRAO=[
  {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'img/logo-econtec.png',zap:ZAP_ECONTEC},
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
@@ -507,17 +507,17 @@ let tocandoArq=false,volArq=null;
 function volume(){return +$('vol').value}
 let yt=null,ytOk=null;const ytPronto=new Promise(r=>ytOk=r);
 window.onYouTubeIframeAPIReady=()=>{yt=new YT.Player('yt',{width:'100%',height:'100%',playerVars:{playsinline:1,rel:0,modestbranding:1,controls:0,disablekb:1,origin:location.origin},events:{onReady:()=>ytOk(),onStateChange:e=>ytEv&&ytEv('st',e.data),onError:e=>ytEv&&ytEv('err',e.data)}})};
-let ytEv=null;
+let ytEv=null,ytPrimado=null;
 function tocarYT(tr,onProg,ini,ate){
  return new Promise(async res=>{
   let done=false,tocou=false;const fim=()=>{if(done)return;done=true;clearInterval(iv);clearTimeout(to);ytEv=null;try{yt.stopVideo()}catch(e){}$('ytwrap').classList.remove('on');res(tocou)};
   cancelar=fim;
-  const to=setTimeout(()=>{if(!tocou)fim()},20000);
+  const to=setTimeout(()=>{if(!tocou)fim()},11000);
   await Promise.race([ytPronto,new Promise(r=>setTimeout(r,12000))]);
   if(done)return;if(!yt||!yt.loadVideoById){bot('O player do YouTube não carregou. Verifique a internet.',true);fim();return}
   $('ytwrap').classList.add('on');
   ytEv=(k,v)=>{if(k==='err'){fim()}else if(v===1)tocou=true;else if(v===0)fim()};
-  yt.setVolume(Math.round(volume()*100));yt.loadVideoById(ini>1?{videoId:tr.id,startSeconds:Math.floor(ini)}:tr.id);
+  yt.setVolume(Math.round(volume()*100));if(ytPrimado===tr.id){ytPrimado=null;try{if(yt.getPlayerState()===1)tocou=true}catch(e){}}else{ytPrimado=null;yt.loadVideoById(ini>1?{videoId:tr.id,startSeconds:Math.floor(ini)}:tr.id)}
   const iv=setInterval(()=>{try{const d0=yt.getDuration(),c=yt.getCurrentTime(),d=ate?Math.min(d0,ate):d0;if(d>0){onProg(c/d);const r=d-c;yt.setVolume(Math.round(volume()*100*Math.max(0,Math.min(1,r/3))));if(r<.4&&tocou)fim()}}catch(e){}},300);
  });
 }
@@ -531,10 +531,15 @@ async function falaEmendada(urls,gaps){try{if(!ctx)return false;const bs=await P
  bs.forEach((b,k)=>{const [i,j]=parts[k],d=b.getChannelData(0),n=j-i+1,f=Math.round(.008*sr);for(let x=0;x<n;x++){let v=d[i+x];if(x<f)v*=x/f;if(n-x<f)v*=(n-x)/f;o[pos+x]=v}pos+=n+(k<bs.length-1?Math.round((gaps[k]||.1)*sr):0)});
  await new Promise(res=>{const src=ctx.createBufferSource();src.buffer=out;const g=ctx.createGain();g.gain.value=1.15;src.connect(g);g.connect(master);let done=false;const fim=()=>{if(done)return;done=true;try{src.stop()}catch(e){}res()};src.onended=fim;cancelar=fim;src.start()});return true}catch(e){return false}}
 function preCarregaNome(p){try{if(!ctx)return;const ni=idxNome(p.nome);if(ni===undefined)return;(FRASES.has(ni)?['v/nf/'+String(ni).padStart(3,'0')+'.mp3',]:['v/n/_pedido-de.mp3','v/n/'+String(ni).padStart(3,'0')+'.mp3']).concat([p.tr.parecida?'v/f-parecida.mp3':'v/f-obrigada.mp3']).forEach(u=>bufDe(u).catch(()=>{}))}catch(e){}}
+/* um só elemento de áudio, liberado no toque do ouvinte (celulares bloqueiam áudio novo sem toque) */
+const AUD=new Audio(),AUDF=new Audio();AUD.preload='auto';let audTok=0;if(/[?&]teste\b/.test(location.search))window.__AUD=AUD;
+const SIL='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
+function liberaAudio(){for(const a of [AUD,AUDF]){try{a.muted=true;a.src=SIL;const p=a.play();if(p)p.then(()=>{if(a.src===SIL)a.pause();a.muted=false}).catch(()=>{a.muted=false})}catch(e){}}}
 function tocarArquivo(tr,onProg){
  return new Promise(res=>{
-  const a=new Audio(tr.url);a.preload='auto';if(tr.ini>0.3)a.addEventListener('loadedmetadata',()=>{if(tr.ini<a.duration-0.3)a.currentTime=tr.ini;else fim()},{once:true});a.volume=volume();let done=false;tocandoArq=true;volArq=a;
-  const fim=()=>{if(done)return;done=true;clearInterval(fd);a.pause();tocandoArq=false;if(volArq===a)volArq=null;res()};
+  const tok=++audTok,a=AUD;a.onended=a.onerror=a.ontimeupdate=null;a.pause();a.muted=false;a.loop=false;a.src=tr.url;a.preload='auto';
+  if(tr.ini>0.3)a.addEventListener('loadedmetadata',()=>{if(tok!==audTok)return;if(tr.ini<a.duration-0.3)a.currentTime=tr.ini;else fim()},{once:true});a.volume=volume();let done=false;tocandoArq=true;volArq=a;
+  const fim=()=>{if(done)return;done=true;clearInterval(fd);if(tok===audTok)a.pause();tocandoArq=false;if(volArq===a)volArq=null;res()};
   const fd=setInterval(()=>{if(a.duration&&a.duration>20){const r=a.duration-a.currentTime;a.volume=volume()*Math.max(0,Math.min(1,r/2.5))}else a.volume=volume()},150);
   a.ontimeupdate=()=>onProg(a.duration?a.currentTime/a.duration:0);a.onended=fim;
   a.onerror=()=>{if(tr.silencioso){if(tr.txt)falar(tr.txt,onProg).then(fim);else fim()}else{bot('Não consegui carregar um arquivo de áudio. Pulando para o próximo.',true);setTimeout(fim,1500)}};
@@ -543,10 +548,10 @@ function tocarArquivo(tr,onProg){
  });
 }
 function jingle(){const t=ctx.currentTime+.05;{const s=ctx.createBufferSource(),f=ctx.createBiquadFilter(),g=ctx.createGain();s.buffer=noise;f.type='bandpass';f.Q.value=4;f.frequency.setValueAtTime(300,t);f.frequency.exponentialRampToValueAtTime(6000,t+.45);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.5,t+.35);g.gain.linearRampToValueAtTime(0,t+.5);s.connect(f);f.connect(g);g.connect(musica);s.start(t);s.stop(t+.55)}[72,76,79,84].forEach((m,i)=>tom(musica,mtof(m),t+i*.13,.6,'triangle',.18));return new Promise(r=>setTimeout(r,800))}
-function fundo(){const a=new Audio('m/chill-wave.mp3');a.loop=true;a.volume=0;
+function fundo(){const a=AUDF;a.pause();a.muted=false;a.src='m/chill-wave.mp3';a.loop=true;a.volume=0;const ft=(fundo.tok=(fundo.tok||0)+1);
  a.addEventListener('loadedmetadata',()=>{a.currentTime=Math.random()*Math.max(0,a.duration-60)},{once:true});a.play().catch(()=>{});
- let v=0;const up=setInterval(()=>{v=Math.min(.18,v+.02);a.volume=v*volume()},100);
- return()=>{clearInterval(up);const dn=setInterval(()=>{v=Math.max(0,v-.02);a.volume=v*volume();if(v<=0){clearInterval(dn);a.pause()}},100)}}
+ let v=0;const up=setInterval(()=>{if(fundo.tok!==ft){clearInterval(up);return}v=Math.min(.18,v+.02);a.volume=v*volume()},100);
+ return()=>{clearInterval(up);const dn=setInterval(()=>{v=Math.max(0,v-.02);a.volume=v*volume();if(v<=0){clearInterval(dn);if(fundo.tok===ft)a.pause()}},100)}}
 let voz=null;
 function pegaVoz(){try{const v=speechSynthesis.getVoices().filter(x=>/^pt/i.test(x.lang));const br=v.filter(x=>/BR/i.test(x.lang));
  const fem=/francisca|thalita|leila|yara|brenda|giovanna|elza|manuela|leticia|luciana|fernanda|joana|maria|vitoria|camila|raquel|helena|heloisa|google portugu|x-afs|female|feminin/i,masc=/antonio|daniel|fabio|julio|donato|humberto|nicolau|valerio|felipe|ricardo/i;
@@ -664,7 +669,7 @@ function horaFalada(ms){const x=new Date(ms-FUSO);return['v/h/'+String(x.getUTCH
 async function tocaItem(it,off){
  const [k,t,w,l,z]=descreve(it);mostra(k,t,w,l,z);const pr=x=>prog(x);prog(off/it.dur);
  const resto=()=>it.t0+it.dur*1000-agora();
- if(it.k==='vin'||it.k==='adE'){await tocarArquivo({url:it.k==='adE'?'v/anuncio-econtec.mp3':it.url,ini:off,ate:it.t0+it.dur*1000+400},pr);return}
+ if(it.k==='vin'||it.k==='adE'){try{const {g,i}=noAr(it.t0+50);const nx=g[i+1];if(nx&&nx.k==='musica'&&yt&&yt.cueVideoById&&!modoLivre)yt.cueVideoById(nx.tr.id)}catch(e){}await tocarArquivo({url:it.k==='adE'?'v/anuncio-econtec.mp3':it.url,ini:off,ate:it.t0+it.dur*1000+400},pr);return}
  if(it.k==='hora'){const stop=fundo();const [h,m]=horaFalada(it.t0+11000);
   if(off<10.5)await tocarArquivo({url:'v/f-hora.mp3',ini:off,silencioso:true},pr);
   if(ligado&&resto()>1500){await tocarArquivo({url:h,silencioso:true},()=>{});if(ligado)await tocarArquivo({url:m,silencioso:true},()=>{})}
@@ -707,7 +712,10 @@ setInterval(()=>{if(ligado)return;const {it,off}=noAr(agora());const [k,t,w,l,z]
 setInterval(()=>{renderFila();avisoHom()},15000);
 $('btnPlay').addEventListener('click',async()=>{
  if(!ctx)initAudio();
- if(!ligado){ligado=true;document.body.classList.add('tocando');await ctx.resume();ultimoId=null;$('btnPlay').textContent='Desligar';$('btnSkip').disabled=false;$('lamp').classList.add('live');$('lampTxt').textContent='Ao vivo';loop()}
+ if(!ligado){liberaAudio();try{const {it,off}=noAr(agora());let vid=null,ini=0;
+   if(it.k==='musica'&&!modoLivre){vid=it.tr.id;ini=off}else if(it.k==='pedido'&&off>PED_INTRO){vid=it.p.tr.id;ini=off-PED_INTRO}
+   if(yt&&yt.loadVideoById){if(vid){yt.setVolume(Math.round(volume()*100));yt.loadVideoById({videoId:vid,startSeconds:Math.floor(ini)});ytPrimado=vid}else{yt.mute();yt.loadVideoById(GRADE[0].id);setTimeout(()=>{try{if(yt.getVideoData().video_id===GRADE[0].id&&!ytEv)yt.stopVideo();yt.unMute()}catch(e){}},700)}}}catch(e){}
+  ligado=true;document.body.classList.add('tocando');ctx.resume();ultimoId=null;$('btnPlay').textContent='Desligar';$('btnSkip').disabled=false;$('lamp').classList.add('live');$('lampTxt').textContent='Ao vivo';loop()}
  else{ligado=false;document.body.classList.remove('tocando');if(cancelar)cancelar();$('btnPlay').textContent='Ouvir ao vivo';$('btnSkip').disabled=true;$('lamp').classList.remove('live');$('lampTxt').textContent='Ao vivo (toque para ouvir)'}
 });
 $('btnSkip').addEventListener('click',()=>{if(!ADMIN)return;if(itemAtual){const r=itemAtual.t0+itemAtual.dur*1000-agora();if(r>0)ajuste+=r+100}if(cancelar)cancelar()});
@@ -923,7 +931,7 @@ async function geraRelatorio(){const n=+$('relDia').value,out=$('relOut');out.in
   return `<div class="relCli"><b>${esc(k)}</b><div class="relNums"><span><strong>${L.length}</strong>vezes no ar</span><span><strong>${on}</strong>aparelhos conectados</span><span><strong>${ouv}</strong>ouvindo na hora</span><span><strong>${pico}</strong>pico de ouvintes</span></div>${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório no WhatsApp do cliente</a>`:`<a class="zapCli" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório pelo WhatsApp</a>`}</div>`}).join('')+'<p class="note">Os números de audiência contam aparelhos com a rádio aberta no minuto do anúncio.</p>'}
 if(ADMIN)$('btnRel').addEventListener('click',geraRelatorio);
 
-const VERSAO=26;
+const VERSAO=27;
 function checaVersao(){fetch('index.html?nv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VERSAO=(\d+)/);if(m&&+m[1]>VERSAO&&!ligado)location.reload()}).catch(()=>{})}
 checaVersao();setInterval(checaVersao,5*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checaVersao()});
 
