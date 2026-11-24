@@ -521,7 +521,7 @@ const _q=location.search+location.hash;
 /* Administrador só pelo link de admin (?admin). O link de ouvinte é sempre ouvinte. */
 try{localStorage.removeItem('radioEcontec.admin')}catch(e){}
 const ADMIN=/[?&#]admin\b/.test(_q);
-if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 49</span>')}
+if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 50</span>')}
 const CLI_PADRAO=[
  {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'img/logo-econtec.png',zap:ZAP_ECONTEC},
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
@@ -577,7 +577,7 @@ window.onYouTubeIframeAPIReady=()=>{yt=new YT.Player('yt',{width:'100%',height:'
 let ytEv=null,ytPrimado=null;
 function tocarYT(tr,onProg,ini,ate,ref,durReal){
  return new Promise(async res=>{
-  let done=false,tocou=false;const fim=()=>{if(done)return;done=true;clearInterval(iv);clearTimeout(to);ytEv=null;try{yt.stopVideo()}catch(e){}$('ytwrap').classList.remove('on');res(tocou)};
+  let done=false,tocou=false,iv=null;const fim=()=>{if(done)return;done=true;clearInterval(iv);clearTimeout(to);ytEv=null;try{yt.stopVideo()}catch(e){}$('ytwrap').classList.remove('on');res(tocou)};
   cancelar=fim;
   const to=setTimeout(()=>{if(!tocou)fim()},16000);const espDur=durReal||DUR[tr.id]||ate||0;let emAd=false,kindAntes='';
   await Promise.race([ytPronto,new Promise(r=>setTimeout(r,12000))]);
@@ -585,7 +585,7 @@ function tocarYT(tr,onProg,ini,ate,ref,durReal){
   $('ytwrap').classList.add('on');
   ytEv=(k,v)=>{if(k==='err'){fim()}else if(v===1)tocou=true;else if(v===0)fim()};
   yt.setVolume(Math.round(volume()*100));if(ytPrimado===tr.id){ytPrimado=null;try{if(yt.getPlayerState()===1)tocou=true}catch(e){}}else{ytPrimado=null;yt.loadVideoById(ini>1?{videoId:tr.id,startSeconds:Math.floor(ini)}:tr.id)}
-  let ultAj=0;const iv=setInterval(()=>{try{const d00=yt.getDuration(),vd=yt.getVideoData?yt.getVideoData():null;const ad=(vd&&vd.video_id&&vd.video_id!==tr.id)||(espDur>0&&d00>0&&Math.abs(d00-espDur)>12&&d00<120);
+  let ultAj=0;if(done)return;iv=setInterval(()=>{try{const d00=yt.getDuration(),vd=yt.getVideoData?yt.getVideoData():null;const ad=(vd&&vd.video_id&&vd.video_id!==tr.id)||(espDur>0&&d00>0&&Math.abs(d00-espDur)>12&&d00<120);
    if(ad!==emAd){emAd=ad;if(ad){kindAntes=$('npKind').textContent;$('npKind').textContent='Anúncio do YouTube · a música entra já, no ponto ao vivo'}else if(kindAntes){$('npKind').textContent=kindAntes;ultAj=0}}
    if(ad){if(yt.getPlayerState()===1)tocou=true;return}
    if(ref&&tocou&&Date.now()-ultAj>20000&&yt.getPlayerState()===1){const esp=(agora()-ref)/1000,cur=yt.getCurrentTime();if(Math.abs(cur-esp)>6&&esp>0){yt.seekTo(esp+1,true);ultAj=Date.now()}}if(ref&&ligado&&Date.now()-ultAj>5000&&yt.getPlayerState()===2){yt.seekTo(Math.max(0,(agora()-ref)/1000),true);yt.playVideo();ultAj=Date.now()}
@@ -795,12 +795,13 @@ async function tocaItem(it,off){
  /* música */
  if(it.tr.tipo==='livre'){await tocarArquivo({url:it.tr.url,ini:off,ref:it.t0,ate:it.t0+it.dur*1000+400},pr);return}
  const ate=DUR[it.tr.id]?0:it.dur;
- const reserva=async()=>{const lv=LIVRES[Math.abs(it.t0/1000|0)%LIVRES.length];mostra('Ao vivo · '+lv.estilo+' · sem intervalo',lv.titulo,'Kevin MacLeod (incompetech.com) · Licença CC BY 4.0','img/e-econtec.png','');const dl=DL[lv.id]||200,pos=((agora()-it.t0)/1000)%Math.max(60,dl-5);await tocarArquivo(Object.assign({},lv,{ini:pos,ref:agora()-pos*1000,ate:it.t0+it.dur*1000+300}),pr)};
- if(modoLivre){await reserva();return}
+ /* Se o YouTube falhar nesta música: entra OUTRA música de sucesso do YouTube no lugar (nunca música livre/eletrônica) */
+ const reserva=async()=>{const base=GRADE.filter(x=>!x.desde&&x.id!==it.tr.id);for(let k=0;k<2&&ligado&&resto()>8000;k++){const sub=base[(Math.abs(it.t0/1000|0)+k*7)%base.length];const ate2=Math.max(5,resto()/1000-.5);mostra('Ao vivo · '+sub.estilo,sub.titulo,sub.artista,capa(sub),'');if(await tocarYT(sub,pr,0,Math.min(ate2,DUR[sub.id]||ate2),agora()))return}
+  if(ligado&&resto()>0){mostra('Ao vivo · reconectando','Rádio ECONTEC','Carregando a próxima música…','img/e-econtec.png','');await espera(resto(),false)}};
  let ok=await tocarYT(it.tr,pr,off,ate,it.t0);
  if(!ok&&ligado&&resto()>20000){mostra('Ao vivo · reconectando','Rádio ECONTEC','Carregando a música…','img/e-econtec.png','');ok=await tocarYT(it.tr,pr,(agora()-it.t0)/1000,ate,it.t0)}
  if(ok)falhasYT=0;else if(ligado){falhasYT++;
-  if(falhasYT>=3&&!modoLivre){modoLivre=true;if(!avisouLivre){avisouLivre=true;bot('O YouTube não está tocando neste aparelho agora. Para a rádio não parar, entram as músicas livres da ECONTEC.',true)}setTimeout(()=>{modoLivre=false;falhasYT=0},3*60*1000)}
+  
   if(ligado&&resto()>8000)await reserva()}
 }
 const NOMES=["Maria", "José", "Ana", "João", "Antônio", "Francisco", "Carlos", "Paulo", "Pedro", "Lucas", "Luiz", "Marcos", "Luis", "Gabriel", "Rafael", "Daniel", "Marcelo", "Bruno", "Eduardo", "Felipe", "Raimundo", "Rodrigo", "Manoel", "Mateus", "André", "Fernando", "Fábio", "Leonardo", "Gustavo", "Guilherme", "Leandro", "Tiago", "Anderson", "Ricardo", "Márcio", "Jorge", "Sebastião", "Alexandre", "Roberto", "Edson", "Diego", "Vitor", "Sérgio", "Cláudio", "Matheus", "Thiago", "Geraldo", "Adriano", "Luciano", "Júlio", "Renato", "Alex", "Vinícius", "Rogério", "Samuel", "Ronaldo", "Mário", "Flávio", "Igor", "Douglas", "Davi", "Enzo", "Miguel", "Arthur", "Heitor", "Bernardo", "Benício", "Wellington", "Juliana", "Adriana", "Márcia", "Fernanda", "Patrícia", "Aline", "Sandra", "Camila", "Amanda", "Bruna", "Jéssica", "Letícia", "Júlia", "Luciana", "Vanessa", "Mariana", "Gabriela", "Vera", "Vitória", "Larissa", "Cláudia", "Beatriz", "Luana", "Rita", "Sônia", "Renata", "Eliane", "Débora", "Simone", "Cristina", "Daniela", "Tatiana", "Carla", "Paula", "Raquel", "Natália", "Andréia", "Isabela", "Laura", "Alice", "Valentina", "Helena", "Sophia", "Heloísa", "Lorena", "Lívia", "Manuela", "Cecília", "Eduarda", "Rafaela", "Priscila", "Kelly", "Rosa", "Lúcia", "Regina", "Aparecida", "Fátima", "Dalila", "Joana", "Luzia", "Antônia", "Francisca", "Edna", "Célia", "Silvia", "Tereza", "Marta", "Cleide", "Rosângela", "Elaine", "Abel", "Abner", "Ademir", "Adilson", "Ailton", "Alan", "Alberto", "Aldo", "Alessandro", "Alexsandro", "Alisson", "Altair", "Álvaro", "Amauri", "Anselmo", "Antony", "Arnaldo", "Augusto", "Benedito", "Benjamin", "Breno", "Brayan", "Caio", "Carlito", "Cássio", "Celso", "Cesar", "Cícero", "Cleber", "Cristiano", "Danilo", "Denis", "Deivid", "Dirceu", "Edilson", "Edmilson", "Edvaldo", "Elias", "Emerson", "Erick", "Everton", "Ezequiel", "Fabiano", "Fabrício", "Francis", "Gael", "Gilberto", "Gilmar", "Gilson", "Giovanni", "Hélio", "Henrique", "Hugo", "Humberto", "Iago", "Isaac", "Ítalo", "Ivan", "Jacó", "Jailson", "Jair", "Jefferson", "Jeová", "Joaquim", "Jonas", "Jonathan", "Josué", "Juan", "Juliano", "Kaio", "Kauã", "Kevin", "Leonel", "Lorenzo", "Lourival", "Luan", "Lucca", "Marcelino", "Marcondes", "Mauro", "Maurício", "Max", "Milton", "Moisés", "Murilo", "Nathan", "Nelson", "Nicolas", "Noah", "Odair", "Orlando", "Osmar", "Oswaldo", "Otávio", "Pablo", "Raí", "Ravi", "Reinaldo", "Renan", "Rian", "Robson", "Rodolfo", "Rômulo", "Rubens", "Ruan", "Sandro", "Saulo", "Silvio", "Tales", "Theo", "Thomas", "Valdir", "Valter", "Vagner", "Valdecir", "Vicente", "Wagner", "Waldir", "Washington", "Weslley", "Willian", "Wilson", "Yuri", "Zé", "Adriele", "Agatha", "Alana", "Alessandra", "Aléxia", "Alícia", "Ana Clara", "Ana Júlia", "Ana Paula", "Andressa", "Ângela", "Antonella", "Bárbara", "Benedita", "Bianca", "Brenda", "Carina", "Carolina", "Catarina", "Clara", "Clarice", "Cleusa", "Conceição", "Cristiane", "Dayane", "Denise", "Diana", "Edilene", "Eliana", "Eloá", "Elisa", "Elisângela", "Emanuelly", "Emília", "Ester", "Eva", "Fabiana", "Flávia", "Gisele", "Giovana", "Glória", "Graça", "Iara", "Inês", "Ingrid", "Iolanda", "Irene", "Isabel", "Isabelly", "Isadora", "Ivone", "Jaqueline", "Jane", "Janaína", "Josiane", "Joyce", "Jucélia", "Jussara", "Karen", "Karina", "Kátia", "Kauane", "Lara", "Leila", "Liliane", "Luna", "Madalena", "Maitê", "Marcela", "Margarida", "Maria Clara", "Maria Eduarda", "Maria Luiza", "Mariane", "Marilene", "Marina", "Marisa", "Maysa", "Melissa", "Michele", "Mirela", "Mirian", "Mônica", "Nair", "Neide", "Nicole", "Nilza", "Olívia", "Pâmela", "Pietra", "Rayane", "Rebeca", "Roberta", "Rosana", "Rosilene", "Sabrina", "Samara", "Sara", "Sarah", "Selma", "Sheila", "Sofia", "Solange", "Stefany", "Suelen", "Tânia", "Telma", "Thaís", "Valéria", "Vânia", "Viviane", "Yasmin", "Zilda", "Zuleide"];
@@ -1076,7 +1077,7 @@ async function geraRelatorio(){const n=+$('relDia').value,out=$('relOut');out.in
   return `<div class="relCli"><b>${esc(k)}</b><div class="relNums"><span><strong>${L.length}</strong>vezes no ar</span><span><strong>${on}</strong>aparelhos conectados</span><span><strong>${ouv}</strong>ouvindo na hora</span><span><strong>${pico}</strong>pico de ouvintes</span></div>${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório no WhatsApp do cliente</a>`:`<a class="zapCli" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório pelo WhatsApp</a>`}</div>`}).join('')+'<p class="note">Os números de audiência contam aparelhos com a rádio aberta no minuto do anúncio.</p>'}
 if(ADMIN)$('btnRel').addEventListener('click',geraRelatorio);
 
-const VERSAO=49;
+const VERSAO=50;
 function checaVersao(){fetch('index.html?nv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VERSAO=(\d+)/);if(m&&+m[1]>VERSAO){if(!ligado)location.reload();else novaVersao=true}}).catch(()=>{})}
 /* versão nova com a rádio tocando: atualiza sozinha numa vinheta (só com a tela aberta) e volta a tocar */
 let novaVersao=false;setInterval(()=>{if(!novaVersao||!ligado||document.hidden)return;try{const {it,off}=noAr(agora());if(it.k==='vin'&&off<3){sessionStorage.setItem('retomar','1');location.reload()}}catch(e){}},1000);
