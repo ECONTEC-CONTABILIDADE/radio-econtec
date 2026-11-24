@@ -261,6 +261,7 @@ body.tocando #figIdle{display:none}
 .proxAn:empty{display:none}
 .redesCli{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:4px;font-size:13px}.redesCli a{color:#ffd978!important;font-weight:600;text-decoration:none}
 .cadRec{margin:12px 0;padding:12px 14px;border-radius:14px;background:#2a1a05;border:1px solid #f0c14b66}.cadRec h4{margin:0 0 4px}
+.tocadas li[data-agora]{background:#f0c14b1f;border-radius:10px}
 .proxAn{margin:12px 0 4px;padding:12px 14px;border-radius:14px;background:#0f2a17;border:1px solid #2ecc7155;color:#d6f8e1;font-size:14px;line-height:1.5}
 .proxAn ul{margin:6px 0 0;padding-left:18px}
 .proxAn.alerta{background:#2a1a05;border-color:#f0c14b88;color:#ffe7a6}
@@ -368,6 +369,8 @@ body:not([data-aba="inicio"]) main .wrap{min-height:60vh}
       <h3>A seguir no ao vivo</h3>
       <div id="homAviso" class="meuPed" hidden></div>
       <ol class="q" id="fila"></ol>
+      <h3 style="margin-top:14px">🎶 Tocaram agora há pouco</h3>
+      <ol class="q tocadas" id="tocadas"></ol>
       <p class="note">A rádio é ao vivo: todo mundo ouve a mesma programação, na mesma hora. Quando chega um pedido, ele toca logo depois da música atual, para todos os ouvintes, com o nome de quem pediu na tela e na voz da locutora. A cada 5 músicas entra o intervalo com a hora certa e os anúncios dos nossos clientes.</p>
     </section>
 
@@ -509,7 +512,7 @@ const _q=location.search+location.hash;
 /* Administrador só pelo link de admin (?admin). O link de ouvinte é sempre ouvinte. */
 try{localStorage.removeItem('radioEcontec.admin')}catch(e){}
 const ADMIN=/[?&#]admin\b/.test(_q);
-if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 35</span>')}
+if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 36</span>')}
 const CLI_PADRAO=[
  {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'img/logo-econtec.png',zap:ZAP_ECONTEC},
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
@@ -565,13 +568,16 @@ function tocarYT(tr,onProg,ini,ate,ref){
  return new Promise(async res=>{
   let done=false,tocou=false;const fim=()=>{if(done)return;done=true;clearInterval(iv);clearTimeout(to);ytEv=null;try{yt.stopVideo()}catch(e){}$('ytwrap').classList.remove('on');res(tocou)};
   cancelar=fim;
-  const to=setTimeout(()=>{if(!tocou)fim()},11000);
+  const to=setTimeout(()=>{if(!tocou)fim()},16000);const espDur=DUR[tr.id]||ate||0;let emAd=false,kindAntes='';
   await Promise.race([ytPronto,new Promise(r=>setTimeout(r,12000))]);
   if(done)return;if(!yt||!yt.loadVideoById){bot('O player do YouTube não carregou. Verifique a internet.',true);fim();return}
   $('ytwrap').classList.add('on');
   ytEv=(k,v)=>{if(k==='err'){fim()}else if(v===1)tocou=true;else if(v===0)fim()};
   yt.setVolume(Math.round(volume()*100));if(ytPrimado===tr.id){ytPrimado=null;try{if(yt.getPlayerState()===1)tocou=true}catch(e){}}else{ytPrimado=null;yt.loadVideoById(ini>1?{videoId:tr.id,startSeconds:Math.floor(ini)}:tr.id)}
-  let ultAj=0;const iv=setInterval(()=>{try{if(ref&&tocou&&Date.now()-ultAj>3000&&yt.getPlayerState()===1){const esp=(agora()-ref)/1000,cur=yt.getCurrentTime();if(Math.abs(cur-esp)>1.5&&esp>0){yt.seekTo(esp,true);ultAj=Date.now()}}if(ref&&ligado&&Date.now()-ultAj>3000&&yt.getPlayerState()===2){yt.seekTo(Math.max(0,(agora()-ref)/1000),true);yt.playVideo();ultAj=Date.now()}
+  let ultAj=0;const iv=setInterval(()=>{try{const d00=yt.getDuration(),vd=yt.getVideoData?yt.getVideoData():null;const ad=(vd&&vd.video_id&&vd.video_id!==tr.id)||(espDur>0&&d00>0&&Math.abs(d00-espDur)>12&&d00<120);
+   if(ad!==emAd){emAd=ad;if(ad){kindAntes=$('npKind').textContent;$('npKind').textContent='Anúncio do YouTube · a música entra já, no ponto ao vivo'}else if(kindAntes){$('npKind').textContent=kindAntes;ultAj=0}}
+   if(ad){if(yt.getPlayerState()===1)tocou=true;return}
+   if(ref&&tocou&&Date.now()-ultAj>3000&&yt.getPlayerState()===1){const esp=(agora()-ref)/1000,cur=yt.getCurrentTime();if(Math.abs(cur-esp)>1.5&&esp>0){yt.seekTo(esp,true);ultAj=Date.now()}}if(ref&&ligado&&Date.now()-ultAj>3000&&yt.getPlayerState()===2){yt.seekTo(Math.max(0,(agora()-ref)/1000),true);yt.playVideo();ultAj=Date.now()}
   const d0=yt.getDuration(),c=yt.getCurrentTime(),d=ate?Math.min(d0,ate):d0;if(d>0){onProg(c/d);const r=d-c;yt.setVolume(Math.round(volume()*100*Math.max(0,Math.min(1,r/3))));if(r<.4&&tocou)fim()}}catch(e){}},300);
  });
 }
@@ -718,8 +724,13 @@ function descreve(it){
  if(it.tr.tipo==='livre')return['Ao vivo · '+it.tr.estilo+' · sem intervalo',it.tr.titulo,'Kevin MacLeod (incompetech.com) · Licença CC BY 4.0','img/e-econtec.png',''];
  return['Ao vivo · '+it.tr.estilo,it.tr.titulo,it.tr.artista,capa(it.tr),''];
 }
+function renderTocadas(ms,g,i){const el=$('tocadas');if(!el)return;const L=[];const d=Math.floor((ms-FUSO)/DIA);let G=g,j=i;
+ const lin=x=>x.k==='pedido'?`<li class="ped"><span><b>${esc(x.p.tr.titulo)}</b> · ${esc(x.p.tr.artista)}</span><span class="tag">${hhmm(x.t0)} · 🙋 pedido de ${esc(x.p.nome)}</span></li>`:`<li><span><b>${esc(x.tr.titulo)}</b> · ${esc(x.tr.artista)}</span><span class="tag">${hhmm(x.t0)} · ${x.hom?'🏆 Homenagem':esc(x.tr.estilo)}${x.tr.tipo==='livre'?' · sem intervalo':''}</span></li>`;
+ for(let k=j;k>=0&&L.length<10;k--){const x=G[k];if(x.t0>ms)continue;if(x.k==='musica'||x.k==='pedido')L.push(x)}
+ if(L.length<10){const g2=gradeViva(d-1).g;for(let k=g2.length-1;k>=0&&L.length<10;k--){const x=g2[k];if(x.k==='musica'||x.k==='pedido')L.push(x)}}
+ el.innerHTML=L.map((x,n)=>n===0?lin(x).replace('<li','<li data-agora="1"').replace('<span class="tag">','<span class="tag">▶ tocando agora · '):lin(x)).join('')}
 function renderFila(){
- const ms=agora(),{g,i}=noAr(ms),prox=[];
+ const ms=agora(),{g,i}=noAr(ms),prox=[];try{renderTocadas(ms,g,i)}catch(e){}
  for(let j=i+1;j<g.length&&prox.length<6;j++)if(g[j].k==='musica'||g[j].k==='pedido')prox.push(g[j]);
  const d=Math.floor((ms-FUSO)/DIA),pend=gradeViva(d).pendentes||[];prox.filter(x=>x.k==='pedido'&&x.t0-ms<3e5).forEach(x=>preCarregaNome(x.p));
  $('fila').innerHTML=prox.map(x=>x.k==='pedido'?`<li class="ped"><span><b>${esc(x.p.tr.titulo)}</b> · ${esc(x.p.tr.artista)}</span><span class="tag">${hhmm(x.t0)} · pedido de ${esc(x.p.nome)}</span></li>`:`<li><span><b>${esc(x.tr.titulo)}</b> · ${esc(x.tr.artista)}</span><span class="tag">${hhmm(x.t0)} · ${esc(x.tr.estilo)}</span></li>`).concat(pend.slice(0,3).map(p=>`<li class="ped"><span><b>${esc(p.tr.titulo)}</b> · ${esc(p.tr.artista)}</span><span class="tag">na fila · pedido de ${esc(p.nome)}</span></li>`)).slice(0,7).join('');
@@ -753,11 +764,12 @@ async function tocaItem(it,off){
  /* música */
  if(it.tr.tipo==='livre'){await tocarArquivo({url:it.tr.url,ini:off,ref:it.t0,ate:it.t0+it.dur*1000+400},pr);return}
  const ate=DUR[it.tr.id]?0:it.dur;
- if(modoLivre){const lv=LIVRES[Math.abs(it.t0/1000|0)%LIVRES.length];mostra('Ao vivo · '+lv.estilo,lv.titulo,lv.artista,'','');await tocarArquivo(Object.assign({},lv,{ini:off}),pr);return}
+ const reserva=async()=>{const lv=LIVRES[Math.abs(it.t0/1000|0)%LIVRES.length];mostra('Ao vivo · '+lv.estilo+' · sem intervalo',lv.titulo,'Kevin MacLeod (incompetech.com) · Licença CC BY 4.0','img/e-econtec.png','');const dl=DL[lv.id]||200,pos=((agora()-it.t0)/1000)%Math.max(60,dl-5);await tocarArquivo(Object.assign({},lv,{ini:pos,ref:agora()-pos*1000,ate:it.t0+it.dur*1000+300}),pr)};
+ if(modoLivre){await reserva();return}
  const ok=await tocarYT(it.tr,pr,off,ate,it.t0);
  if(ok)falhasYT=0;else if(ligado){falhasYT++;
   if(falhasYT>=3&&!modoLivre){modoLivre=true;if(!avisouLivre){avisouLivre=true;bot('O YouTube não está tocando neste aparelho agora. Para a rádio não parar, entram as músicas livres da ECONTEC.',true)}setTimeout(()=>{modoLivre=false;falhasYT=0},10*60*1000)}
-  if(ligado&&resto()>15000){const lv=LIVRES[Math.abs(it.t0/1000|0)%LIVRES.length];mostra('Ao vivo · '+lv.estilo,lv.titulo,lv.artista,'','');await tocarArquivo(lv,pr)}}
+  if(ligado&&resto()>8000)await reserva()}
 }
 const NOMES=["Maria", "José", "Ana", "João", "Antônio", "Francisco", "Carlos", "Paulo", "Pedro", "Lucas", "Luiz", "Marcos", "Luis", "Gabriel", "Rafael", "Daniel", "Marcelo", "Bruno", "Eduardo", "Felipe", "Raimundo", "Rodrigo", "Manoel", "Mateus", "André", "Fernando", "Fábio", "Leonardo", "Gustavo", "Guilherme", "Leandro", "Tiago", "Anderson", "Ricardo", "Márcio", "Jorge", "Sebastião", "Alexandre", "Roberto", "Edson", "Diego", "Vitor", "Sérgio", "Cláudio", "Matheus", "Thiago", "Geraldo", "Adriano", "Luciano", "Júlio", "Renato", "Alex", "Vinícius", "Rogério", "Samuel", "Ronaldo", "Mário", "Flávio", "Igor", "Douglas", "Davi", "Enzo", "Miguel", "Arthur", "Heitor", "Bernardo", "Benício", "Wellington", "Juliana", "Adriana", "Márcia", "Fernanda", "Patrícia", "Aline", "Sandra", "Camila", "Amanda", "Bruna", "Jéssica", "Letícia", "Júlia", "Luciana", "Vanessa", "Mariana", "Gabriela", "Vera", "Vitória", "Larissa", "Cláudia", "Beatriz", "Luana", "Rita", "Sônia", "Renata", "Eliane", "Débora", "Simone", "Cristina", "Daniela", "Tatiana", "Carla", "Paula", "Raquel", "Natália", "Andréia", "Isabela", "Laura", "Alice", "Valentina", "Helena", "Sophia", "Heloísa", "Lorena", "Lívia", "Manuela", "Cecília", "Eduarda", "Rafaela", "Priscila", "Kelly", "Rosa", "Lúcia", "Regina", "Aparecida", "Fátima", "Dalila", "Joana", "Luzia", "Antônia", "Francisca", "Edna", "Célia", "Silvia", "Tereza", "Marta", "Cleide", "Rosângela", "Elaine", "Abel", "Abner", "Ademir", "Adilson", "Ailton", "Alan", "Alberto", "Aldo", "Alessandro", "Alexsandro", "Alisson", "Altair", "Álvaro", "Amauri", "Anselmo", "Antony", "Arnaldo", "Augusto", "Benedito", "Benjamin", "Breno", "Brayan", "Caio", "Carlito", "Cássio", "Celso", "Cesar", "Cícero", "Cleber", "Cristiano", "Danilo", "Denis", "Deivid", "Dirceu", "Edilson", "Edmilson", "Edvaldo", "Elias", "Emerson", "Erick", "Everton", "Ezequiel", "Fabiano", "Fabrício", "Francis", "Gael", "Gilberto", "Gilmar", "Gilson", "Giovanni", "Hélio", "Henrique", "Hugo", "Humberto", "Iago", "Isaac", "Ítalo", "Ivan", "Jacó", "Jailson", "Jair", "Jefferson", "Jeová", "Joaquim", "Jonas", "Jonathan", "Josué", "Juan", "Juliano", "Kaio", "Kauã", "Kevin", "Leonel", "Lorenzo", "Lourival", "Luan", "Lucca", "Marcelino", "Marcondes", "Mauro", "Maurício", "Max", "Milton", "Moisés", "Murilo", "Nathan", "Nelson", "Nicolas", "Noah", "Odair", "Orlando", "Osmar", "Oswaldo", "Otávio", "Pablo", "Raí", "Ravi", "Reinaldo", "Renan", "Rian", "Robson", "Rodolfo", "Rômulo", "Rubens", "Ruan", "Sandro", "Saulo", "Silvio", "Tales", "Theo", "Thomas", "Valdir", "Valter", "Vagner", "Valdecir", "Vicente", "Wagner", "Waldir", "Washington", "Weslley", "Willian", "Wilson", "Yuri", "Zé", "Adriele", "Agatha", "Alana", "Alessandra", "Aléxia", "Alícia", "Ana Clara", "Ana Júlia", "Ana Paula", "Andressa", "Ângela", "Antonella", "Bárbara", "Benedita", "Bianca", "Brenda", "Carina", "Carolina", "Catarina", "Clara", "Clarice", "Cleusa", "Conceição", "Cristiane", "Dayane", "Denise", "Diana", "Edilene", "Eliana", "Eloá", "Elisa", "Elisângela", "Emanuelly", "Emília", "Ester", "Eva", "Fabiana", "Flávia", "Gisele", "Giovana", "Glória", "Graça", "Iara", "Inês", "Ingrid", "Iolanda", "Irene", "Isabel", "Isabelly", "Isadora", "Ivone", "Jaqueline", "Jane", "Janaína", "Josiane", "Joyce", "Jucélia", "Jussara", "Karen", "Karina", "Kátia", "Kauane", "Lara", "Leila", "Liliane", "Luna", "Madalena", "Maitê", "Marcela", "Margarida", "Maria Clara", "Maria Eduarda", "Maria Luiza", "Mariane", "Marilene", "Marina", "Marisa", "Maysa", "Melissa", "Michele", "Mirela", "Mirian", "Mônica", "Nair", "Neide", "Nicole", "Nilza", "Olívia", "Pâmela", "Pietra", "Rayane", "Rebeca", "Roberta", "Rosana", "Rosilene", "Sabrina", "Samara", "Sara", "Sarah", "Selma", "Sheila", "Sofia", "Solange", "Stefany", "Suelen", "Tânia", "Telma", "Thaís", "Valéria", "Vânia", "Viviane", "Yasmin", "Zilda", "Zuleide"];
 const fuz=t=>norm(t).replace(/y/g,'i').replace(/th/g,'t').replace(/ph/g,'f').replace(/w/g,'v').replace(/k/g,'c').replace(/h/g,'').replace(/(.)\1+/g,'$1').trim();
@@ -1022,7 +1034,7 @@ async function geraRelatorio(){const n=+$('relDia').value,out=$('relOut');out.in
   return `<div class="relCli"><b>${esc(k)}</b><div class="relNums"><span><strong>${L.length}</strong>vezes no ar</span><span><strong>${on}</strong>aparelhos conectados</span><span><strong>${ouv}</strong>ouvindo na hora</span><span><strong>${pico}</strong>pico de ouvintes</span></div>${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório no WhatsApp do cliente</a>`:`<a class="zapCli" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório pelo WhatsApp</a>`}</div>`}).join('')+'<p class="note">Os números de audiência contam aparelhos com a rádio aberta no minuto do anúncio.</p>'}
 if(ADMIN)$('btnRel').addEventListener('click',geraRelatorio);
 
-const VERSAO=35;
+const VERSAO=36;
 function checaVersao(){fetch('index.html?nv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VERSAO=(\d+)/);if(m&&+m[1]>VERSAO&&!ligado)location.reload()}).catch(()=>{})}
 checaVersao();setInterval(checaVersao,5*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checaVersao()});
 
