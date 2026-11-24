@@ -43,6 +43,8 @@ h2{font-family:Outfit,sans-serif;font-size:28px;text-align:center;margin:40px 0 
 footer{text-align:center;color:#bfa9a9;font-size:13px;margin-top:30px}
 footer a{color:#ffd978}
 .promo{margin:0 0 14px;padding:14px 18px;border-radius:16px;background:linear-gradient(90deg,#f0c14b,#ffd978);color:#2a1a00;font-weight:800;font-size:18px;text-align:center}
+.experimental{margin:0 0 18px;padding:22px;border-radius:22px;background:linear-gradient(135deg,#2a1a05,#140b0c);border:2px solid #f0c14b;text-align:center}.experimental p{color:#f3e2c0;line-height:1.6}.experimental .cta{display:inline-block;margin-top:6px}
+.experimental[hidden],#blocoPlanos[hidden]{display:none}
 </style>
 </head>
 <body>
@@ -63,6 +65,8 @@ footer a{color:#ffd978}
   <div><b>📈 Relatório</b>Você recebe quantas vezes o anúncio tocou e quantos aparelhos estavam ouvindo.</div>
 </div>
 
+<div id="experimental" class="experimental"><h2 style="margin-top:0">🎉 Fase experimental: anuncie grátis</h2><p>Nestes primeiros meses a Rádio ECONTEC está em fase experimental, e o anúncio da sua empresa entra no ar <b>sem custo</b>. Chame a ECONTEC no WhatsApp e garanta o seu espaço.</p><a class="cta" id="ctaExp" href="#" target="_blank" rel="noopener">💬 Quero anunciar grátis</a></div>
+<div id="blocoPlanos" hidden>
 <h2>Planos</h2>
 <div id="promo" class="promo" hidden></div>
 <div class="planos">
@@ -70,10 +74,11 @@ footer a{color:#ffd978}
   <div class="plano dest"><h3>Destaque</h3><div class="preco">Consulte o valor</div><ul><li>Tudo do Essencial</li><li>Locução profissional da Betina com fundo musical</li><li>Sua logo na tela durante o anúncio</li><li>Relatório mensal no WhatsApp</li></ul><a href="#" data-plano="Destaque" target="_blank" rel="noopener">Quero este plano</a></div>
   <div class="plano"><h3>Patrocinador</h3><div class="preco">Consulte o valor</div><ul><li>Tudo do Destaque</li><li>"Oferecimento" na hora certa</li><li>Mais vezes no ar por dia</li><li>Relatório semanal</li></ul><a href="#" data-plano="Patrocinador" target="_blank" rel="noopener">Quero este plano</a></div>
 </div>
+</div>
 
 <h2>Como funciona</h2>
 <div class="passos">
-  <div><i>1</i><br>Você chama a ECONTEC no WhatsApp e escolhe o plano.</div>
+  <div><i>1</i><br>Você chama a ECONTEC no WhatsApp.</div>
   <div><i>2</i><br>Manda o texto do anúncio, sua logo e o seu WhatsApp. A gente ajuda a escrever.</div>
   <div><i>3</i><br>Gravamos a locução e o seu anúncio entra no ar para todos os ouvintes.</div>
 </div>
@@ -89,9 +94,9 @@ footer a{color:#ffd978}
 const ZAP='5564984192320';
 const link=t=>'https://wa.me/'+ZAP+'?text='+encodeURIComponent(t);
 const base='Olá, ECONTEC! Quero anunciar a minha empresa na Rádio ECONTEC.';
-document.getElementById('ctaTopo').href=link(base);document.getElementById('ctaFim').href=link(base);
+document.getElementById('ctaTopo').href=link(base);document.getElementById('ctaExp').href=link(base+' Vi que está grátis na fase experimental.');document.getElementById('ctaFim').href=link(base);
 document.querySelectorAll('[data-plano]').forEach(a=>a.href=link(base+' Tenho interesse no plano '+a.dataset.plano+'.'));
-fetch('config.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(c=>{if(!c)return;const p=c.precos||{};
+fetch('config.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(c=>{if(!c||!c.planosOn)return;document.getElementById('blocoPlanos').hidden=false;document.getElementById('experimental').hidden=true;const p=c.precos||{};
  document.querySelectorAll('.plano').forEach(el=>{const n=el.querySelector('h3').textContent.trim(),v=(p[n]||'').trim();if(v)el.querySelector('.preco').textContent=v});
  if(c.promo){const b=document.getElementById('promo');b.textContent='🔥 '+c.promo;b.hidden=false}}).catch(()=>{});
 </script>
