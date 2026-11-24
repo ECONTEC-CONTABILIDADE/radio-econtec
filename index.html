@@ -250,6 +250,7 @@ body.tocando #figIdle{display:none}
 .cl p{line-height:1.45;margin:4px 0 8px}
 .cl .zapCli{display:inline-flex;width:auto;max-width:none;flex-wrap:nowrap;min-height:38px;padding:6px 14px;font-size:14px;margin-top:2px;box-shadow:none}
 .cl .zapCli span{flex-basis:auto;font-size:13px}
+.tagGrav{display:inline-block;margin-left:6px;padding:2px 8px;border-radius:99px;background:#f0c14b22;color:#ffd978;font-size:12px;font-weight:700}
 .btnOuvir{background:#2a1a1c;color:#ffd978;border:1px solid #f0c14b66;border-radius:12px;font-weight:700;padding:10px 12px;flex:1 1 100px}
 .proxAn:empty{display:none}
 .proxAn{margin:12px 0 4px;padding:12px 14px;border-radius:14px;background:#0f2a17;border:1px solid #2ecc7155;color:#d6f8e1;font-size:14px;line-height:1.5}
@@ -380,7 +381,7 @@ body:not([data-aba="inicio"]) main .wrap{min-height:60vh}
       </form>
       <p class="note">Toque no WhatsApp para falar direto com o anunciante. Durante cada anúncio também aparece o botão do WhatsApp na tela.</p>
       <p id="admAviso" class="admAviso adm" hidden></p>
-      <p class="note adm">Área do administrador. Tudo o que você adicionar, editar, cancelar ou excluir aqui vale para a rádio de todos os ouvintes em poucos segundos. Use "▶ Ouvir" para escutar como o anúncio vai sair no ar. Só os anúncios ativos (sem a etiqueta Cancelado) entram nos intervalos.</p>
+      <p class="note adm">Área do administrador. Tudo o que você adicionar, editar, cancelar ou excluir aqui vale para a rádio de todos os ouvintes em poucos segundos. Todos os anúncios saem na voz da locutora Betina. Anúncio novo fica com a etiqueta "Aguardando gravação" até ser gravado; enquanto isso ele aparece na tela com fundo musical, sem voz. Só os anúncios ativos (sem a etiqueta Cancelado) entram nos intervalos.</p>
     </section>
 
     <section class="card adm" id="ajustes" data-ab="-" data-aa="ajustes" aria-label="Planos e preços">
@@ -486,7 +487,7 @@ const _q=location.search+location.hash;
 /* Administrador só pelo link de admin (?admin). O link de ouvinte é sempre ouvinte. */
 try{localStorage.removeItem('radioEcontec.admin')}catch(e){}
 const ADMIN=/[?&#]admin\b/.test(_q);
-if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 28</span>')}
+if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 29</span>')}
 const CLI_PADRAO=[
  {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'img/logo-econtec.png',zap:ZAP_ECONTEC},
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
@@ -564,7 +565,7 @@ function tocarArquivo(tr,onProg){
   const fim=()=>{if(done)return;done=true;clearInterval(fd);if(tok===audTok)a.pause();tocandoArq=false;if(volArq===a)volArq=null;res()};
   const fd=setInterval(()=>{if(a.duration&&a.duration>20){const r=a.duration-a.currentTime;a.volume=volume()*Math.max(0,Math.min(1,r/2.5))}else a.volume=volume()},150);
   a.ontimeupdate=()=>onProg(a.duration?a.currentTime/a.duration:0);a.onended=fim;
-  a.onerror=()=>{if(tr.silencioso){if(tr.txt)falar(tr.txt,onProg).then(fim);else fim()}else{bot('Não consegui carregar um arquivo de áudio. Pulando para o próximo.',true);setTimeout(fim,1500)}};
+  a.onerror=()=>{if(tr.silencioso){fim()}else{bot('Não consegui carregar um arquivo de áudio. Pulando para o próximo.',true);setTimeout(fim,1500)}};
   cancelar=fim;a.play().catch(()=>setTimeout(fim,1500));
   if(tr.ate){const r=tr.ate-agora();setTimeout(fim,Math.max(0,r))}
  });
@@ -696,14 +697,14 @@ async function tocaItem(it,off){
   if(off<10.5)await tocarArquivo({url:'v/f-hora.mp3',ini:off,silencioso:true},pr);
   if(ligado&&resto()>1500){await tocarArquivo({url:h,silencioso:true},()=>{});if(ligado)await tocarArquivo({url:m,silencioso:true},()=>{})}
   stop();return}
- if(it.k==='adC'){const stop=fundo();if(it.au)await tocarArquivo({url:it.au,ini:off,silencioso:true,txt:off<4?it.c.txt:'',ate:it.t0+it.dur*1000+400},pr);else if(off<4)await falar(it.c.txt,pr);stop();return}
+ if(it.k==='adC'){const stop=fundo();if(it.au)await tocarArquivo({url:it.au,ini:off,silencioso:true,ate:it.t0+it.dur*1000+400},pr);else await espera(it.t0+it.dur*1000-agora(),false);stop();return}
  if(it.k==='pedido'){const p=it.p,tr=p.tr;
   if(off<PED_INTRO-1){mostra(`Obrigado, ${p.nome}!`,tr.titulo,'Em nome da ECONTEC Contabilidade e de todos os nossos clientes','img/e-econtec.png','');const stop=fundo();
    if(off<2){const ni=idxNome(p.nome);
     const fim=tr.parecida?'v/f-parecida.mp3':'v/f-obrigada.mp3';
     if(ni!==undefined&&FRASES.has(ni)){if(!await falaEmendada(['v/nf/'+String(ni).padStart(3,'0')+'.mp3',fim],[0.3]))await tocarArquivo({url:'v/nf/'+String(ni).padStart(3,'0')+'.mp3',silencioso:true},()=>{})}
     else if(ni!==undefined){if(!await falaEmendada(['v/n/_pedido-de.mp3','v/n/'+String(ni).padStart(3,'0')+'.mp3',fim],[0.06,0.22])){await tocarArquivo({url:'v/n/_pedido-de.mp3',silencioso:true},()=>{});if(ligado)await tocarArquivo({url:'v/n/'+String(ni).padStart(3,'0')+'.mp3',silencioso:true},()=>{});if(ligado)await tocarArquivo({url:fim,silencioso:true},()=>{})}}
-    else{await tocarArquivo({url:'v/n/_pedido-de.mp3',silencioso:true},()=>{});if(ligado)await falar(p.nome.split(/\s+/).slice(0,2).join(' ')+'!',()=>{});if(ligado)await tocarArquivo({url:fim,silencioso:true},()=>{})}}
+    else{await tocarArquivo({url:'v/n/_especial.mp3',silencioso:true},()=>{});if(ligado)await tocarArquivo({url:fim,silencioso:true},()=>{})}}
    if(ligado)await espera(it.t0+PED_INTRO*1000-agora(),false);stop()}
   if(!ligado)return;const o2=Math.max(0,(agora()-it.t0)/1000-PED_INTRO);
   if(o2<p.dur-3){mostra(`Pedido de ${p.nome}`,tr.titulo,tr.artista,capa(tr),'');const ok=await tocarYT(tr,x=>prog(x),o2,p.dur);if(ok)falhasYT=0}
@@ -828,7 +829,7 @@ async function publica(lista,msg,cfg){cfg=cfg||cfgAtual;if(publicando)return fal
  finally{publicando=false;document.body.classList.remove('publicando')}}
 function renderCli(){
  const L=ADMIN?anuncios.map((c,i)=>Object.assign({},c,{_i:i})):clientes;
- $('clientes').innerHTML=L.map(c=>`<div class="cl${c.cancelado?' cancelado':''}"><div class="lg">${c.logo?`<img src="${esc(c.logo)}" alt="">`:esc(c.nome[0]||'?')}</div><div><b>${esc(c.nome)}</b>${c.cancelado?' <span class="tagCanc">Cancelado</span>':''}<p>${esc(c.txt)}</p>${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.2c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.9s.7-2.1 1-2.4c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .5l-.4.6-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l2 .9c.3.1.5.2.5.3.1.1.1.7-.1 1.3z"/></svg>Chamar no WhatsApp <span>${esc(zapFmt(c.zap))}</span></a>`:''}</div>${ADMIN?`<div style="display:grid;gap:6px">${c.cancelado?`<button type="button" class="btnEd" data-reat="${c._i}">Reativar</button>`:`<button type="button" class="btnOuvir" data-ouvir="${c._i}">▶ Ouvir</button><button type="button" class="btnEd" data-ed="${c._i}">Editar</button><button type="button" class="btnPausa" data-pausa="${c._i}">Cancelar</button>`}<button type="button" class="btnCanc" data-exc="${c._i}">Excluir</button></div>`:''}</div>`).join('')||'<p class="note">Nenhum anúncio no momento.</p>';
+ $('clientes').innerHTML=L.map(c=>`<div class="cl${c.cancelado?' cancelado':''}"><div class="lg">${c.logo?`<img src="${esc(c.logo)}" alt="">`:esc(c.nome[0]||'?')}</div><div><b>${esc(c.nome)}</b>${c.cancelado?' <span class="tagCanc">Cancelado</span>':''}${ADMIN&&!c.cancelado&&!ehBase(c)&&!(c.audio||AUDIO_CLI[c.nome])?' <span class="tagGrav">🎙️ Aguardando gravação da Betina</span>':''}<p>${esc(c.txt)}</p>${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.2c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.9s.7-2.1 1-2.4c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .5l-.4.6-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l2 .9c.3.1.5.2.5.3.1.1.1.7-.1 1.3z"/></svg>Chamar no WhatsApp <span>${esc(zapFmt(c.zap))}</span></a>`:''}</div>${ADMIN?`<div style="display:grid;gap:6px">${c.cancelado?`<button type="button" class="btnEd" data-reat="${c._i}">Reativar</button>`:`<button type="button" class="btnOuvir" data-ouvir="${c._i}">▶ Ouvir</button><button type="button" class="btnEd" data-ed="${c._i}">Editar</button><button type="button" class="btnPausa" data-pausa="${c._i}">Cancelar</button>`}<button type="button" class="btnCanc" data-exc="${c._i}">Excluir</button></div>`:''}</div>`).join('')||'<p class="note">Nenhum anúncio no momento.</p>';
 }
 $('clientes').addEventListener('click',async e=>{if(!ADMIN||publicando)return;const d=e.target.dataset;const L=anuncios.map(c=>Object.assign({},c));
  if(d.ouvir!==undefined){ouvirAn(anuncios[+d.ouvir],e.target);return}
@@ -859,6 +860,7 @@ function ouvirAn(c,b){if(!c)return;try{speechSynthesis.cancel()}catch(e){}if(ouv
  b.dataset.tocando=1;b.textContent='■ Parar';const fim=()=>{if(b.isConnected){delete b.dataset.tocando;b.textContent='▶ Ouvir'}};
  const au=c.audio||AUDIO_CLI[c.nome];
  if(au){ouvindoAn=new Audio(au);ouvindoAn.onended=fim;ouvindoAn.play().catch(fim);return}
+ fim();avisoAdm('Este anúncio ainda não tem a gravação da Betina. Enquanto isso ele aparece na tela com fundo musical, sem voz.');return;
  try{const u=new SpeechSynthesisUtterance(c.txt);u.lang='pt-BR';if(voz)u.voice=voz;u.rate=1.05;u.pitch=tomVoz();u.onend=fim;u.onerror=fim;speechSynthesis.speak(u)}catch(e){fim()}}
 /* próximos intervalos com anúncio de cliente (só admin) */
 function renderProxAn(){if(!ADMIN)return;const el=$('proxAn');if(!el)return;const ms=agora(),d=Math.floor((ms-FUSO)/DIA);
@@ -964,7 +966,7 @@ async function geraRelatorio(){const n=+$('relDia').value,out=$('relOut');out.in
   return `<div class="relCli"><b>${esc(k)}</b><div class="relNums"><span><strong>${L.length}</strong>vezes no ar</span><span><strong>${on}</strong>aparelhos conectados</span><span><strong>${ouv}</strong>ouvindo na hora</span><span><strong>${pico}</strong>pico de ouvintes</span></div>${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório no WhatsApp do cliente</a>`:`<a class="zapCli" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório pelo WhatsApp</a>`}</div>`}).join('')+'<p class="note">Os números de audiência contam aparelhos com a rádio aberta no minuto do anúncio.</p>'}
 if(ADMIN)$('btnRel').addEventListener('click',geraRelatorio);
 
-const VERSAO=28;
+const VERSAO=29;
 function checaVersao(){fetch('index.html?nv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VERSAO=(\d+)/);if(m&&+m[1]>VERSAO&&!ligado)location.reload()}).catch(()=>{})}
 checaVersao();setInterval(checaVersao,5*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checaVersao()});
 
