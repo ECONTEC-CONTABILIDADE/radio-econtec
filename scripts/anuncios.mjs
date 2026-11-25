@@ -8,7 +8,9 @@ const pronuncia=s=>String(s).replace(/\becontec\b/gi,'Econtéc');
 const U=['zero','um','dois','três','quatro','cinco','seis','sete','oito','nove','dez','onze','doze','treze','catorze','quinze','dezesseis','dezessete','dezoito','dezenove'],D=['','','vinte','trinta','quarenta','cinquenta','sessenta','setenta','oitenta','noventa'],C=['','cento','duzentos','trezentos','quatrocentos','quinhentos','seiscentos','setecentos','oitocentos','novecentos'];
 const ext=n=>{if(n<20)return U[n];if(n<100)return D[Math.floor(n/10)]+(n%10?' e '+U[n%10]:'');if(n===100)return 'cem';return C[Math.floor(n/100)]+(n%100?' e '+ext(n%100):'')};
 const grupo=g=>g[0]==='0'?g.split('').map(x=>U[+x]).join(' '):ext(+g);
-const falaFone=s=>String(s).replace(/(?:\+?55\s*)?(?:\(\s*(\d{2})\s*\)\s*|\b(\d{2})[\s.-]*)?(9[\s.]?\d{4}|\d{4})[\s.-]?(\d{4})\b/g,(m,a,b,p1,p2)=>{const ddd=a||b,n=(p1+p2).replace(/\D/g,'');if(n.length<8||(!ddd&&!/[-\s.]/.test(m)))return m;const gs=n.length===9?[n.slice(0,3),n.slice(3,5),n.slice(5,7),n.slice(7)]:[n.slice(0,2),n.slice(2,4),n.slice(4,6),n.slice(6)];return (ddd?grupo(ddd)+', ':'')+gs.map(grupo).join(', ')});
+const dig=g=>g.split('').map(x=>U[+x]).join(' '),par=g=>g[0]==='0'?dig(g):ext(+g);
+// regra 25/11 (2ª, testada): celular (64) 9 8419-2320 → "sessenta e quatro, nove oito quatro um nove, vinte e três vinte"; fixo 3651-1234 → "três seis cinco um, doze trinta e quatro"
+const falaFone=s=>String(s).replace(/(?:\+?55\s*)?(?:\(\s*(\d{2})\s*\)\s*|\b(\d{2})[\s.-]*)?(9[\s.]?\d{4}|\d{4})[\s.-]?(\d{4})\b/g,(m,a,b,p1,p2)=>{const ddd=a||b,n=(p1+p2).replace(/\D/g,'');if(n.length<8||(!ddd&&!/[-\s.]/.test(m)))return m;const ini=n.slice(0,n.length-4),fim=n.slice(-4);return (ddd?grupo(ddd)+', ':'')+dig(ini)+', '+par(fim.slice(0,2))+' '+par(fim.slice(2))});
 const tituloNome=s=>String(s).toLowerCase().replace(/[\p{L}]+/gu,(w,i)=>/^(de|da|do|das|dos|e)$/.test(w)&&i>0?w:w[0].toUpperCase()+w.slice(1));
 const TOP='radio-econtec-anuncios-q7k2m9x4';
 const norm=c=>{const o={nome:String(c.nome||''),txt:String(c.txt||''),logo:String(c.logo||''),zap:String(c.zap||'').replace(/\D/g,''),audio:String(c.audio||'')};for(const k of ['ig','tt','mail','fb','site'])if(c[k])o[k]=String(c[k]).slice(0,80);if(/^[\w-]{11}$/.test(c.vid||'')){o.vid=c.vid;o.vdur=Math.max(10,Math.min(420,Math.round(+c.vdur||30)))}if(c.cancelado)o.cancelado=true;return o};
@@ -91,11 +93,12 @@ else console.log('Sem mudanças');
  for(const c of lista){
   if(c.cancelado||c.audio||AUDIO_CLI.includes(c.nome)||(c.nome==='ECONTEC Contabilidade'&&c.logo==='img/logo-econtec.png')||!c.txt)continue;
   const k=fnv(c.nome+'|'+c.txt),f='v/a/'+k+'.mp3';
-  if(mapa[k]&&mapa[k].v===4&&fs.existsSync(f))continue;
+  const vq=falaFone(c.txt)!==c.txt?5:4; /* só regrava o que tem telefone */
+  if(mapa[k]&&mapa[k].v>=vq&&fs.existsSync(f))continue;
   const txt=falaFone(pronuncia(falaNatural(c.txt))).replace(/([!?.])\1+/g,'$1').replace(/\s+/g,' ').trim();
   try{execFileSync('edge-tts',['--voice','pt-BR-FranciscaNeural','--rate=+4%','--text',txt,'--write-media',f],{stdio:'pipe',timeout:60000});
    const bytes=fs.statSync(f).size;if(bytes<2000)throw new Error('áudio vazio');
-   mapa[k]={url:f+'?4',dur:Math.round(bytes*8/48000*10)/10,voz:'francisca',v:4};mudou=true;console.log('voz gerada',c.nome,mapa[k].dur+'s')}
+   mapa[k]={url:f+'?'+vq,dur:Math.round(bytes*8/48000*10)/10,voz:'francisca',v:vq};mudou=true;console.log('voz gerada',c.nome,mapa[k].dur+'s')}
   catch(e){console.log('voz falhou',c.nome,e.message)}
  }
  // oferecimento da hora certa por cliente (regra 25/11): "Hora certa, com oferecimento de JF Soluções Financeiras!" (Francisca)
@@ -114,11 +117,11 @@ else console.log('Sem mudanças');
  if(fs.existsSync('tts-teste.json')){let L=[];try{L=JSON.parse(fs.readFileSync('tts-teste.json','utf8'))}catch{}fs.mkdirSync('v/teste',{recursive:true});
   L.slice(0,10).forEach((t,n)=>{try{execFileSync('edge-tts',['--voice','pt-BR-FranciscaNeural','--rate=+4%','--text',String(t),'--write-media','v/teste/'+n+'.mp3'],{stdio:'pipe',timeout:60000})}catch(e){console.log('teste falhou',n)}});fs.unlinkSync('tts-teste.json');console.log('testes de voz',L.length)}
  // anúncio fixo do escritório na voz Francisca, telefone falado em grupos (Betina sem créditos até ~13/12)
- if(!fs.existsSync('v/anuncio-econtec-f.mp3')){
+ if(!fs.existsSync('v/anuncio-econtec-f2.mp3')){
   const tb=falaFone(pronuncia('ECONTEC Contabilidade! Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você! Chama a ECONTEC no WhatsApp: (64) 9 8419-2320. ECONTEC Contabilidade: sua empresa em dia, você tranquilo!'));
-  try{execFileSync('edge-tts',['--voice','pt-BR-FranciscaNeural','--rate=+4%','--text',tb,'--write-media','v/anuncio-econtec-f.mp3'],{stdio:'pipe',timeout:60000});
-   const bytes=fs.statSync('v/anuncio-econtec-f.mp3').size;if(bytes<2000)throw new Error('áudio vazio');console.log('anúncio base gerado',Math.round(bytes*8/48000*10)/10+'s')}
-  catch(e){console.log('anúncio base falhou',e.message);try{fs.unlinkSync('v/anuncio-econtec-f.mp3')}catch{}}
+  try{execFileSync('edge-tts',['--voice','pt-BR-FranciscaNeural','--rate=+4%','--text',tb,'--write-media','v/anuncio-econtec-f2.mp3'],{stdio:'pipe',timeout:60000});
+   const bytes=fs.statSync('v/anuncio-econtec-f2.mp3').size;if(bytes<2000)throw new Error('áudio vazio');console.log('anúncio base gerado',Math.round(bytes*8/48000*10)/10+'s')}
+  catch(e){console.log('anúncio base falhou',e.message);try{fs.unlinkSync('v/anuncio-econtec-f2.mp3')}catch{}}
  }
  if(mudou||!fs.existsSync('audios.json'))fs.writeFileSync('audios.json',JSON.stringify(mapa)+'\n');
 }
