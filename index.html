@@ -565,7 +565,7 @@ const _q=location.search+location.hash;
 /* Administrador só pelo link de admin (?admin). O link de ouvinte é sempre ouvinte. */
 try{localStorage.removeItem('radioEcontec.admin')}catch(e){}
 const ADMIN=/[?&#]admin\b/.test(_q);
-if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 61</span>')}
+if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 62</span>')}
 const CLI_PADRAO=[
  {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'img/logo-econtec.png',zap:ZAP_ECONTEC},
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
@@ -1067,7 +1067,8 @@ async function pegaChave(){if(anChave)return anChave;const m=await minhaChave();
  anChave=await crypto.subtle.importKey('jwk',{kty:'EC',crv:'P-256',x:m.j.x,y:m.j.y,d:m.j.d,ext:true},AN_EC,false,['sign']);return anChave}
 async function mostraCodigo(){if(!ADMIN)return;const m=await minhaChave();if(!m.liberada)avisoAdm('Código deste aparelho: '+m.cod+'. Mande esse código para o Claude no chat. Depois que ele liberar, o que você mudar aqui vale para todos os ouvintes.',true)}
 function avisoAdm(t,erro){const el=$('admAviso');if(!el)return;el.textContent=t;el.className='admAviso'+(erro?' erro':'');el.hidden=!t}
-async function publica(lista,msg,cfg){cfg=cfg||cfgAtual;if(publicando)return false;const k=await pegaChave();
+async function publica(lista,msg,cfg){cfg=cfg||cfgAtual;if(publicando)return false;let k=await pegaChave();
+ if(!k){await carregaChaves();k=await pegaChave()} /* aparelho liberado com a página já aberta: confere a lista de novo */
  if(!k){await mostraCodigo();return false}
  publicando=true;document.body.classList.add('publicando');avisoAdm('Publicando para todos os ouvintes…');
  try{const ts=Math.max(Date.now(),anTs+1),L=lista.map(normA),p=JSON.stringify({ts,lista:L,cfg});
@@ -1231,7 +1232,7 @@ async function geraRelatorio(){const n=+$('relDia').value,out=$('relOut');out.in
   return `<div class="relCli"><b>${esc(k)}</b><div class="relNums"><span><strong>${L.length}</strong>vezes no ar</span><span><strong>${on}</strong>aparelhos conectados</span><span><strong>${ouv}</strong>ouvindo na hora</span><span><strong>${pico}</strong>pico de ouvintes</span></div>${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório no WhatsApp do cliente</a>`:`<a class="zapCli" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório pelo WhatsApp</a>`}</div>`}).join('')+'<p class="note">Os números de audiência contam aparelhos com a rádio aberta no minuto do anúncio.</p>'}
 if(ADMIN)$('btnRel').addEventListener('click',geraRelatorio);
 
-const VERSAO=61;
+const VERSAO=62;
 function checaVersao(){fetch('index.html?nv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VERSAO=(\d+)/);if(m&&+m[1]>VERSAO){if(!ligado)location.reload();else novaVersao=true}}).catch(()=>{})}
 /* versão nova com a rádio tocando: atualiza sozinha numa vinheta (só com a tela aberta) e volta a tocar */
 let novaVersao=false;setInterval(()=>{if(!novaVersao||!ligado||document.hidden)return;try{const {it,off}=noAr(agora());if(it.k==='vin'&&off<3){sessionStorage.setItem('retomar','1');location.reload()}}catch(e){}},1000);
