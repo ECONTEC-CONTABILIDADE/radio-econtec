@@ -98,6 +98,18 @@ else console.log('Sem mudanças');
    mapa[k]={url:f+'?4',dur:Math.round(bytes*8/48000*10)/10,voz:'francisca',v:4};mudou=true;console.log('voz gerada',c.nome,mapa[k].dur+'s')}
   catch(e){console.log('voz falhou',c.nome,e.message)}
  }
+ // oferecimento da hora certa por cliente (regra 25/11): "Hora certa, com oferecimento de JF Soluções Financeiras!" (Francisca)
+ fs.mkdirSync('v/ho',{recursive:true});
+ for(const c of lista){
+  if(c.cancelado||!c.nome||/econtec/i.test(c.nome))continue;
+  const k=fnv(c.nome.trim().toLowerCase()),f='v/ho/'+k+'.mp3';
+  if(mapa['ho:'+k]&&fs.existsSync(f))continue;
+  const txt=pronuncia(falaNatural(`Hora certa, com oferecimento de ${c.nome.trim()}!`));
+  try{execFileSync('edge-tts',['--voice','pt-BR-FranciscaNeural','--rate=+4%','--text',txt,'--write-media',f],{stdio:'pipe',timeout:60000});
+   const bytes=fs.statSync(f).size;if(bytes<2000)throw new Error('áudio vazio');
+   mapa['ho:'+k]={url:f+'?1',dur:Math.round(bytes*8/48000*10)/10,voz:'francisca'};mudou=true;console.log('oferecimento gerado',c.nome,mapa['ho:'+k].dur+'s')}
+  catch(e){console.log('oferecimento falhou',c.nome,e.message)}
+ }
  // anúncio fixo do escritório na voz Francisca, telefone falado em grupos (Betina sem créditos até ~13/12)
  if(!fs.existsSync('v/anuncio-econtec-f.mp3')){
   const tb=falaFone(pronuncia('ECONTEC Contabilidade! Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você! Chama a ECONTEC no WhatsApp: (64) 9 8419-2320. ECONTEC Contabilidade: sua empresa em dia, você tranquilo!'));
