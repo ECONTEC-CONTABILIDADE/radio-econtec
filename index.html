@@ -560,7 +560,7 @@ const _q=location.search+location.hash;
 /* Administrador só pelo link de admin (?admin). O link de ouvinte é sempre ouvinte. */
 try{localStorage.removeItem('radioEcontec.admin')}catch(e){}
 const ADMIN=/[?&#]admin\b/.test(_q);
-if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 59</span>')}
+if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 60</span>')}
 const CLI_PADRAO=[
  {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'img/logo-econtec.png',zap:ZAP_ECONTEC},
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
@@ -734,13 +734,15 @@ function grade(d){
  const add=(k,dur,x)=>{it.push(Object.assign({k,t0:t,dur,id:d+':'+it.length},x));t+=dur*1000};
  const vin=()=>{const u=VINHETAS[iv++%VINHETAS.length];add('vin',DV[u]||11,{url:u})};
  const G=GRADE.filter(x=>!x.desde||x.desde<=d),JAN=Math.max(120,Math.min(500,Math.floor(G.length*.6)));const ultS=new Set(),ultL=[];let antLivre=false;const musica=()=>{const sorteio=r();if(MIXL>0&&!antLivre&&sorteio<MIXL/100){antLivre=true;let ops=LIVRES.filter(x=>!ultL.includes(x));if(!ops.length)ops=LIVRES;const lv=ops[Math.floor(r()*ops.length)];ultL.push(lv);if(ultL.length>Math.min(30,LIVRES.length-3))ultL.shift();add('musica',DL[lv.id]||200,{tr:lv});return}antLivre=false;const ue=ult.slice(-2).map(x=>x.estilo),ua=ult.slice(-8).map(x=>x.artista);let ops=G.filter(x=>!ultS.has(x)&&!ue.includes(x.estilo)&&!ua.includes(x.artista));if(!ops.length)ops=G.filter(x=>!ult.slice(-40).includes(x));if(!ops.length)ops=G;const pw=ops.flatMap(x=>hit.includes(x.estilo)?[x,x]:[x]);const tr=pw[Math.floor(r()*pw.length)];ult.push(tr);ultS.add(tr);if(ult.length>JAN)ultS.delete(ult.shift());add('musica',DUR[tr.id]||PADRAO,{tr})};
- while(t<fim){
-  /* intervalo (regra 24/11, 2ª): a cada 5 músicas seguidas, 1 vinheta + hora certa + 1 anúncio só; vinhetas e anúncios em rodízio (passa por todos antes de repetir) */
-  vin();add('hora',HORA);const na=1+outros.length,ia=(d*7+b)%na;
+ /* regra 25/11: a cada 3 músicas → vinheta + hora certa; a cada 5 músicas → vinheta + 1 anúncio só (rodízio ECONTEC e clientes, um por vez, sem repetir seguido); quando coincidem (15), uma vinheta só */
+ const anuncio=()=>{const na=1+outros.length,ia=(d*7+b++)%na;
   if(ia===0)add('adE',DV['v/anuncio-econtec-f.mp3']);
-  else{const c=outros[ia-1];const g=audGer(c),au=c.audio||AUDIO_CLI[c.nome]||(g&&g.url);if(c.vid)add('adC',Math.min(VID_MAX,c.vdur||30),{c,au,vid:c.vid});else add('adC',au?(DV[au]||(g&&g.dur)||12):Math.max(6,c.txt.length*.075+1.5),{c,au})}
-  for(let m=0;m<5;m++)musica();
-  b++;
+  else{const c=outros[ia-1];const g=audGer(c),au=c.audio||AUDIO_CLI[c.nome]||(g&&g.url);if(c.vid)add('adC',Math.min(VID_MAX,c.vdur||30),{c,au,vid:c.vid});else add('adC',au?(DV[au]||(g&&g.dur)||12):Math.max(6,c.txt.length*.075+1.5),{c,au})}};
+ let nm=0;
+ while(t<fim){
+  musica();nm++;
+  const h3=nm%3===0,a5=nm%5===0;
+  if(h3||a5){vin();if(h3)add('hora',HORA);if(a5)anuncio()}
  }
  return cacheGrade[d]=it;
 }
@@ -820,8 +822,8 @@ function renderFila(){
  let a=i;while(a>0&&ehIv(g[a])&&ehIv(g[a-1]))a--;
  const linhas=[];
  for(let j=a;j<g.length&&linhas.length<8;j++){const x=g[j],agoraX=j<=i;
-  if(ehIv(x)){let b=j,ad='';while(b<g.length&&ehIv(g[b])){ad=ad||nomeAd(g[b]);b++}const aqui=i>=j&&i<b;
-   linhas.push(`<li class="iv${aqui?' agora':''}"${aqui?' data-agora="1"':''}><span><b>📢 Intervalo</b> · vinheta, hora certa e anúncio${ad?' de '+esc(ad):''}</span><span class="tag">${aqui?'▶ agora':hhmm(x.t0)}</span></li>`);j=b-1;continue}
+  if(ehIv(x)){let b=j,ad='',hr=false;while(b<g.length&&ehIv(g[b])){ad=ad||nomeAd(g[b]);if(g[b].k==='hora')hr=true;b++}const aqui=i>=j&&i<b;
+   linhas.push(`<li class="iv${aqui?' agora':''}"${aqui?' data-agora="1"':''}><span><b>${ad?'📢 Intervalo':'🕒 Intervalo'}</b> · vinheta${hr&&ad?', hora certa':hr?' e hora certa':''}${ad?' e anúncio de '+esc(ad):''}</span><span class="tag">${aqui?'▶ agora':hhmm(x.t0)}</span></li>`);j=b-1;continue}
   if(x.k==='pedido')linhas.push(`<li class="ped${agoraX?' agora':''}"${agoraX?' data-agora="1"':''}><span><b>${esc(x.p.tr.titulo)}</b> · ${esc(x.p.tr.artista)}</span><span class="tag">${agoraX?'▶ tocando agora':hhmm(x.t0)} · pedido de ${deQuem(x.p)}</span></li>`);
   else if(x.k==='musica')linhas.push(`<li${agoraX?' class="agora" data-agora="1"':''}><span><b>${esc(x.tr.titulo)}</b> · ${esc(x.tr.artista)}</span><span class="tag">${agoraX?'▶ tocando agora':hhmm(x.t0)} · ${x.hom?'🏆 Homenagem':esc(x.tr.estilo)}</span></li>`);
  }
@@ -1222,7 +1224,7 @@ async function geraRelatorio(){const n=+$('relDia').value,out=$('relOut');out.in
   return `<div class="relCli"><b>${esc(k)}</b><div class="relNums"><span><strong>${L.length}</strong>vezes no ar</span><span><strong>${on}</strong>aparelhos conectados</span><span><strong>${ouv}</strong>ouvindo na hora</span><span><strong>${pico}</strong>pico de ouvintes</span></div>${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório no WhatsApp do cliente</a>`:`<a class="zapCli" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório pelo WhatsApp</a>`}</div>`}).join('')+'<p class="note">Os números de audiência contam aparelhos com a rádio aberta no minuto do anúncio.</p>'}
 if(ADMIN)$('btnRel').addEventListener('click',geraRelatorio);
 
-const VERSAO=59;
+const VERSAO=60;
 function checaVersao(){fetch('index.html?nv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VERSAO=(\d+)/);if(m&&+m[1]>VERSAO){if(!ligado)location.reload();else novaVersao=true}}).catch(()=>{})}
 /* versão nova com a rádio tocando: atualiza sozinha numa vinheta (só com a tela aberta) e volta a tocar */
 let novaVersao=false;setInterval(()=>{if(!novaVersao||!ligado||document.hidden)return;try{const {it,off}=noAr(agora());if(it.k==='vin'&&off<3){sessionStorage.setItem('retomar','1');location.reload()}}catch(e){}},1000);
