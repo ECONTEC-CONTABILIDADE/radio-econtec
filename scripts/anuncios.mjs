@@ -21,7 +21,7 @@ const txt=await (await fetch('https://ntfy.sh/'+TOP+'/json?poll=1&since=12h')).t
 let melhor=null;const erros=[];
 for(const ln of txt.split('\n').reverse()){if(melhor)break; /* do mais novo para o mais antigo: basta o último válido */
  if(!ln.trim())continue;let m;try{m=JSON.parse(ln)}catch{continue}if(m.event!=='message')continue;
- let env=null;for(let tent=0;tent<4&&!env;tent++){try{if(m.attachment){const r=await fetch(m.attachment.url,{signal:AbortSignal.timeout(15000)});if(!r.ok)throw new Error('HTTP '+r.status);env=await r.json()}else env=JSON.parse(m.message)}catch(e){erros.push(m.id+': '+e.message);if(!m.attachment)break;await new Promise(r=>setTimeout(r,3000*(tent+1)))}}if(!env)continue;
+ let env=null;for(let tent=0;tent<4&&!env;tent++){try{if(m.attachment){const r=await fetch(m.attachment.url,{signal:AbortSignal.timeout(15000)});if(!r.ok)throw new Error('HTTP '+r.status);env=await r.json()}else env=JSON.parse(m.message)}catch(e){erros.push(m.id+': '+e.message);if(!m.attachment||/HTTP 40[34]|HTTP 410/.test(e.message))break;await new Promise(r=>setTimeout(r,3000*(tent+1)))}}if(!env)continue;
  try{let ok=false;for(const key of keys)if(await crypto.subtle.verify({name:'ECDSA',hash:'SHA-256'},key,Buffer.from(env.s,'base64'),new TextEncoder().encode(env.p))){ok=true;break}if(!ok)continue;
   const o=JSON.parse(env.p);if(Array.isArray(o.lista)&&o.ts&&(!melhor||o.ts>melhor.ts))melhor=o}catch{}}
 const agora=new Date().toISOString();
