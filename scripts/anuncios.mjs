@@ -190,9 +190,12 @@ const quemPara=p=>{let nome=limpaN(p.nome),para=limpaN(p.para);const m=!para&&no
  const antes=PO.length;PO=PO.filter(p=>Date.now()-p.ts<14*864e5);if(PO.length!==antes)mudouPO=true;
  if(mudouPO)fs.writeFileSync('piadas-ouvintes.json',JSON.stringify(PO)+'\n');
  fs.mkdirSync('v/es',{recursive:true});const t0=Date.now();let mudou=false,feitos=0;const usados=new Set();
- const gera=(txt,op)=>{const k=fnv(VOZ+op.join('')+'|'+txt),f='v/es/'+k+'.mp3';usados.add(f);if(M[k]&&fs.existsSync(f))return;if(Date.now()-t0>120000||feitos>=30)return;
-  try{execFileSync('edge-tts',['--voice',VOZ,...op,'--text',pronuncia(falaNatural(txt)),'--write-media',f],{stdio:'pipe',timeout:60000});const bytes=fs.statSync(f).size;if(bytes<2000)throw new Error('áudio vazio');
-   M[k]={url:f+'?1',dur:Math.round(bytes*8/48000*10)/10};mudou=true;feitos++}catch(e){console.log('especial falhou',e.message);try{fs.unlinkSync(f)}catch{}}};
+ const salvaM=()=>{let j={};try{j=JSON.parse(fs.readFileSync('especiais-voz.json','utf8'))}catch{}j._m=M;fs.writeFileSync('especiais-voz.json',JSON.stringify(j)+'\n')};
+ const gera=(txt,op)=>{const k=fnv(VOZ+op.join('')+'|'+txt),f='v/es/'+k+'.mp3';usados.add(f);if(M[k]&&fs.existsSync(f))return;
+  if(fs.existsSync(f)&&fs.statSync(f).size>2000){M[k]={url:f+'?1',dur:Math.round(fs.statSync(f).size*8/48000*10)/10};mudou=true;salvaM();return}
+  if(Date.now()-t0>100000||process.uptime()>170||feitos>=25)return;
+  try{execFileSync('edge-tts',['--voice',VOZ,...op,'--text',pronuncia(falaNatural(txt)),'--write-media',f],{stdio:'pipe',timeout:25000});const bytes=fs.statSync(f).size;if(bytes<2000)throw new Error('áudio vazio');
+   M[k]={url:f+'?1',dur:Math.round(bytes*8/48000*10)/10};mudou=true;feitos++;salvaM()}catch(e){console.log('especial falhou',e.message);try{fs.unlinkSync(f)}catch{}}};
  const lista=(L,op)=>(Array.isArray(L)?L:[L]).forEach(x=>gera(x,op));
  for(const c of ['manhaAbre','manha','paiNosso','manhaFecha','tardeAbre','tarde','tardeFecha'])lista(E[c]||[],REZA);
  for(const c of ['piadaAbre','piadaFecha','piadas'])lista(E[c]||[],PIADA);
