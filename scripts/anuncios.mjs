@@ -110,6 +110,9 @@ else console.log('Sem mudanças');
    mapa['ho:'+k]={url:f+'?1',dur:Math.round(bytes*8/48000*10)/10,voz:'francisca'};mudou=true;console.log('oferecimento gerado',c.nome,mapa['ho:'+k].dur+'s')}
   catch(e){console.log('oferecimento falhou',c.nome,e.message)}
  }
+ // testes de voz (Claude): tts-teste.json = ["texto", ...] → v/teste/N.mp3, depois apaga o pedido
+ if(fs.existsSync('tts-teste.json')){let L=[];try{L=JSON.parse(fs.readFileSync('tts-teste.json','utf8'))}catch{}fs.mkdirSync('v/teste',{recursive:true});
+  L.slice(0,10).forEach((t,n)=>{try{execFileSync('edge-tts',['--voice','pt-BR-FranciscaNeural','--rate=+4%','--text',String(t),'--write-media','v/teste/'+n+'.mp3'],{stdio:'pipe',timeout:60000})}catch(e){console.log('teste falhou',n)}});fs.unlinkSync('tts-teste.json');console.log('testes de voz',L.length)}
  // anúncio fixo do escritório na voz Francisca, telefone falado em grupos (Betina sem créditos até ~13/12)
  if(!fs.existsSync('v/anuncio-econtec-f.mp3')){
   const tb=falaFone(pronuncia('ECONTEC Contabilidade! Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você! Chama a ECONTEC no WhatsApp: (64) 9 8419-2320. ECONTEC Contabilidade: sua empresa em dia, você tranquilo!'));
