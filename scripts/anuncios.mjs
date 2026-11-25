@@ -169,6 +169,45 @@ const quemPara=p=>{let nome=limpaN(p.nome),para=limpaN(p.para);const m=!para&&no
  if(mudou||!fs.existsSync('nomes-voz.json'))fs.writeFileSync('nomes-voz.json',JSON.stringify(mapa)+'\n');
 }
 
+// Horários especiais (pedido 25/11): 6h oração da manhã + Pai Nosso, 18h agradecimento + Pai Nosso, 20h Hora da Piada.
+// Voz MASCULINA grave (Antonio, Microsoft neural). Textos em especiais.json; piadas dos ouvintes chegam pelo ntfy e passam pelo mesmo filtro do site.
+{
+ const {execFileSync}=await import('node:child_process');
+ const fnv=t=>{let h=0x811c9dc5;for(const ch of new TextEncoder().encode(t)){h^=ch;h=Math.imul(h,0x01000193)>>>0}return h.toString(16).padStart(8,'0')};
+ const VOZ='pt-BR-AntonioNeural',REZA=['--rate=-12%','--pitch=-10Hz'],PIADA=['--rate=+0%','--pitch=-6Hz'];
+ let E={};try{E=JSON.parse(fs.readFileSync('especiais.json','utf8'))}catch{}
+ let M={};try{M=JSON.parse(fs.readFileSync('especiais-voz.json','utf8'))._m||{}}catch{}
+ let PO=[];try{PO=JSON.parse(fs.readFileSync('piadas-ouvintes.json','utf8'))}catch{}
+ // filtro de palavras: o mesmo do site (lido do index.html)
+ const html=fs.readFileSync('index.html','utf8'),arr=n=>{const m=html.match(new RegExp('const '+n+'=(\\[[^\\]]*\\])'));try{return JSON.parse(m[1].replace(/'/g,'"'))}catch{return[]}};
+ const BLOQ=arr('BLOQ'),EXATAS=arr('EXATAS'),nrm=s=>String(s).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+ const ofensivo=t=>{const w=nrm(t).split(/[^a-z0-9]+/).filter(Boolean),full=' '+w.join(' ')+' ';return BLOQ.some(b=>b.includes(' ')?full.includes(' '+b):w.some(x=>x.startsWith(b)))||w.some(x=>EXATAS.includes(x))};
+ let mudouPO=false;
+ try{const t=await (await fetch('https://ntfy.sh/'+TOP.replace('anuncios','piadas')+'/json?poll=1&since=24h',{signal:AbortSignal.timeout(15000)})).text();const ids=new Set(PO.map(p=>p.id));
+  for(const ln of t.split('\n')){if(!ln.trim())continue;let m;try{m=JSON.parse(ln)}catch{continue}if(m.event!=='message'||ids.has(m.id))continue;
+   let p;try{p=JSON.parse(m.message)}catch{continue}const nome=String(p.nome||'').replace(/[^\p{L}\p{N} ,'.!?-]/gu,' ').replace(/\s+/g,' ').trim().slice(0,40)||'Ouvinte',txt=String(p.txt||'').replace(/\s+/g,' ').trim().slice(0,400);
+   if(txt.length<15||ofensivo(nome+' '+txt))continue;PO.push({id:m.id,ts:m.time*1000,nome,txt});ids.add(m.id);mudouPO=true}}catch(e){console.log('piadas ntfy falhou',e.message)}
+ const antes=PO.length;PO=PO.filter(p=>Date.now()-p.ts<14*864e5);if(PO.length!==antes)mudouPO=true;
+ if(mudouPO)fs.writeFileSync('piadas-ouvintes.json',JSON.stringify(PO)+'\n');
+ fs.mkdirSync('v/es',{recursive:true});const t0=Date.now();let mudou=false,feitos=0;const usados=new Set();
+ const gera=(txt,op)=>{const k=fnv(VOZ+op.join('')+'|'+txt),f='v/es/'+k+'.mp3';usados.add(f);if(M[k]&&fs.existsSync(f))return;if(Date.now()-t0>120000||feitos>=30)return;
+  try{execFileSync('edge-tts',['--voice',VOZ,...op,'--text',pronuncia(falaNatural(txt)),'--write-media',f],{stdio:'pipe',timeout:60000});const bytes=fs.statSync(f).size;if(bytes<2000)throw new Error('áudio vazio');
+   M[k]={url:f+'?1',dur:Math.round(bytes*8/48000*10)/10};mudou=true;feitos++}catch(e){console.log('especial falhou',e.message);try{fs.unlinkSync(f)}catch{}}};
+ const lista=(L,op)=>(Array.isArray(L)?L:[L]).forEach(x=>gera(x,op));
+ for(const c of ['manhaAbre','manha','paiNosso','manhaFecha','tardeAbre','tarde','tardeFecha'])lista(E[c]||[],REZA);
+ for(const c of ['piadaAbre','piadaFecha','piadas'])lista(E[c]||[],PIADA);
+ for(const p of PO){const dito=p.nome==='Ouvinte'?'de um ouvinte':'do ouvinte '+tituloNome(p.nome);p.fala=`Essa piada é ${dito}: ${p.txt}`;gera(p.fala,PIADA)}
+ // o site lê só especiais-voz.json: cada lista na mesma ordem de especiais.json, null = ainda gerando
+ const ach=(txt,op)=>M[fnv(VOZ+op.join('')+'|'+txt)]||null;
+ const S={v:1};for(const c of ['manhaAbre','manha','manhaFecha','tardeAbre','tarde','tardeFecha'])S[c]=(E[c]||[]).map(x=>ach(x,REZA));S.paiNosso=E.paiNosso?ach(E.paiNosso,REZA):null;
+ for(const c of ['piadaAbre','piadaFecha','piadas'])S[c]=(E[c]||[]).map(x=>ach(x,PIADA));
+ S.ouvintes=PO.map(p=>{const a=ach(p.fala,PIADA);return a?{id:p.id,ts:p.ts,nome:p.nome,txt:p.txt,url:a.url,dur:a.dur}:null}).filter(Boolean);
+ const keep={};for(const [k,x] of Object.entries(M))if(usados.has(x.url.split('?')[0]))keep[k]=x;
+ for(const f of fs.readdirSync('v/es'))if(!usados.has('v/es/'+f)){fs.unlinkSync('v/es/'+f);mudou=true}
+ let antigo='';try{antigo=fs.readFileSync('especiais-voz.json','utf8')}catch{}
+ const novo=JSON.stringify(Object.assign({},S,{_m:keep}))+'\n';if(novo!==antigo){fs.writeFileSync('especiais-voz.json',novo);console.log('especiais: gerados',feitos)}
+}
+
 // Ao vivo compartilhado: guarda no site os "Pular" do administrador (assinados), para quem entrar depois ouvir o mesmo ao vivo
 {
  const t=await (await fetch('https://ntfy.sh/'+TOP+'-aovivo/json?poll=1&since=12h')).text();
