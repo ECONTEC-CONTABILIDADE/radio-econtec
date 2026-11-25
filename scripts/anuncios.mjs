@@ -18,12 +18,14 @@ let meta={ts:0};try{meta=JSON.parse(fs.readFileSync('clientes-meta.json','utf8')
 const chaves=JSON.parse(fs.readFileSync('chaves-admin.json','utf8'));
 const keys=await Promise.all(chaves.map(k=>crypto.subtle.importKey('jwk',{kty:'EC',crv:'P-256',x:k.x,y:k.y},{name:'ECDSA',namedCurve:'P-256'},false,['verify'])));
 const txt=await (await fetch('https://ntfy.sh/'+TOP+'/json?poll=1&since=12h')).text();
-let melhor=null;
-for(const ln of txt.split('\n')){if(!ln.trim())continue;let m;try{m=JSON.parse(ln)}catch{continue}if(m.event!=='message')continue;
- let env;try{env=m.attachment?await (await fetch(m.attachment.url)).json():JSON.parse(m.message)}catch{continue}
+let melhor=null;const erros=[];
+for(const ln of txt.split('\n').reverse()){if(melhor)break; /* do mais novo para o mais antigo: basta o último válido */
+ if(!ln.trim())continue;let m;try{m=JSON.parse(ln)}catch{continue}if(m.event!=='message')continue;
+ let env=null;for(let tent=0;tent<4&&!env;tent++){try{if(m.attachment){const r=await fetch(m.attachment.url,{signal:AbortSignal.timeout(15000)});if(!r.ok)throw new Error('HTTP '+r.status);env=await r.json()}else env=JSON.parse(m.message)}catch(e){erros.push(m.id+': '+e.message);if(!m.attachment)break;await new Promise(r=>setTimeout(r,3000*(tent+1)))}}if(!env)continue;
  try{let ok=false;for(const key of keys)if(await crypto.subtle.verify({name:'ECDSA',hash:'SHA-256'},key,Buffer.from(env.s,'base64'),new TextEncoder().encode(env.p))){ok=true;break}if(!ok)continue;
   const o=JSON.parse(env.p);if(Array.isArray(o.lista)&&o.ts&&(!melhor||o.ts>melhor.ts))melhor=o}catch{}}
 const agora=new Date().toISOString();
+if(erros.length){console.log('anúncios: falhas ao baixar',erros.join(' | '));fs.writeFileSync('plantao-erros.json',JSON.stringify({quando:agora,erros:erros.slice(-10)})+'\n')}
 if(melhor&&melhor.ts>(meta.ts||0)){
  fs.writeFileSync('clientes.json','[\n'+melhor.lista.map(c=>' '+JSON.stringify(norm(c))).join(',\n')+'\n]\n');
  if(melhor.cfg&&typeof melhor.cfg==='object'){const p=melhor.cfg.precos||{},t=(v,n)=>String(v||'').slice(0,n);
