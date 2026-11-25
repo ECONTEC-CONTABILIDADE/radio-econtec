@@ -189,20 +189,21 @@ const quemPara=p=>{let nome=limpaN(p.nome),para=limpaN(p.para);const m=!para&&no
    if(txt.length<15||ofensivo(nome+' '+txt))continue;PO.push({id:m.id,ts:m.time*1000,nome,txt});ids.add(m.id);mudouPO=true}}catch(e){console.log('piadas ntfy falhou',e.message)}
  const antes=PO.length;PO=PO.filter(p=>Date.now()-p.ts<14*864e5);if(PO.length!==antes)mudouPO=true;
  if(mudouPO)fs.writeFileSync('piadas-ouvintes.json',JSON.stringify(PO)+'\n');
- fs.mkdirSync('v/es',{recursive:true});const t0=Date.now();let mudou=false,feitos=0;const usados=new Set();
+ fs.mkdirSync('v/es',{recursive:true});const t0=Date.now();let mudou=false,feitos=0,falhas=0,ultErro='';
+ console.log('especiais: início aos',Math.round(process.uptime()),'s');const usados=new Set();
  const salvaM=()=>{let j={};try{j=JSON.parse(fs.readFileSync('especiais-voz.json','utf8'))}catch{}j._m=M;fs.writeFileSync('especiais-voz.json',JSON.stringify(j)+'\n')};
  const gera=(txt,op)=>{const k=fnv(VOZ+op.join('')+'|'+txt),f='v/es/'+k+'.mp3';usados.add(f);if(M[k]&&fs.existsSync(f))return;
   if(fs.existsSync(f)&&fs.statSync(f).size>2000){M[k]={url:f+'?1',dur:Math.round(fs.statSync(f).size*8/48000*10)/10};mudou=true;salvaM();return}
-  if(Date.now()-t0>100000||process.uptime()>170||feitos>=25)return;
+  if(Date.now()-t0>100000||process.uptime()>200||feitos>=25||falhas>=2)return;
   try{execFileSync('edge-tts',['--voice',VOZ,...op,'--text',pronuncia(falaNatural(txt)),'--write-media',f],{stdio:'pipe',timeout:25000});const bytes=fs.statSync(f).size;if(bytes<2000)throw new Error('áudio vazio');
-   M[k]={url:f+'?1',dur:Math.round(bytes*8/48000*10)/10};mudou=true;feitos++;salvaM()}catch(e){console.log('especial falhou',e.message);try{fs.unlinkSync(f)}catch{}}};
+   M[k]={url:f+'?1',dur:Math.round(bytes*8/48000*10)/10};mudou=true;feitos++;salvaM()}catch(e){falhas++;ultErro=new Date().toISOString()+' '+String(e.message).slice(0,200);console.log('especial falhou',e.message);try{fs.unlinkSync(f)}catch{}}};
  const lista=(L,op)=>(Array.isArray(L)?L:[L]).forEach(x=>gera(x,op));
  for(const c of ['manhaAbre','manha','paiNosso','manhaFecha','tardeAbre','tarde','tardeFecha'])lista(E[c]||[],REZA);
  for(const c of ['piadaAbre','piadaFecha','piadas'])lista(E[c]||[],PIADA);
  for(const p of PO){const dito=p.nome==='Ouvinte'?'de um ouvinte':'do ouvinte '+tituloNome(p.nome);p.fala=`Essa piada é ${dito}: ${p.txt}`;gera(p.fala,PIADA)}
  // o site lê só especiais-voz.json: cada lista na mesma ordem de especiais.json, null = ainda gerando
  const ach=(txt,op)=>M[fnv(VOZ+op.join('')+'|'+txt)]||null;
- const S={v:1};for(const c of ['manhaAbre','manha','manhaFecha','tardeAbre','tarde','tardeFecha'])S[c]=(E[c]||[]).map(x=>ach(x,REZA));S.paiNosso=E.paiNosso?ach(E.paiNosso,REZA):null;
+ const S={v:1,inicio:Math.round(process.uptime()-(Date.now()-t0)/1000),feitos,...(ultErro?{erro:ultErro}:{})};for(const c of ['manhaAbre','manha','manhaFecha','tardeAbre','tarde','tardeFecha'])S[c]=(E[c]||[]).map(x=>ach(x,REZA));S.paiNosso=E.paiNosso?ach(E.paiNosso,REZA):null;
  for(const c of ['piadaAbre','piadaFecha','piadas'])S[c]=(E[c]||[]).map(x=>ach(x,PIADA));
  S.ouvintes=PO.map(p=>{const a=ach(p.fala,PIADA);return a?{id:p.id,ts:p.ts,nome:p.nome,txt:p.txt,url:a.url,dur:a.dur}:null}).filter(Boolean);
  const keep={};for(const [k,x] of Object.entries(M))if(usados.has(x.url.split('?')[0]))keep[k]=x;
