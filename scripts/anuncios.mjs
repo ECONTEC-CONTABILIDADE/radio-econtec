@@ -29,7 +29,7 @@ if(erros.length){console.log('anúncios: falhas ao baixar',erros.join(' | '));fs
 if(melhor&&melhor.ts>(meta.ts||0)){
  fs.writeFileSync('clientes.json','[\n'+melhor.lista.map(c=>' '+JSON.stringify(norm(c))).join(',\n')+'\n]\n');
  if(melhor.cfg&&typeof melhor.cfg==='object'){const p=melhor.cfg.precos||{},t=(v,n)=>String(v||'').slice(0,n);
-  fs.writeFileSync('config.json',JSON.stringify({ts:melhor.ts,precos:{Essencial:t(p.Essencial,40),Destaque:t(p.Destaque,40),Patrocinador:t(p.Patrocinador,40)},promo:t(melhor.cfg.promo,120),planosOn:!!melhor.cfg.planosOn,livre:melhor.cfg.livre==null||isNaN(+melhor.cfg.livre)?10:Math.max(0,Math.min(60,Math.round(+melhor.cfg.livre))),redes:Object.fromEntries(['instagram','facebook','youtube','tiktok','linkedin','site'].map(k=>[k,t((melhor.cfg.redes||{})[k],120)]))})+'\n')}
+  fs.writeFileSync('config.json',JSON.stringify({ts:melhor.ts,precos:{Essencial:t(p.Essencial,40),Destaque:t(p.Destaque,40),Patrocinador:t(p.Patrocinador,40)},promo:t(melhor.cfg.promo,120),planosOn:!!melhor.cfg.planosOn,livre:melhor.cfg.livre==null||isNaN(+melhor.cfg.livre)?10:Math.max(0,Math.min(60,Math.round(+melhor.cfg.livre))),redes:Object.fromEntries(['instagram','facebook','youtube','tiktok','linkedin','site'].map(k=>[k,t((melhor.cfg.redes||{})[k],120)])),infoOn:melhor.cfg.infoOn!==false,...(Array.isArray(melhor.cfg.info)?{info:melhor.cfg.info.map(x=>t(x,600).trim()).filter(Boolean).slice(0,60)}:{})})+'\n')}
  meta={ts:melhor.ts,verificado:agora};fs.writeFileSync('clientes-meta.json',JSON.stringify(meta)+'\n');console.log('Anúncios atualizados',melhor.ts);
 }else if(!meta.verificado||Date.now()-Date.parse(meta.verificado)>6*864e5){meta.verificado=agora;fs.writeFileSync('clientes-meta.json',JSON.stringify(meta)+'\n');console.log('Sem mudanças (registro semanal)')}
 else console.log('Sem mudanças');
@@ -125,6 +125,16 @@ else console.log('Sem mudanças');
    const bytes=fs.statSync('v/anuncio-econtec-f3.mp3').size;if(bytes<2000)throw new Error('áudio vazio');console.log('anúncio base gerado',Math.round(bytes*8/48000*10)/10+'s')}
   catch(e){console.log('anúncio base falhou',e.message);try{fs.unlinkSync('v/anuncio-econtec-f3.mp3')}catch{}}
  }
+ // Momento Informativo ECONTEC (pedido 26/11): abertura fixa + informativo + convite; voz Francisca; lista do admin (config.json) ou a padrão (informativos.json)
+ {let cf={};try{cf=JSON.parse(fs.readFileSync('config.json','utf8'))}catch{}let L=Array.isArray(cf.info)?cf.info:[];if(!Array.isArray(cf.info))try{L=JSON.parse(fs.readFileSync('informativos.json','utf8'))}catch{}
+  fs.mkdirSync('v/inf',{recursive:true});let feitos=0;const usados=new Set();
+  for(const x of L){const k=fnv(String(x).trim()),f='v/inf/'+k+'.mp3';usados.add(f);if(mapa['inf:'+k]&&fs.existsSync(f))continue;if(feitos>=8||process.uptime()>150)continue;
+   const corpo=String(x).trim(),fim=/econtec/i.test(corpo)?'':' Procure a ECONTEC Contabilidade!';
+   const txt=falaFone(pronuncia(falaNatural('Momento Informativo ECONTEC Contabilidade. Você está atento às mudanças? A ECONTEC te informa: '+corpo+fim))).replace(/\s+/g,' ');
+   try{execFileSync('edge-tts',['--voice','pt-BR-FranciscaNeural','--rate=+4%','--text',txt,'--write-media',f],{stdio:'pipe',timeout:25000});const bytes=fs.statSync(f).size;if(bytes<2000)throw new Error('áudio vazio');
+    mapa['inf:'+k]={url:f+'?1',dur:Math.round(bytes*8/48000*10)/10,voz:'francisca'};mudou=true;feitos++;console.log('informativo gerado',mapa['inf:'+k].dur+'s')}catch(e){console.log('informativo falhou',e.message);try{fs.unlinkSync(f)}catch{}feitos=99}}
+  for(const k of Object.keys(mapa))if(k.startsWith('inf:')&&!usados.has(mapa[k].url.split('?')[0])){delete mapa[k];mudou=true}
+  for(const f of fs.readdirSync('v/inf'))if(!usados.has('v/inf/'+f))fs.unlinkSync('v/inf/'+f)}
  if(mudou||!fs.existsSync('audios.json'))fs.writeFileSync('audios.json',JSON.stringify(mapa)+'\n');
 }
 
