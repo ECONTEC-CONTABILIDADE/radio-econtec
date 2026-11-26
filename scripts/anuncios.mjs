@@ -29,7 +29,7 @@ if(erros.length){console.log('anúncios: falhas ao baixar',erros.join(' | '));fs
 if(melhor&&melhor.ts>(meta.ts||0)){
  fs.writeFileSync('clientes.json','[\n'+melhor.lista.map(c=>' '+JSON.stringify(norm(c))).join(',\n')+'\n]\n');
  if(melhor.cfg&&typeof melhor.cfg==='object'){const p=melhor.cfg.precos||{},t=(v,n)=>String(v||'').slice(0,n);
-  fs.writeFileSync('config.json',JSON.stringify({ts:melhor.ts,precos:{Essencial:t(p.Essencial,40),Destaque:t(p.Destaque,40),Patrocinador:t(p.Patrocinador,40)},promo:t(melhor.cfg.promo,120),planosOn:!!melhor.cfg.planosOn,livre:melhor.cfg.livre==null||isNaN(+melhor.cfg.livre)?10:Math.max(0,Math.min(60,Math.round(+melhor.cfg.livre))),redes:Object.fromEntries(['instagram','facebook','youtube','tiktok','linkedin','site'].map(k=>[k,t((melhor.cfg.redes||{})[k],120)])),infoOn:melhor.cfg.infoOn!==false,...(Array.isArray(melhor.cfg.info)?{info:melhor.cfg.info.map(x=>t(x,600).trim()).filter(Boolean).slice(0,60)}:{})})+'\n')}
+  fs.writeFileSync('config.json',JSON.stringify({ts:melhor.ts,precos:{Essencial:t(p.Essencial,40),Destaque:t(p.Destaque,40),Patrocinador:t(p.Patrocinador,40)},promo:t(melhor.cfg.promo,120),planosOn:!!melhor.cfg.planosOn,livre:melhor.cfg.livre==null||isNaN(+melhor.cfg.livre)?10:Math.max(0,Math.min(60,Math.round(+melhor.cfg.livre))),redes:Object.fromEntries(['instagram','facebook','youtube','tiktok','linkedin','site'].map(k=>[k,t((melhor.cfg.redes||{})[k],120)])),infoOn:melhor.cfg.infoOn!==false,autoOn:melhor.cfg.autoOn!==false,...(Array.isArray(melhor.cfg.info)?{info:melhor.cfg.info.map(x=>t(x,600).trim()).filter(Boolean).slice(0,60)}:{})})+'\n')}
  meta={ts:melhor.ts,verificado:agora};fs.writeFileSync('clientes-meta.json',JSON.stringify(meta)+'\n');console.log('Anúncios atualizados',melhor.ts);
 }else if(!meta.verificado||Date.now()-Date.parse(meta.verificado)>6*864e5){meta.verificado=agora;fs.writeFileSync('clientes-meta.json',JSON.stringify(meta)+'\n');console.log('Sem mudanças (registro semanal)')}
 else console.log('Sem mudanças');
@@ -126,7 +126,26 @@ else console.log('Sem mudanças');
   catch(e){console.log('anúncio base falhou',e.message);try{fs.unlinkSync('v/anuncio-econtec-f3.mp3')}catch{}}
  }
  // Momento Informativo ECONTEC (pedido 26/11): abertura fixa + informativo + convite; voz Francisca; lista do admin (config.json) ou a padrão (informativos.json)
+ // Alimentação automática (pedido 26/11): prazos do mês (calendário), 2 informativos novos por semana (banco com data de liberação) e notícias oficiais da Receita Federal sobre assuntos do contribuinte (até 7 dias)
+ {let A={ts:0,noticias:[]};try{A=JSON.parse(fs.readFileSync('informativos-auto.json','utf8'))}catch{}let FO={calendario:[],banco:[]};try{FO=JSON.parse(fs.readFileSync('informativos-auto-fontes.json','utf8'))}catch{}
+  const hoje=new Date(Date.now()-3*36e5).toISOString().slice(0,10),md=hoje.slice(5);
+  const cal=FO.calendario.filter(c=>c.de<=c.ate?(md>=c.de&&md<=c.ate):(md>=c.de||md<=c.ate)).map(c=>c.t),ban=FO.banco.filter(b=>b.desde<=hoje).map(b=>b.t);
+  let not=A.noticias||[];
+  if(Date.now()-(A.ts||0)>60*6e4){try{const x=await (await fetch('https://www.gov.br/receitafederal/pt-br/assuntos/noticias/ultimas-noticias/RSS',{signal:AbortSignal.timeout(15000),headers:{'User-Agent':'Mozilla/5.0 RadioECONTEC'}})).text();
+   const SIM=/simples nacional|\bmei\b|microempreendedor|restitui|imposto de renda|\birpf\b|declara[çc][ãa]o|prazo|reforma tribut|\bcbs\b|\bibs\b|parcelamento|regulariza|esocial|nota fiscal|contribuinte|dctf|carn[êe]-le[ãa]o|malha|pix|cpf|cnpj|tributa/i,NAO=/apreen|opera[çc][ãa]o|maconha|droga|pol[íi]cia|ouro|aduana|alf[âa]ndega|concurso|coletiva|perdimento|contrabando|pris[ãa]o|crime|fraude|arrecada/i;
+   const MES=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];const nov=[];
+   for(const it of x.match(/<item [\s\S]*?<\/item>/g)||[]){const ti=((it.match(/<title>([\s\S]*?)<\/title>/)||[])[1]||'').replace(/&amp;/g,'&').replace(/&#\d+;|&\w+;/g,' ').replace(/\s+/g,' ').trim(),dt=((it.match(/<dc:date>([^<]+)/)||[])[1]||'').slice(0,10);
+    if(!ti||!dt||ti.length>170||!SIM.test(ti)||NAO.test(ti)||/^comunicado/i.test(ti))continue;if((Date.parse(hoje)-Date.parse(dt))/864e5>7)continue;
+    const t2=ti.replace(/\s*\([^)]*\)/g,'').replace(/\s+nest[ae]\s+(segunda|terça|quarta|quinta|sexta)(-feira)?|\s+neste\s+(sábado|domingo)|\s+(hoje|amanhã)\b/gi,'').replace(/[.!]+$/,'');
+    nov.push({dt,t:`Notícia publicada pela Receita Federal no dia ${+dt.slice(8)} de ${MES[+dt.slice(5,7)-1]}: ${t2}. Quer saber como isso afeta você? Procure a ECONTEC Contabilidade!`})}
+   not=nov.slice(0,6);A.ts=Date.now()}catch(e){console.log('notícias da Receita falharam',e.message)}}
+  not=not.filter(n=>(Date.parse(hoje)-Date.parse(n.dt))/864e5<=7);
+  const lista=[...new Set([...cal,...ban,...not.map(n=>n.t)])];const novo={dia:hoje,lista,noticias:not};
+  let antigo={};try{antigo=JSON.parse(fs.readFileSync('informativos-auto.json','utf8'))}catch{}
+  if(JSON.stringify({dia:antigo.dia,lista:antigo.lista,noticias:antigo.noticias})!==JSON.stringify(novo)){fs.writeFileSync('informativos-auto.json',JSON.stringify(Object.assign(novo,{ts:A.ts||0}))+'\n');console.log('informativos automáticos',lista.length)}
+  else if(A.ts!==antigo.ts){/* só o horário da consulta mudou: não grava (evita commit à toa) */}}
  {let cf={};try{cf=JSON.parse(fs.readFileSync('config.json','utf8'))}catch{}let L=Array.isArray(cf.info)?cf.info:[];if(!Array.isArray(cf.info))try{L=JSON.parse(fs.readFileSync('informativos.json','utf8'))}catch{}
+  if(cf.autoOn!==false)try{L=L.concat(JSON.parse(fs.readFileSync('informativos-auto.json','utf8')).lista||[])}catch{}
   fs.mkdirSync('v/inf',{recursive:true});let feitos=0;const usados=new Set();
   for(const x of L){const k=fnv(String(x).trim()),f='v/inf/'+k+'.mp3';usados.add(f);if(mapa['inf:'+k]&&fs.existsSync(f))continue;if(feitos>=8||process.uptime()>150)continue;
    const corpo=String(x).trim(),fim=/econtec/i.test(corpo)?'':' Procure a ECONTEC Contabilidade!';

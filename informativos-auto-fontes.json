@@ -1,0 +1,161 @@
+{
+ "calendario": [
+  {
+   "de": "11-01",
+   "ate": "11-30",
+   "t": "Atenção, empresário: a primeira parcela do décimo terceiro salário dos funcionários precisa ser paga até o dia trinta de novembro. Ficou com dúvida? Fale com a ECONTEC Contabilidade!"
+  },
+  {
+   "de": "12-01",
+   "ate": "12-20",
+   "t": "Atenção, empresário: a segunda parcela do décimo terceiro salário dos funcionários vence no dia vinte de dezembro. Já separe o dinheiro no caixa. Conte com a ECONTEC Contabilidade para cuidar disso pra você!"
+  },
+  {
+   "de": "12-10",
+   "ate": "01-31",
+   "t": "Quer entrar no Simples Nacional? A opção é feita em janeiro, até o último dia útil do mês. Depois disso, só no ano seguinte. A ECONTEC Contabilidade está pronta pra te ajudar. Procure a gente!"
+  },
+  {
+   "de": "02-01",
+   "ate": "02-28",
+   "t": "Fevereiro é o mês do informe de rendimentos: as empresas devem entregar o comprovante de rendimentos aos funcionários até o último dia útil de fevereiro. Procure a ECONTEC Contabilidade: sua empresa em dia, você tranquilo!"
+  },
+  {
+   "de": "03-01",
+   "ate": "05-31",
+   "t": "Está aberta a temporada do Imposto de Renda pessoa física. Separe os informes de rendimentos, recibos médicos e documentos dos dependentes, e não deixe para a última hora. Ficou com dúvida? Fale com a ECONTEC Contabilidade!"
+  },
+  {
+   "de": "04-01",
+   "ate": "05-31",
+   "t": "MEI, não esqueça: a declaração anual de faturamento, a DASN-SIMEI, deve ser entregue até trinta e um de maio. Quem atrasa paga multa. Conte com a ECONTEC Contabilidade para cuidar disso pra você!"
+  },
+  {
+   "de": "06-01",
+   "ate": "07-31",
+   "t": "Vai dar férias coletivas no meio do ano? Lembre que as férias precisam ser pagas até dois dias antes do início do descanso. A ECONTEC Contabilidade está pronta pra te ajudar. Procure a gente!"
+  }
+ ],
+ "banco": [
+  {
+   "desde": "2026-11-29",
+   "t": "Nota fiscal com dados errados pode dar dor de cabeça. Confira sempre o CNPJ ou CPF do cliente, o valor e a descrição do serviço antes de emitir. Procure a ECONTEC Contabilidade: sua empresa em dia, você tranquilo!"
+  },
+  {
+   "desde": "2026-12-02",
+   "t": "O MEI pode ter um funcionário registrado, recebendo um salário mínimo ou o piso da categoria. Com o registro certo, todos ficam protegidos. Ficou com dúvida? Fale com a ECONTEC Contabilidade!"
+  },
+  {
+   "desde": "2026-12-06",
+   "t": "Antes de assinar um contrato de aluguel para a empresa, verifique se a prefeitura permite a sua atividade naquele endereço. Isso evita problemas com o alvará. Conte com a ECONTEC Contabilidade para cuidar disso pra você!"
+  },
+  {
+   "desde": "2026-12-09",
+   "t": "Recebeu uma intimação ou carta da Receita Federal? Não ignore. Cada notificação tem prazo para resposta, e responder a tempo evita multas maiores. A ECONTEC Contabilidade está pronta pra te ajudar. Procure a gente!"
+  },
+  {
+   "desde": "2026-12-13",
+   "t": "Empréstimo para a empresa deve ficar no nome da empresa. Misturar dívidas pessoais com as do negócio complica a contabilidade e o seu controle. Procure a ECONTEC Contabilidade: sua empresa em dia, você tranquilo!"
+  },
+  {
+   "desde": "2026-12-16",
+   "t": "Funcionário que faz hora extra deve receber pelo menos cinquenta por cento a mais sobre o valor da hora normal. Registre o ponto direitinho. Ficou com dúvida? Fale com a ECONTEC Contabilidade!"
+  },
+  {
+   "desde": "2026-12-20",
+   "t": "Vale-transporte: a empresa pode descontar até seis por cento do salário do funcionário. O que passar disso, a empresa paga. Conte com a ECONTEC Contabilidade para cuidar disso pra você!"
+  },
+  {
+   "desde": "2026-12-23",
+   "t": "Ao vender a prazo, anote quem deve, quanto e quando vence. Controlar as contas a receber é tão importante quanto vender. A ECONTEC Contabilidade está pronta pra te ajudar. Procure a gente!"
+  },
+  {
+   "desde": "2026-12-27",
+   "t": "Reserve um dinheiro todo mês para os impostos e para o décimo terceiro. Assim, quando a conta chega, o caixa da empresa não aperta. Procure a ECONTEC Contabilidade: sua empresa em dia, você tranquilo!"
+  },
+  {
+   "desde": "2026-12-30",
+   "t": "Atestado médico do funcionário: os primeiros quinze dias de afastamento são pagos pela empresa. A partir do décimo sexto dia, quem paga é o INSS. Ficou com dúvida? Fale com a ECONTEC Contabilidade!"
+  },
+  {
+   "desde": "2027-01-03",
+   "t": "Sócio que trabalha na empresa deve receber pró-labore e contribuir para o INSS. Isso garante aposentadoria e proteção em caso de doença. Conte com a ECONTEC Contabilidade para cuidar disso pra você!"
+  },
+  {
+   "desde": "2027-01-06",
+   "t": "Comprou um computador, máquina ou veículo para a empresa? Guarde a nota fiscal no nome do CNPJ. Esses bens fazem parte do patrimônio do negócio. A ECONTEC Contabilidade está pronta pra te ajudar. Procure a gente!"
+  },
+  {
+   "desde": "2027-01-10",
+   "t": "Trocar de contador é simples: a nova contabilidade cuida da transferência dos documentos. Você não precisa ficar parado por causa disso. Procure a ECONTEC Contabilidade: sua empresa em dia, você tranquilo!"
+  },
+  {
+   "desde": "2027-01-13",
+   "t": "Quem vende pela internet também precisa emitir nota fiscal e pagar os impostos. Vender on-line é ótimo, mas tem que estar regularizado. Ficou com dúvida? Fale com a ECONTEC Contabilidade!"
+  },
+  {
+   "desde": "2027-01-17",
+   "t": "A empresa sem movimento também precisa entregar algumas declarações. Ficar parado sem entregar nada gera multa. Conte com a ECONTEC Contabilidade para cuidar disso pra você!"
+  },
+  {
+   "desde": "2027-01-20",
+   "t": "Antes de dar baixa no CNPJ, é preciso acertar impostos, funcionários e declarações. Fechar a empresa do jeito certo evita dívidas no seu CPF. A ECONTEC Contabilidade está pronta pra te ajudar. Procure a gente!"
+  },
+  {
+   "desde": "2027-01-24",
+   "t": "Faça reuniões com o seu contador ao longo do ano, e não só na hora de pagar impostos. Planejar com antecedência é o que faz economizar. Procure a ECONTEC Contabilidade: sua empresa em dia, você tranquilo!"
+  },
+  {
+   "desde": "2027-01-27",
+   "t": "Desconto no salário só pode ser feito quando a lei permite ou quando o funcionário autoriza por escrito. Cuidado para não criar um problema trabalhista. Ficou com dúvida? Fale com a ECONTEC Contabilidade!"
+  },
+  {
+   "desde": "2027-01-31",
+   "t": "O aviso prévio pode ser trabalhado ou indenizado. Cada caso tem regras e prazos, então confira antes de comunicar a demissão. Conte com a ECONTEC Contabilidade para cuidar disso pra você!"
+  },
+  {
+   "desde": "2027-02-03",
+   "t": "Cartão de crédito da empresa ajuda a separar os gastos. Use só para despesas do negócio e guarde os comprovantes. A ECONTEC Contabilidade está pronta pra te ajudar. Procure a gente!"
+  },
+  {
+   "desde": "2027-02-07",
+   "t": "Os relatórios da contabilidade, como o balanço e a demonstração de resultado, são pedidos pelos bancos na hora de liberar crédito. Mantenha tudo em dia. Procure a ECONTEC Contabilidade: sua empresa em dia, você tranquilo!"
+  },
+  {
+   "desde": "2027-02-10",
+   "t": "Doação, herança e venda de imóvel podem ter imposto. Antes de fechar negócio, converse com um contador para não ter surpresa. Ficou com dúvida? Fale com a ECONTEC Contabilidade!"
+  },
+  {
+   "desde": "2027-02-14",
+   "t": "Quem vende um imóvel com lucro pode ter que pagar imposto sobre o ganho de capital. Existem casos de isenção, mas é preciso conferir antes. Conte com a ECONTEC Contabilidade para cuidar disso pra você!"
+  },
+  {
+   "desde": "2027-02-17",
+   "t": "A carteira de trabalho agora é digital. O funcionário consulta pelo celular tudo o que a empresa registrou sobre o contrato dele. A ECONTEC Contabilidade está pronta pra te ajudar. Procure a gente!"
+  },
+  {
+   "desde": "2027-02-21",
+   "t": "Estagiário não é funcionário com carteira assinada, mas precisa de contrato de estágio com a escola e de seguro contra acidentes. Procure a ECONTEC Contabilidade: sua empresa em dia, você tranquilo!"
+  },
+  {
+   "desde": "2027-02-24",
+   "t": "Contratar pessoa jurídica no lugar de funcionário, quando existe horário, chefe e salário fixo, pode virar processo trabalhista. Cuidado com a pejotização. Ficou com dúvida? Fale com a ECONTEC Contabilidade!"
+  },
+  {
+   "desde": "2027-02-28",
+   "t": "Pequenas despesas também contam. Anotar o cafezinho, o combustível e o material de escritório mostra para onde vai o dinheiro da empresa. Conte com a ECONTEC Contabilidade para cuidar disso pra você!"
+  },
+  {
+   "desde": "2027-03-03",
+   "t": "O CNPJ tem que estar com as atividades certas. Se você passou a vender ou prestar um serviço novo, inclua essa atividade no cadastro. A ECONTEC Contabilidade está pronta pra te ajudar. Procure a gente!"
+  },
+  {
+   "desde": "2027-03-07",
+   "t": "Antes de dar um aumento ou contratar mais um funcionário, faça as contas do custo total, com encargos, férias e décimo terceiro. Procure a ECONTEC Contabilidade: sua empresa em dia, você tranquilo!"
+  },
+  {
+   "desde": "2027-03-10",
+   "t": "Família na empresa? Defina por escrito o papel e a retirada de cada um. Isso evita conflitos e deixa a contabilidade organizada. Ficou com dúvida? Fale com a ECONTEC Contabilidade!"
+  }
+ ]
+}
