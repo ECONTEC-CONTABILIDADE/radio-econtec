@@ -446,6 +446,7 @@ body:not(.admin) #fila li:nth-child(n+6),body:not(.admin) #tocadas li:nth-child(
       <button type="button" class="adm btnNovoAn" id="btnNovoAn">➕ Adicionar anúncio de cliente</button>
       <div id="proxAn" class="adm proxAn"></div>
       <div id="cadRec" class="adm cadRec" hidden></div>
+      <div id="preCad" class="adm cadRec" hidden></div>
       <div id="clientes"></div>
       <form id="fCli" class="adm admForm">
         <h4 id="fCliTit">Novo anúncio</h4>
@@ -600,7 +601,7 @@ const _q=location.search+location.hash;
 /* Administrador só pelo link de admin (?admin). O link de ouvinte é sempre ouvinte. */
 try{localStorage.removeItem('radioEcontec.admin')}catch(e){}
 const ADMIN=/[?&#]admin\b/.test(_q);
-if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 74</span>')}
+if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 75</span>')}
 const CLI_PADRAO=[
  {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'img/logo-econtec.png',zap:ZAP_ECONTEC},
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
@@ -1198,6 +1199,20 @@ function renderCad(){const box=$('cadRec');if(!ADMIN){box.hidden=true;return}con
 $('cadRec').addEventListener('click',e=>{const d=e.target.dataset;if(d.cadok){const v=store.get('cadVistos',[]);v.push(d.cadok);store.set('cadVistos',v.slice(-400));renderCad();return}
  if(d.cadusa){const c=cadastros.find(x=>x.id===d.cadusa);if(!c)return;fechaEdicao();cadUsando=c;$('cNome').value=c.nome;$('cTxt').value=c.txt||c.desc||'';$('cZap').value=zapFmt(c.zap);$('cVid').value=c.video||'';for(const k of REDES_CLI)$(REDES_ID[k]).value=c[k]||'';$('fCliTit').textContent='Cadastro de '+c.nome+' (confira o texto e toque em Adicionar)';$('fCli').scrollIntoView({behavior:'smooth',block:'center'});$('cTxt').focus()}});
 if(ADMIN){setTimeout(carregaCad,1500);setInterval(carregaCad,60000)}
+/* Pré-cadastros (26/11): empresas cadastradas pela ECONTEC. NÃO tocam no ar até o administrador completar os dados e colocar no ar (um a um ou vários de uma vez) */
+let preCads=[];async function carregaPre(){if(!ADMIN)return;try{const L=await fetch('pre-cadastros.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():[]);if(Array.isArray(L))preCads=L.filter(c=>c&&c.nome)}catch(e){}renderPre()}
+function renderPre(){const box=$('preCad');if(!ADMIN||!box){if(box)box.hidden=true;return}const vistos=store.get('cadVistos',[]),noAr=new Set(anuncios.filter(c=>!c.cancelado).map(c=>c.nome.trim().toLowerCase()));
+ const L=preCads.filter(c=>!vistos.includes(c.id)&&!noAr.has(c.nome.trim().toLowerCase())),ja=preCads.filter(c=>noAr.has(c.nome.trim().toLowerCase())).length;box.hidden=!preCads.length;
+ box.innerHTML=`<h4>📋 Pré-cadastros <span class="tagGrav">${L.length} esperando</span>${ja?` <span class="tagGrav">${ja} já no ar</span>`:''}</h4><p class="note" style="margin:0 0 6px">Estas empresas ainda <b>não tocam</b> na rádio. Toque em "Completar" para pôr WhatsApp, redes e um texto melhor e depois "Adicionar". Ou marque várias e toque em "Colocar marcados no ar" (entram com o texto que está aqui). Antes, confirme com a empresa a autorização para anunciar.</p>`+(L.length?`<p><button type="button" id="preTodos" class="lite">☑ Marcar todos</button> <button type="button" id="preAtiva">▶ Colocar marcados no ar</button></p>`+L.map(c=>`<div class="cl"><input type="checkbox" class="preSel" value="${esc(c.id)}" aria-label="Marcar ${esc(c.nome)}" style="width:26px;height:26px;flex:none"><div><b>${esc(c.nome)}</b><p>${esc(c.txt||c.desc||'')}</p><p>📱 ${c.zap?esc(zapFmt(c.zap)):'<i>sem WhatsApp</i>'}${c.quem?' · '+esc(c.quem):''}</p>${redesCli(c)}</div><div><button type="button" data-preusa="${esc(c.id)}">✏️ Completar</button><button type="button" class="lite" data-preok="${esc(c.id)}">Dispensar</button></div></div>`).join(''):'<p class="note">Todos os pré-cadastros já foram usados.</p>')}
+$('preCad').addEventListener('click',async e=>{const d=e.target.dataset;
+ if(e.target.id==='preTodos'){const cs=[...document.querySelectorAll('.preSel')],todos=cs.every(x=>x.checked);cs.forEach(x=>x.checked=!todos);return}
+ if(d.preok){const v=store.get('cadVistos',[]);v.push(d.preok);store.set('cadVistos',v.slice(-400));renderPre();return}
+ if(d.preusa){const c=preCads.find(x=>x.id===d.preusa);if(!c)return;fechaEdicao();cadUsando=c;$('cNome').value=c.nome;$('cTxt').value=c.txt||c.desc||'';$('cZap').value=c.zap?zapFmt(c.zap):'';$('cVid').value=c.video||'';for(const k of REDES_CLI)$(REDES_ID[k]).value=c[k]||'';$('fCliTit').textContent='Pré-cadastro de '+c.nome+' (complete os dados e toque em Adicionar)';$('fCli').scrollIntoView({behavior:'smooth',block:'center'});$('cZap').focus();return}
+ if(e.target.id==='preAtiva'){if(publicando)return;const ids=[...document.querySelectorAll('.preSel:checked')].map(x=>x.value);if(!ids.length){bot('Marque pelo menos uma empresa.',true);return}
+  const sel=preCads.filter(c=>ids.includes(c.id)&&(c.txt||c.desc)&&!ofensivo(c.txt||c.desc));const L=anuncios.map(c=>Object.assign({},c));
+  for(const c of sel){const o={nome:c.nome.trim(),txt:(c.txt||c.desc).trim(),zap:String(c.zap||'').replace(/\D/g,''),logo:c.logo||''};for(const k of ['ig','tt','mail','fb','site'])if(c[k])o[k]=String(c[k]).slice(0,80);L.push(o)}
+  if(await publica(L,sel.length+' empresa'+(sel.length>1?'s':'')+' do pré-cadastro no ar.')){const v=store.get('cadVistos',[]);v.push(...sel.map(c=>c.id));store.set('cadVistos',v.slice(-400));renderPre()}}});
+if(ADMIN){setTimeout(carregaPre,1600);setInterval(carregaPre,5*60000)}
 function reduzLogo(f){return new Promise(ok=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,160/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=Math.round(im.width*k);cv.height=Math.round(im.height*k);cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);ok(cv.toDataURL('image/png'))};im.onerror=()=>ok('');im.src=r.result};r.onerror=()=>ok('');r.readAsDataURL(f)})}
 async function enviarCli(){if(!ADMIN||publicando)return;const nome=$('cNome').value.trim(),txt=$('cTxt').value.trim();if(!nome||!txt){bot('Para salvar um anúncio, preencha o nome do cliente e o texto.',true);return}const zap=$('cZap').value.replace(/\D/g,''),f=$('cLogo').files[0];const redes={};for(const k of REDES_CLI)redes[k]=$(REDES_ID[k]).value.trim().slice(0,80);
  if(ofensivo(txt)){alertMsg('O texto do anúncio tem palavras bloqueadas pelo filtro.');return}
@@ -1205,7 +1220,7 @@ async function enviarCli(){if(!ADMIN||publicando)return;const nome=$('cNome').va
  const vtxt=$('cVid').value.trim(),vid=idYT(vtxt);if(vtxt&&!vid){alertMsg('Não reconheci o link do vídeo. Cole o link do YouTube (youtube.com/watch?v=..., youtu.be/... ou Shorts).');return}let vdur=0;if(vid){vdur=await duracaoYT(vid)}
  if(editando!==null&&L[editando]){const o=L[editando];const novoTxt=o.txt!==txt;Object.assign(o,{nome,txt,zap,logo:logo||o.logo});for(const k of REDES_CLI){if(redes[k])o[k]=redes[k];else delete o[k]}if(vid){o.vid=vid;o.vdur=vdur}else{delete o.vid;delete o.vdur}if(novoTxt)o.audio='';msg='Anúncio de '+nome+' alterado.'}
  else{const o={nome,txt,zap,logo};if(vid){o.vid=vid;o.vdur=vdur}const cu=cadUsando;if(cu){if(!o.logo&&cu.logo)o.logo=cu.logo;for(const k of ['ig','tt','mail'])if(cu[k])o[k]=cu[k]}for(const k of REDES_CLI)if(redes[k])o[k]=redes[k];L.push(o);msg='Anúncio de '+nome+' adicionado.'}
- if(await publica(L,msg)){if(cadUsando){const v=store.get('cadVistos',[]);v.push(cadUsando.id);store.set('cadVistos',v.slice(-400))}fechaEdicao();$('fCli').reset();renderCad()}}
+ if(await publica(L,msg)){if(cadUsando){const v=store.get('cadVistos',[]);v.push(cadUsando.id);store.set('cadVistos',v.slice(-400))}fechaEdicao();$('fCli').reset();renderCad();try{renderPre()}catch(e){}}}
 $('btnCli').addEventListener('click',enviarCli);$('fCli').addEventListener('submit',e=>{e.preventDefault();enviarCli()});
 function alertMsg(t){bot(t,true)}
 renderCli();
@@ -1328,7 +1343,7 @@ async function geraRelatorio(){const n=+$('relDia').value,out=$('relOut');out.in
   return `<div class="relCli"><b>${esc(k)}</b><div class="relNums"><span><strong>${L.length}</strong>vezes no ar</span><span><strong>${on}</strong>aparelhos conectados</span><span><strong>${ouv}</strong>ouvindo na hora</span><span><strong>${pico}</strong>pico de ouvintes</span></div>${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório no WhatsApp do cliente</a>`:`<a class="zapCli" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório pelo WhatsApp</a>`}</div>`}).join('')+'<p class="note">Os números de audiência contam aparelhos com a rádio aberta no minuto do anúncio.</p>'}
 if(ADMIN)$('btnRel').addEventListener('click',geraRelatorio);
 
-const VERSAO=74;
+const VERSAO=75;
 function checaVersao(){fetch('index.html?nv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VERSAO=(\d+)/);if(m&&+m[1]>VERSAO){if(!ligado)location.reload();else novaVersao=true}}).catch(()=>{})}
 /* versão nova com a rádio tocando: atualiza sozinha numa vinheta (só com a tela aberta) e volta a tocar */
 let novaVersao=false;setInterval(()=>{if(!novaVersao||!ligado||document.hidden)return;try{const {it,off}=noAr(agora());if(it.k==='vin'&&off<3){sessionStorage.setItem('retomar','1');location.reload()}}catch(e){}},1000);
