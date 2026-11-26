@@ -212,6 +212,7 @@ body.tocando #miniBtn::before{left:16px;top:15px;border:0;width:16px;height:18px
 main{padding-bottom:90px}
 @media(prefers-reduced-motion:reduce){#mini{transition:none}}
 .pedCard{position:relative;z-index:6;scroll-margin-top:120px}
+.deck.longe{position:fixed!important;left:0;bottom:0;width:240px!important;height:140px!important;margin:0!important;overflow:hidden;opacity:.01;pointer-events:none;z-index:-1}
 .premAviso{display:flex;gap:16px;align-items:center;border:3px solid #f0c14b;background:linear-gradient(135deg,#3a2a05,#1c1405);box-shadow:0 0 24px #f0c14b55}
 .premAviso p{margin:0;font-size:20px;line-height:1.45;color:#fff}.premAviso b{color:#f0c14b}
 .autoLista{margin:6px 0 0;padding-left:18px;font-size:14px;opacity:.85}.autoLista li{margin:4px 0}
@@ -599,7 +600,7 @@ const _q=location.search+location.hash;
 /* Administrador só pelo link de admin (?admin). O link de ouvinte é sempre ouvinte. */
 try{localStorage.removeItem('radioEcontec.admin')}catch(e){}
 const ADMIN=/[?&#]admin\b/.test(_q);
-if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 73</span>')}
+if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 74</span>')}
 const CLI_PADRAO=[
  {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'img/logo-econtec.png',zap:ZAP_ECONTEC},
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
@@ -1268,7 +1269,9 @@ const ABAS_ADM=[['inicio','📻','Ao vivo'],['pedir','🎵','Pedidos'],['anuncia
 const ABAS=ADMIN?ABAS_ADM:ABAS_OUV,ALIAS={aoVivo:'inicio',redes:ADMIN?'ajustes':'anunciantes',programacao:'inicio'};
 let abaAtual='';
 function vaiAba(a,semRolar){if(!ABAS.some(x=>x[0]===a))a='inicio';abaAtual=a;document.body.dataset.aba=a;
- document.querySelectorAll('[data-ab]').forEach(el=>{const l=(ADMIN?el.dataset.aa:el.dataset.ab).split(' ');el.hidden=!l.includes(a)});
+ /* o aparelho (#aoVivo) NUNCA some de verdade: escondido (display:none) o YouTube pausa a música. Nas outras abas ele só sai de vista (classe .longe) e continua tocando */
+ document.querySelectorAll('[data-ab]').forEach(el=>{const l=(ADMIN?el.dataset.aa:el.dataset.ab).split(' ');if(el.id==='aoVivo'){el.hidden=false;el.classList.toggle('longe',!l.includes(a));return}el.hidden=!l.includes(a)});
+ document.body.classList.toggle('miniOn',a!=='inicio'||document.body.classList.contains('deckFora'));
  document.querySelectorAll('.abaBtn').forEach(b=>{const on=b.dataset.aba===a;b.classList.toggle('on',on);b.setAttribute('aria-current',on?'page':'false')});
  if(!semRolar)scrollTo({top:0,behavior:'instant'});try{renderFila()}catch(e){}}
 const htmlAbas=ABAS.map(([k,i,t])=>`<button type="button" class="abaBtn" data-aba="${k}"><span class="abaIco" aria-hidden="true">${i}</span><span class="abaTxt">${t}</span></button>`).join('');
@@ -1325,7 +1328,7 @@ async function geraRelatorio(){const n=+$('relDia').value,out=$('relOut');out.in
   return `<div class="relCli"><b>${esc(k)}</b><div class="relNums"><span><strong>${L.length}</strong>vezes no ar</span><span><strong>${on}</strong>aparelhos conectados</span><span><strong>${ouv}</strong>ouvindo na hora</span><span><strong>${pico}</strong>pico de ouvintes</span></div>${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório no WhatsApp do cliente</a>`:`<a class="zapCli" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório pelo WhatsApp</a>`}</div>`}).join('')+'<p class="note">Os números de audiência contam aparelhos com a rádio aberta no minuto do anúncio.</p>'}
 if(ADMIN)$('btnRel').addEventListener('click',geraRelatorio);
 
-const VERSAO=73;
+const VERSAO=74;
 function checaVersao(){fetch('index.html?nv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VERSAO=(\d+)/);if(m&&+m[1]>VERSAO){if(!ligado)location.reload();else novaVersao=true}}).catch(()=>{})}
 /* versão nova com a rádio tocando: atualiza sozinha numa vinheta (só com a tela aberta) e volta a tocar */
 let novaVersao=false;setInterval(()=>{if(!novaVersao||!ligado||document.hidden)return;try{const {it,off}=noAr(agora());if(it.k==='vin'&&off<3){sessionStorage.setItem('retomar','1');location.reload()}}catch(e){}},1000);
@@ -1337,7 +1340,7 @@ function atualizaMini(kind,title,who,logo){const i=$('miniImg');if(!i)return;i.s
 $('miniBtn').addEventListener('click',()=>$('btnPlay').click());
 /* voltou do segundo plano: alinha de novo com o ao vivo */
 document.addEventListener('visibilitychange',()=>{if(document.hidden||!ligado)return;sincRelogio().then(()=>{try{const {it}=noAr(agora());if(!itemAtual||it.id!==itemAtual.id){ultimoId=null;if(cancelar)cancelar()}}catch(e){}})});
-new IntersectionObserver(es=>{document.body.classList.toggle('miniOn',!es[0].isIntersecting)},{threshold:.15}).observe(document.querySelector('.deck'));
+new IntersectionObserver(es=>{const fora=!es[0].isIntersecting;document.body.classList.toggle('deckFora',fora);document.body.classList.toggle('miniOn',fora||document.body.dataset.aba!=='inicio')},{threshold:.15}).observe(document.querySelector('.deck'));
 function sugere(){const q=norm($('pMus').value).trim(),box=$('sug');if(q.length<2){box.hidden=true;$('pMus').setAttribute('aria-expanded','false');return}
  const ws=q.split(/\s+/);const r=acervo.filter(t=>{const h=norm(t.titulo+' '+t.artista+' '+t.estilo);return ws.every(w=>h.includes(w))}).slice(0,7);
  if(!r.length){box.innerHTML='<div class="sugVazio">Não está na lista, mas pode pedir: o robô procura no YouTube.</div>'}
