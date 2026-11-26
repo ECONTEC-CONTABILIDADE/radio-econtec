@@ -214,6 +214,7 @@ main{padding-bottom:90px}
 .pedCard{position:relative;z-index:6;scroll-margin-top:120px}
 .premAviso{display:flex;gap:16px;align-items:center;border:3px solid #f0c14b;background:linear-gradient(135deg,#3a2a05,#1c1405);box-shadow:0 0 24px #f0c14b55}
 .premAviso p{margin:0;font-size:20px;line-height:1.45;color:#fff}.premAviso b{color:#f0c14b}
+.autoLista{margin:6px 0 0;padding-left:18px;font-size:14px;opacity:.85}.autoLista li{margin:4px 0}
 .premIco{font-size:54px;line-height:1;flex:none;animation:premPulsa 1.6s ease-in-out infinite}
 @keyframes premPulsa{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
 @media (prefers-reduced-motion:reduce){.premIco{animation:none}}
@@ -477,6 +478,10 @@ body:not(.admin) #fila li:nth-child(n+6),body:not(.admin) #tocadas li:nth-child(
       <p class="pedDica" id="infoCont"></p>
       <button type="button" id="btnInfo">💾 Salvar informativos para todos</button>
       <button type="button" id="btnInfoPad" class="sec">↺ Voltar para a lista padrão</button>
+      <label class="chk"><input type="checkbox" id="autoOn" checked> Alimentação automática</label>
+      <p class="pedDica">Todo dia o sistema coloca sozinho: os lembretes de prazo do mês (13º, Simples Nacional, Imposto de Renda, declaração do MEI…), 2 informativos novos por semana e as notícias da Receita Federal sobre assuntos do contribuinte (sem notícias de polícia ou apreensões). As notícias saem depois de 7 dias.</p>
+      <p class="pedDica" id="autoCont"></p>
+      <ul id="autoLista" class="autoLista"></ul>
     </section>
     <section class="card adm" id="ajustes" data-ab="-" data-aa="ajustes" aria-label="Planos e preços">
       <h3>💰 Planos e preços</h3>
@@ -594,7 +599,7 @@ const _q=location.search+location.hash;
 /* Administrador só pelo link de admin (?admin). O link de ouvinte é sempre ouvinte. */
 try{localStorage.removeItem('radioEcontec.admin')}catch(e){}
 const ADMIN=/[?&#]admin\b/.test(_q);
-if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 71</span>')}
+if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 72</span>')}
 const CLI_PADRAO=[
  {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'img/logo-econtec.png',zap:ZAP_ECONTEC},
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
@@ -781,7 +786,7 @@ function grade(d){
  const daEcontec=c=>/econtec/i.test(c.nome),cliR=outros.filter(c=>!daEcontec(c)),ecoR=outros.filter(daEcontec);let bc=0,be=0,bh=0;
  const anuncio=()=>{if(cliR.length)adCli(cliR[(d*7+bc++)%cliR.length]);const ne=1+ecoR.length,ie=(d*7+be++)%ne;if(ie===0)add('adE',DV['v/anuncio-econtec-f3.mp3']);else adCli(ecoR[ie-1])};
  /* Momento Informativo ECONTEC (26/11): fora do intervalo e dos anúncios de clientes; depois da 7ª e da 14ª música de cada 15 (nunca encostado num intervalo); ordem sorteada do dia, sem repetir até acabar a lista */
- const infos=infoOn()?infoLista().map(x=>AUD_GER['inf:'+fnvH(x.trim())]).filter(a=>a&&a.dur>0):[],ri=rng(d*131+17);for(let q=infos.length-1;q>0;q--){const z=Math.floor(ri()*(q+1));[infos[q],infos[z]]=[infos[z],infos[q]]}let ni=0;
+ const infos=infoOn()?infoTodos().map(x=>AUD_GER['inf:'+fnvH(x.trim())]).filter(a=>a&&a.dur>0):[],ri=rng(d*131+17);for(let q=infos.length-1;q>0;q--){const z=Math.floor(ri()*(q+1));[infos[q],infos[z]]=[infos[z],infos[q]]}let ni=0;
  let nm=0;
  while(t<fim){
   musica();nm++;
@@ -802,7 +807,11 @@ function pedsDoDia(d){const ini=d*DIA+FUSO,fim=ini+DIA;const L=Object.values(ped
  const ok=[];for(const p of L){if(ok.some(x=>x.tr.id===p.tr.id&&norm(x.nome)===norm(p.nome)&&p.ts-x.ts<30*6e4))continue;ok.push(p)}return ok}
 let INFO_PADRAO=[];fetch('informativos.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(L=>{if(Array.isArray(L)&&JSON.stringify(L)!==JSON.stringify(INFO_PADRAO)){INFO_PADRAO=L;cacheGrade={};try{renderFila();renderInfoAdm()}catch(e){}}}).catch(()=>{});
 const infoOn=()=>!cfgAtual||cfgAtual.infoOn!==false,infoLista=()=>cfgAtual&&Array.isArray(cfgAtual.info)?cfgAtual.info:INFO_PADRAO;
-if(/[?&]teste\b/.test(location.search))window.__inf={lista:()=>infoLista(),on:()=>infoOn(),fake:()=>{for(const x of infoLista())AUD_GER['inf:'+fnvH(x.trim())]={url:'v/vinheta-numeros.mp3',dur:22};cacheGrade={};cacheViva={}},viva:d=>gradeViva(d).g};
+/* alimentação automática (26/11): o plantão monta informativos-auto.json todo dia (prazos do mês, 2 novos por semana, notícias da Receita Federal) */
+let INFO_AUTO=[];const autoOn=()=>!cfgAtual||cfgAtual.autoOn!==false,infoTodos=()=>[...new Set(infoLista().concat(autoOn()?INFO_AUTO:[]))];
+function carregaInfoAuto(){fetch('informativos-auto.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{const L=j&&Array.isArray(j.lista)?j.lista:[];if(JSON.stringify(L)!==JSON.stringify(INFO_AUTO)){INFO_AUTO=L;cacheGrade={};try{renderFila();renderInfoAdm()}catch(e){}}}).catch(()=>{})}
+carregaInfoAuto();setInterval(carregaInfoAuto,30*6e4);
+if(/[?&]teste\b/.test(location.search))window.__inf={lista:()=>infoLista(),on:()=>infoOn(),fake:()=>{for(const x of infoTodos())AUD_GER['inf:'+fnvH(x.trim())]={url:'v/vinheta-numeros.mp3',dur:22};cacheGrade={};cacheViva={}},viva:d=>gradeViva(d).g};
 let homs={};const HOM_HORA=22;
 /* Horários especiais (25/11): 6h oração da manhã + Pai Nosso, 18h agradecimento + Pai Nosso, 20h Hora da Piada (voz masculina Antonio). Entram logo depois da música que estiver tocando. */
 let ESP=null,espSig='';const ESP_H=[[6,'manha'],[18,'tarde'],[20,'piada']],PIADA_SEG=600;
@@ -1102,11 +1111,13 @@ try{const mn=store.get('meuNome','');if(mn&&!$('pNome').value)$('pNome').value=m
 /* Hora da Piada: o ouvinte manda a piada (passa pelo filtro); o plantão grava na voz do locutor e ela entra às 20h do dia seguinte ao envio (ou do mesmo dia, se mandou antes das 20h) */
 try{const mn=store.get('meuNome','');if(mn)$('pjNome').value=mn}catch(e){}
 function renderInfoAdm(){if(!ADMIN||!$('infoTxt'))return;const L=infoLista();if(document.activeElement!==$('infoTxt'))$('infoTxt').value=L.join('\n');if(document.activeElement!==$('infoOn'))$('infoOn').checked=infoOn();
- const pr=L.filter(x=>AUD_GER['inf:'+fnvH(x.trim())]).length;$('infoCont').textContent=L.length+' informativos'+(cfgAtual&&Array.isArray(cfgAtual.info)?'':' (lista padrão)')+' · '+pr+' com a voz pronta'+(pr<L.length?' (o resto fica pronto em poucos minutos)':'')}
+ const pr=L.filter(x=>AUD_GER['inf:'+fnvH(x.trim())]).length;if(document.activeElement!==$('autoOn'))$('autoOn').checked=autoOn();$('autoCont').textContent='Entraram sozinhos hoje: '+INFO_AUTO.length+(autoOn()?'':' (desligado)');$('autoLista').innerHTML=INFO_AUTO.map(x=>'<li>'+esc(x)+'</li>').join('');
+ $('infoCont').textContent=L.length+' informativos'+(cfgAtual&&Array.isArray(cfgAtual.info)?'':' (lista padrão)')+' · '+pr+' com a voz pronta'+(pr<L.length?' (o resto fica pronto em poucos minutos)':'')}
 setInterval(()=>{try{renderInfoAdm()}catch(e){}},30000);setTimeout(()=>{try{renderInfoAdm()}catch(e){}},3000);
 $('btnInfo').addEventListener('click',async()=>{if(!ADMIN||publicando)return;const L=$('infoTxt').value.split('\n').map(x=>x.trim().replace(/\s+/g,' ')).filter(x=>x.length>=10).slice(0,60);
- const c=normCfg(Object.assign({},cfgAtual,{infoOn:$('infoOn').checked,info:L}));await publica(anuncios.map(x=>Object.assign({},x)),L.length+' informativos salvos'+(c.infoOn?'':' (desligados)')+'.',c)});
-$('btnInfoPad').addEventListener('click',async()=>{if(!ADMIN||publicando)return;const c=normCfg(Object.assign({},cfgAtual,{infoOn:$('infoOn').checked}));c.info=null;delete c.info;await publica(anuncios.map(x=>Object.assign({},x)),'Lista padrão de informativos de volta.',c)});
+ const c=normCfg(Object.assign({},cfgAtual,{infoOn:$('infoOn').checked,autoOn:$('autoOn').checked,info:L}));await publica(anuncios.map(x=>Object.assign({},x)),L.length+' informativos salvos'+(c.infoOn?'':' (desligados)')+'.',c)});
+$('autoOn').addEventListener('change',async()=>{if(!ADMIN||publicando)return;const c=normCfg(Object.assign({},cfgAtual,{autoOn:$('autoOn').checked}));if(!await publica(anuncios.map(x=>Object.assign({},x)),'Alimentação automática '+(c.autoOn?'ligada':'desligada')+'.',c))$('autoOn').checked=autoOn()});
+$('btnInfoPad').addEventListener('click',async()=>{if(!ADMIN||publicando)return;const c=normCfg(Object.assign({},cfgAtual,{infoOn:$('infoOn').checked,autoOn:$('autoOn').checked}));c.info=null;delete c.info;await publica(anuncios.map(x=>Object.assign({},x)),'Lista padrão de informativos de volta.',c)});
 $('btnPiada').addEventListener('click',async()=>{const nome=$('pjNome').value.trim().slice(0,40)||'Ouvinte',txt=$('pjTxt').value.trim().replace(/\s+/g,' ').slice(0,400),msg=$('pjMsg');
  if(txt.length<15){msg.textContent='Escreva a piada inteira, por favor.';return}
  if(ofensivo(nome+' '+txt)){msg.textContent='Essa piada tem palavras que não podem tocar na rádio. Tente outra, por favor!';return}
@@ -1216,8 +1227,8 @@ setInterval(renderProxAn,30000);setTimeout(renderProxAn,1500);
 /* planos e preços da página Anuncie (publicados junto com os anúncios, assinados) */
 let cfgAtual=null,cfgTs=-1;
 const REDES=['instagram','facebook','youtube','tiktok','linkedin','site'];
-function normCfg(c){c=c||{};const p=c.precos||{},r=c.redes||{};const s=(v,n)=>String(v||'').trim().slice(0,n);return{precos:{Essencial:s(p.Essencial,40),Destaque:s(p.Destaque,40),Patrocinador:s(p.Patrocinador,40)},promo:s(c.promo,120),planosOn:!!c.planosOn,livre:c.livre==null||isNaN(+c.livre)?10:Math.max(0,Math.min(60,Math.round(+c.livre))),redes:Object.fromEntries(REDES.map(k=>[k,s(r[k],120)])),infoOn:c.infoOn!==false,info:Array.isArray(c.info)?c.info.map(x=>s(x,600)).filter(Boolean).slice(0,60):null}}
-function aplicaCfg(c,ts){if(!c||ts<cfgTs)return;const antes=JSON.stringify(cfgAtual&&[cfgAtual.infoOn,cfgAtual.info]);cfgAtual=normCfg(c);cfgTs=ts;if(antes!==JSON.stringify([cfgAtual.infoOn,cfgAtual.info])){cacheGrade={};try{renderFila();renderInfoAdm()}catch(e){}}renderRedes();const al=document.querySelector('.anuncieLink');if(al&&cfgAtual.planosOn){al.textContent='📣 Quer anunciar aqui? Conheça os planos';al.href='anuncie.html'}if(!ADMIN)return;if($('mixLivre')&&document.activeElement!==$('mixLivre')){$('mixLivre').value=cfgAtual.livre;mixTxt()}
+function normCfg(c){c=c||{};const p=c.precos||{},r=c.redes||{};const s=(v,n)=>String(v||'').trim().slice(0,n);return{precos:{Essencial:s(p.Essencial,40),Destaque:s(p.Destaque,40),Patrocinador:s(p.Patrocinador,40)},promo:s(c.promo,120),planosOn:!!c.planosOn,livre:c.livre==null||isNaN(+c.livre)?10:Math.max(0,Math.min(60,Math.round(+c.livre))),redes:Object.fromEntries(REDES.map(k=>[k,s(r[k],120)])),infoOn:c.infoOn!==false,autoOn:c.autoOn!==false,info:Array.isArray(c.info)?c.info.map(x=>s(x,600)).filter(Boolean).slice(0,60):null}}
+function aplicaCfg(c,ts){if(!c||ts<cfgTs)return;const antes=JSON.stringify(cfgAtual&&[cfgAtual.infoOn,cfgAtual.info,cfgAtual.autoOn]);cfgAtual=normCfg(c);cfgTs=ts;if(antes!==JSON.stringify([cfgAtual.infoOn,cfgAtual.info,cfgAtual.autoOn])){cacheGrade={};try{renderFila();renderInfoAdm()}catch(e){}}renderRedes();const al=document.querySelector('.anuncieLink');if(al&&cfgAtual.planosOn){al.textContent='📣 Quer anunciar aqui? Conheça os planos';al.href='anuncie.html'}if(!ADMIN)return;if($('mixLivre')&&document.activeElement!==$('mixLivre')){$('mixLivre').value=cfgAtual.livre;mixTxt()}
  for(const k of REDES){const el=$('rd'+k[0].toUpperCase()+k.slice(1));if(el&&document.activeElement!==el)el.value=cfgAtual.redes[k]}
  const m={prEss:'Essencial',prDes:'Destaque',prPat:'Patrocinador'};for(const [id,k] of Object.entries(m)){const el=$(id);if(el&&document.activeElement!==el)el.value=cfgAtual.precos[k]}
  if(document.activeElement!==$('prPromo'))$('prPromo').value=cfgAtual.promo;$('prOn').checked=cfgAtual.planosOn}
@@ -1313,7 +1324,7 @@ async function geraRelatorio(){const n=+$('relDia').value,out=$('relOut');out.in
   return `<div class="relCli"><b>${esc(k)}</b><div class="relNums"><span><strong>${L.length}</strong>vezes no ar</span><span><strong>${on}</strong>aparelhos conectados</span><span><strong>${ouv}</strong>ouvindo na hora</span><span><strong>${pico}</strong>pico de ouvintes</span></div>${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório no WhatsApp do cliente</a>`:`<a class="zapCli" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório pelo WhatsApp</a>`}</div>`}).join('')+'<p class="note">Os números de audiência contam aparelhos com a rádio aberta no minuto do anúncio.</p>'}
 if(ADMIN)$('btnRel').addEventListener('click',geraRelatorio);
 
-const VERSAO=71;
+const VERSAO=72;
 function checaVersao(){fetch('index.html?nv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VERSAO=(\d+)/);if(m&&+m[1]>VERSAO){if(!ligado)location.reload();else novaVersao=true}}).catch(()=>{})}
 /* versão nova com a rádio tocando: atualiza sozinha numa vinheta (só com a tela aberta) e volta a tocar */
 let novaVersao=false;setInterval(()=>{if(!novaVersao||!ligado||document.hidden)return;try{const {it,off}=noAr(agora());if(it.k==='vin'&&off<3){sessionStorage.setItem('retomar','1');location.reload()}}catch(e){}},1000);
