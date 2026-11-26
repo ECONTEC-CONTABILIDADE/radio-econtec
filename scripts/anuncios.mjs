@@ -131,13 +131,18 @@ else console.log('Sem mudanças');
   const hoje=new Date(Date.now()-3*36e5).toISOString().slice(0,10),md=hoje.slice(5);
   const cal=FO.calendario.filter(c=>c.de<=c.ate?(md>=c.de&&md<=c.ate):(md>=c.de||md<=c.ate)).map(c=>c.t),ban=FO.banco.filter(b=>b.desde<=hoje).map(b=>b.t);
   let not=A.noticias||[];
-  if(Date.now()-(A.ts||0)>60*6e4){try{const x=await (await fetch('https://www.gov.br/receitafederal/pt-br/assuntos/noticias/ultimas-noticias/RSS',{signal:AbortSignal.timeout(15000),headers:{'User-Agent':'Mozilla/5.0 RadioECONTEC'}})).text();
-   const SIM=/simples nacional|\bmei\b|microempreendedor|restitui|imposto de renda|\birpf\b|declara[çc][ãa]o|prazo|reforma tribut|\bcbs\b|\bibs\b|parcelamento|regulariza|esocial|nota fiscal|contribuinte|dctf|carn[êe]-le[ãa]o|malha|pix|cpf|cnpj|tributa/i,NAO=/apreen|opera[çc][ãa]o|maconha|droga|pol[íi]cia|ouro|aduana|alf[âa]ndega|concurso|coletiva|perdimento|contrabando|pris[ãa]o|crime|fraude|arrecada/i;
+  if(Date.now()-(A.ts||0)>60*6e4){try{const ent=t=>t.replace(/<!\[CDATA\[|\]\]>/g,'').replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&#39;|&apos;/g,"'").replace(/&#\d+;|&\w+;/g,' ');let itens=[];
+   try{const x=await (await fetch('https://www.gov.br/receitafederal/pt-br/assuntos/noticias/ultimas-noticias/RSS',{signal:AbortSignal.timeout(20000),headers:{'User-Agent':'Mozilla/5.0 RadioECONTEC'}})).text();
+    for(const it of x.match(/<item [\s\S]*?<\/item>/g)||[])itens.push({ti:ent((it.match(/<title>([\s\S]*?)<\/title>/)||[])[1]||''),dt:((it.match(/<dc:date>([^<]+)/)||[])[1]||'').slice(0,10)})}catch(e){console.log('RSS da Receita falhou',e.message)}
+   /* reserva: as mesmas notícias do site da Receita (gov.br), pelo Google Notícias */
+   if(!itens.length){const x=await (await fetch('https://news.google.com/rss/search?q=site:gov.br/receitafederal&hl=pt-BR&gl=BR&ceid=BR:pt-419',{signal:AbortSignal.timeout(20000)})).text();
+    for(const it of x.match(/<item>[\s\S]*?<\/item>/g)||[]){const pd=Date.parse((it.match(/<pubDate>([^<]+)/)||[])[1]||'');if(!pd)continue;itens.push({ti:ent((it.match(/<title>([\s\S]*?)<\/title>/)||[])[1]||'').replace(/(\s+[—-]\s+(Receita Federal|Governo Federal|www\.gov\.br))+\s*$/,''),dt:new Date(pd-3*36e5).toISOString().slice(0,10)})}}
+   const SIM=/simples nacional|\bmei\b|microempreendedor|restitui|imposto de renda|\birpf\b|declara[çc][ãa]o|prazo|reforma tribut|\bcbs\b|\bibs\b|parcelamento|regulariza|esocial|nota fiscal|contribuinte|dctf|carn[êe]-le[ãa]o|malha|pix|cpf|cnpj|tributa/i,NAO=/apreen|opera[çc][ãa]o|maconha|droga|pol[íi]cia|ouro|aduana|alf[âa]ndega|concurso|coletiva|perdimento|contrabando|pris[ãa]o|crime|fraude|arrecada|^programa\b|maiores contribuintes|lideran[çc]a|visita|\blive\b|webin[áa]rio|evento|semin[áa]rio|carrossel/i;
    const MES=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];const nov=[];
-   for(const it of x.match(/<item [\s\S]*?<\/item>/g)||[]){const ti=((it.match(/<title>([\s\S]*?)<\/title>/)||[])[1]||'').replace(/&amp;/g,'&').replace(/&#\d+;|&\w+;/g,' ').replace(/\s+/g,' ').trim(),dt=((it.match(/<dc:date>([^<]+)/)||[])[1]||'').slice(0,10);
-    if(!ti||!dt||ti.length>170||!SIM.test(ti)||NAO.test(ti)||/^comunicado/i.test(ti))continue;if((Date.parse(hoje)-Date.parse(dt))/864e5>7)continue;
+   itens.sort((a,b)=>a.dt<b.dt?1:-1);for(const o of itens){const ti=o.ti.replace(/\s+/g,' ').trim(),dt=o.dt;if(nov.some(n=>n.ti===ti))continue;
+    if(!ti||!dt||ti.length<35||ti.length>170||!SIM.test(ti)||NAO.test(ti)||/^comunicado/i.test(ti))continue;if((Date.parse(hoje)-Date.parse(dt))/864e5>7)continue;
     const t2=ti.replace(/\s*\([^)]*\)/g,'').replace(/\s+nest[ae]\s+(segunda|terça|quarta|quinta|sexta)(-feira)?|\s+neste\s+(sábado|domingo)|\s+(hoje|amanhã)\b/gi,'').replace(/[.!]+$/,'');
-    nov.push({dt,t:`Notícia publicada pela Receita Federal no dia ${+dt.slice(8)} de ${MES[+dt.slice(5,7)-1]}: ${t2}. Quer saber como isso afeta você? Procure a ECONTEC Contabilidade!`})}
+    nov.push({dt,ti,t:`Notícia publicada pela Receita Federal no dia ${+dt.slice(8)} de ${MES[+dt.slice(5,7)-1]}: ${t2}. Quer saber como isso afeta você? Procure a ECONTEC Contabilidade!`})}
    not=nov.slice(0,6);A.ts=Date.now()}catch(e){console.log('notícias da Receita falharam',e.message)}}
   not=not.filter(n=>(Date.parse(hoje)-Date.parse(n.dt))/864e5<=7);
   const lista=[...new Set([...cal,...ban,...not.map(n=>n.t)])];const novo={dia:hoje,lista,noticias:not};
