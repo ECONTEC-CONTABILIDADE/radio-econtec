@@ -601,7 +601,7 @@ const _q=location.search+location.hash;
 /* Administrador só pelo link de admin (?admin). O link de ouvinte é sempre ouvinte. */
 try{localStorage.removeItem('radioEcontec.admin')}catch(e){}
 const ADMIN=/[?&#]admin\b/.test(_q);
-if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 75</span>')}
+if(ADMIN){document.body.classList.add('admin');const h=document.querySelector('.marcaTxt');if(h)h.insertAdjacentHTML('beforeend','<span class="admtag">Administrador · versão 76</span>')}
 const CLI_PADRAO=[
  {nome:'ECONTEC Contabilidade',txt:'ECONTEC Contabilidade. Imposto, folha de pagamento, abertura de empresa: a gente resolve pra você. Chama no WhatsApp! ECONTEC: sua empresa em dia, você tranquilo.',logo:'img/logo-econtec.png',zap:ZAP_ECONTEC},
  {nome:'Padaria Pão Dourado',txt:'Padaria Pão Dourado: pão quentinho toda hora, café coado e aquele bolo de fubá que você conhece. Passe aqui!',logo:''},
@@ -817,7 +817,7 @@ carregaInfoAuto();setInterval(carregaInfoAuto,30*6e4);
 if(/[?&]teste\b/.test(location.search))window.__inf={lista:()=>infoLista(),on:()=>infoOn(),fake:()=>{for(const x of infoTodos())AUD_GER['inf:'+fnvH(x.trim())]={url:'v/vinheta-numeros.mp3',dur:22};cacheGrade={};cacheViva={}},viva:d=>gradeViva(d).g};
 let homs={};const HOM_HORA=22;
 /* Horários especiais (25/11): 6h oração da manhã + Pai Nosso, 18h agradecimento + Pai Nosso, 20h Hora da Piada (voz masculina Antonio). Entram logo depois da música que estiver tocando. */
-let ESP=null,espSig='';const ESP_H=[[6,'manha'],[18,'tarde'],[20,'piada']],PIADA_SEG=600;
+let ESP=null,espSig='';const ESP_H=[[6,'manha'],[18,'tarde'],[20,'piada']],PIADA_SEG=300; /* 26/11: Hora da Piada com no máximo 5 minutos */
 function carregaEsp(){fetch('especiais-voz.json',{cache:'no-store'}).then(r=>r.ok?r.text():null).then(t=>{if(!t||t===espSig)return;ESP=JSON.parse(t);espSig=t;try{store.set('espCache',t)}catch(e){}cacheViva={};try{renderFila()}catch(e){}}).catch(()=>{})}
 try{const c=store.get('espCache','');if(c){ESP=JSON.parse(c);espSig=c}}catch(e){}
 carregaEsp();setInterval(carregaEsp,5*6e4);
@@ -827,7 +827,7 @@ function blocoEsp(d,tipo,ini){if(!ESP)return[];const L=[],pega=(lista,n)=>{const
   it(pega(M?'manhaAbre':'tardeAbre',d),rot,'Momento de Oração',sub);it(pega(tipo,d),rot,'Momento de Oração',sub);it(ESP.paiNosso,rot,'Pai Nosso','Rezando juntos');it(pega(M?'manhaFecha':'tardeFecha',d),rot,'Momento de Oração','Amém!');return L}
  const rot='😂 Hora da Piada';it(pega('piadaAbre',d),rot,'Hora da Piada','Rádio ECONTEC');let s=L.reduce((a,x)=>a+x.dur,0);
  const fecha=pega('piadaFecha',d),fd=fecha?fecha.dur:0;
- for(const p of (ESP.ouvintes||[]).filter(p=>p.ts<ini-18e5&&p.ts>=ini-DIA-18e5&&!ofensivoBase(p.nome+' '+p.txt)).sort((a,b)=>a.ts-b.ts)){if(s+fd>PIADA_SEG+120)break;it(p,rot,'Piada de '+p.nome,p.txt);s+=p.dur+0.3}
+ for(const p of (ESP.ouvintes||[]).filter(p=>p.ts<ini-18e5&&p.ts>=ini-DIA-18e5&&!ofensivoBase(p.nome+' '+p.txt)).sort((a,b)=>a.ts-b.ts)){if(s+fd>PIADA_SEG+30)break;it(p,rot,'Piada de '+p.nome,p.txt);s+=p.dur+0.3}
  const P=(ESP.piadas||[]).filter(Boolean);for(let n=0;P.length&&s+fd<PIADA_SEG&&n<P.length;n++){const a=P[(d*37+n)%P.length];it(a,rot,'Hora da Piada','Mande a sua piada pelo app!');s+=a.dur+0.3}
  it(fecha,rot,'Hora da Piada','Volta amanhã, às 20h');return L}
 function gradeViva(d,prev){
@@ -1343,7 +1343,7 @@ async function geraRelatorio(){const n=+$('relDia').value,out=$('relOut');out.in
   return `<div class="relCli"><b>${esc(k)}</b><div class="relNums"><span><strong>${L.length}</strong>vezes no ar</span><span><strong>${on}</strong>aparelhos conectados</span><span><strong>${ouv}</strong>ouvindo na hora</span><span><strong>${pico}</strong>pico de ouvintes</span></div>${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório no WhatsApp do cliente</a>`:`<a class="zapCli" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório pelo WhatsApp</a>`}</div>`}).join('')+'<p class="note">Os números de audiência contam aparelhos com a rádio aberta no minuto do anúncio.</p>'}
 if(ADMIN)$('btnRel').addEventListener('click',geraRelatorio);
 
-const VERSAO=75;
+const VERSAO=76;
 function checaVersao(){fetch('index.html?nv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VERSAO=(\d+)/);if(m&&+m[1]>VERSAO){if(!ligado)location.reload();else novaVersao=true}}).catch(()=>{})}
 /* versão nova com a rádio tocando: atualiza sozinha numa vinheta (só com a tela aberta) e volta a tocar */
 let novaVersao=false;setInterval(()=>{if(!novaVersao||!ligado||document.hidden)return;try{const {it,off}=noAr(agora());if(it.k==='vin'&&off<3){sessionStorage.setItem('retomar','1');location.reload()}}catch(e){}},1000);
