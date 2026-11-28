@@ -215,6 +215,8 @@ main{padding-bottom:90px}
 .deck.longe{position:fixed!important;left:0;bottom:0;width:240px!important;height:140px!important;margin:0!important;overflow:hidden;opacity:.01;pointer-events:none;z-index:-1}
 .premAviso{display:flex;gap:16px;align-items:center;border:3px solid #f0c14b;background:linear-gradient(135deg,#3a2a05,#1c1405);box-shadow:0 0 24px #f0c14b55}
 .premAviso p{margin:0;font-size:20px;line-height:1.45;color:#fff}.premAviso b{color:#f0c14b}
+.carroAviso{display:flex;gap:14px;align-items:center;border:1px solid #ffffff22;background:#ffffff08;padding:14px 18px}.carroAviso .premIco{font-size:34px}
+.carroAviso p{margin:0;font-size:20px;line-height:1.45;color:#ddd}.carroAviso b{color:#f0c14b}
 .autoLista{margin:6px 0 0;padding-left:18px;font-size:14px;opacity:.85}.autoLista li{margin:4px 0}
 .premIco{font-size:54px;line-height:1;flex:none;animation:premPulsa 1.6s ease-in-out infinite}
 @keyframes premPulsa{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
@@ -392,6 +394,10 @@ body:not(.admin) #fila li:nth-child(n+6),body:not(.admin) #tocadas li:nth-child(
     <section class="card premAviso" data-ab="inicio" data-aa="-" aria-label="Ouvir sem anúncios do YouTube">
       <div class="premIco" aria-hidden="true">⭐</div>
       <p><b>Ouça sem os anúncios do YouTube!</b> Quem tem <b>YouTube Premium</b> só precisa entrar na sua conta do YouTube neste celular ou computador, no mesmo navegador. Depois, abra a rádio de novo e as músicas tocam sem os anúncios.</p>
+    </section>
+    <section class="card carroAviso" data-ab="inicio" data-aa="-" aria-label="Ouvir no carro">
+      <div class="premIco" aria-hidden="true">🚗</div>
+      <p><b>No carro:</b> conecte o celular pelo Bluetooth ou pelo cabo e aperte <b>Ouvir</b>. O nome da música aparece na tela do carro.</p>
     </section>
     <section class="card pedCard" id="pedir" data-ab="pedir" data-aa="pedir" aria-label="Pedidos">
       <h3>Peça sua música</h3>
@@ -1343,7 +1349,7 @@ async function geraRelatorio(){const n=+$('relDia').value,out=$('relOut');out.in
   return `<div class="relCli"><b>${esc(k)}</b><div class="relNums"><span><strong>${L.length}</strong>vezes no ar</span><span><strong>${on}</strong>aparelhos conectados</span><span><strong>${ouv}</strong>ouvindo na hora</span><span><strong>${pico}</strong>pico de ouvintes</span></div>${c.zap?`<a class="zapCli" href="${esc(zapLink(c.zap))}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório no WhatsApp do cliente</a>`:`<a class="zapCli" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar relatório pelo WhatsApp</a>`}</div>`}).join('')+'<p class="note">Os números de audiência contam aparelhos com a rádio aberta no minuto do anúncio.</p>'}
 if(ADMIN)$('btnRel').addEventListener('click',geraRelatorio);
 
-const VERSAO=76;
+const VERSAO=77;
 function checaVersao(){fetch('index.html?nv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VERSAO=(\d+)/);if(m&&+m[1]>VERSAO){if(!ligado)location.reload();else novaVersao=true}}).catch(()=>{})}
 /* versão nova com a rádio tocando: atualiza sozinha numa vinheta (só com a tela aberta) e volta a tocar */
 let novaVersao=false;setInterval(()=>{if(!novaVersao||!ligado||document.hidden)return;try{const {it,off}=noAr(agora());if(it.k==='vin'&&off<3){sessionStorage.setItem('retomar','1');location.reload()}}catch(e){}},1000);
@@ -1351,7 +1357,12 @@ checaVersao();setInterval(checaVersao,5*60*1000);document.addEventListener('visi
 
 
 /* ---------- Mini player e busca com sugestões ---------- */
-function atualizaMini(kind,title,who,logo){const i=$('miniImg');if(!i)return;i.src=logo||'img/e-econtec.png';$('miniKind').textContent=kind;$('miniTit').textContent=title+(who&&who.length<40?' · '+who:'')}
+function atualizaMini(kind,title,who,logo){telaCarro(kind,title,who);const i=$('miniImg');if(!i)return;i.src=logo||'img/e-econtec.png';$('miniKind').textContent=kind;$('miniTit').textContent=title+(who&&who.length<40?' · '+who:'')}
+/* tela do carro (Bluetooth/cabo), tela de bloqueio e notificação: música, artista e logo ECONTEC */
+function telaCarro(kind,title,who){const MS=navigator.mediaSession;if(!MS||typeof MediaMetadata==='undefined')return;try{MS.metadata=new MediaMetadata({title:title||'Rádio ECONTEC',artist:who||'Rádio ECONTEC',album:'Rádio ECONTEC'+(kind?' · '+kind:''),artwork:[{src:'img/icon-192.png',sizes:'192x192',type:'image/png'},{src:'img/icon-512.png',sizes:'512x512',type:'image/png'}]})}catch(e){}msEstado()}
+function msEstado(){const MS=navigator.mediaSession;if(MS)try{MS.playbackState=ligado?'playing':'paused'}catch(e){}}
+if(navigator.mediaSession){const MS=navigator.mediaSession;const ac=(a,f)=>{try{MS.setActionHandler(a,f)}catch(e){}};ac('play',()=>{if(!ligado)$('btnPlay').click();setTimeout(msEstado,600)});ac('pause',()=>{if(ligado)$('btnPlay').click();setTimeout(msEstado,600)});ac('stop',()=>{if(ligado)$('btnPlay').click();setTimeout(msEstado,600)});
+ $('btnPlay').addEventListener('click',()=>setTimeout(msEstado,600));if(!MS.metadata)telaCarro('Ao vivo','Rádio ECONTEC','Toque em Ouvir')}
 $('miniBtn').addEventListener('click',()=>$('btnPlay').click());
 /* voltou do segundo plano: alinha de novo com o ao vivo */
 document.addEventListener('visibilitychange',()=>{if(document.hidden||!ligado)return;sincRelogio().then(()=>{try{const {it}=noAr(agora());if(!itemAtual||it.id!==itemAtual.id){ultimoId=null;if(cancelar)cancelar()}}catch(e){}})});
