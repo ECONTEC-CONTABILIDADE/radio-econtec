@@ -29,7 +29,7 @@ if(erros.length){console.log('anúncios: falhas ao baixar',erros.join(' | '));fs
 if(melhor&&melhor.ts>(meta.ts||0)){
  fs.writeFileSync('clientes.json','[\n'+melhor.lista.map(c=>' '+JSON.stringify(norm(c))).join(',\n')+'\n]\n');
  if(melhor.cfg&&typeof melhor.cfg==='object'){const p=melhor.cfg.precos||{},t=(v,n)=>String(v||'').slice(0,n);
-  fs.writeFileSync('config.json',JSON.stringify({ts:melhor.ts,precos:{Essencial:t(p.Essencial,40),Destaque:t(p.Destaque,40),Patrocinador:t(p.Patrocinador,40)},promo:t(melhor.cfg.promo,120),planosOn:!!melhor.cfg.planosOn,livre:melhor.cfg.livre==null||isNaN(+melhor.cfg.livre)?10:Math.max(0,Math.min(60,Math.round(+melhor.cfg.livre))),redes:Object.fromEntries(['instagram','facebook','youtube','tiktok','linkedin','site'].map(k=>[k,t((melhor.cfg.redes||{})[k],120)])),infoOn:melhor.cfg.infoOn!==false,autoOn:melhor.cfg.autoOn!==false,...(Array.isArray(melhor.cfg.info)?{info:melhor.cfg.info.map(x=>t(x,600).trim()).filter(Boolean).slice(0,60)}:{})})+'\n')}
+  fs.writeFileSync('config.json',JSON.stringify({ts:melhor.ts,precos:{Essencial:t(p.Essencial,40),Destaque:t(p.Destaque,40),Patrocinador:t(p.Patrocinador,40)},promo:t(melhor.cfg.promo,120),planosOn:!!melhor.cfg.planosOn,livre:melhor.cfg.livre==null||isNaN(+melhor.cfg.livre)?10:Math.max(0,Math.min(60,Math.round(+melhor.cfg.livre))),redes:Object.fromEntries(['instagram','facebook','youtube','tiktok','linkedin','site'].map(k=>[k,t((melhor.cfg.redes||{})[k],120)])),infoOn:melhor.cfg.infoOn!==false,autoOn:melhor.cfg.autoOn!==false,recOff:Array.isArray(melhor.cfg.recOff)?melhor.cfg.recOff.map(x=>t(x,40)).filter(Boolean).slice(-200):[],...(Array.isArray(melhor.cfg.info)?{info:melhor.cfg.info.map(x=>t(x,600).trim()).filter(Boolean).slice(0,60)}:{})})+'\n')}
  meta={ts:melhor.ts,verificado:agora};fs.writeFileSync('clientes-meta.json',JSON.stringify(meta)+'\n');console.log('Anúncios atualizados',melhor.ts);
 }else if(!meta.verificado||Date.now()-Date.parse(meta.verificado)>6*864e5){meta.verificado=agora;fs.writeFileSync('clientes-meta.json',JSON.stringify(meta)+'\n');console.log('Sem mudanças (registro semanal)')}
 else console.log('Sem mudanças');
@@ -244,6 +244,36 @@ const quemPara=p=>{let nome=limpaN(p.nome),para=limpaN(p.para);const m=!para&&no
  for(const f of fs.readdirSync('v/es'))if(!usados.has('v/es/'+f)){fs.unlinkSync('v/es/'+f);mudou=true}
  let antigo='';try{antigo=fs.readFileSync('especiais-voz.json','utf8')}catch{}
  const novo=JSON.stringify(Object.assign({},S,{_m:keep}))+'\n';if(novo!==antigo){fs.writeFileSync('especiais-voz.json',novo);console.log('especiais: gerados',feitos)}
+}
+
+// Recados dos ouvintes (28/11): chegam pelo ntfy, passam pelo mesmo filtro do site e viram áudio na voz da Francisca (recados.json).
+// O site coloca cada recado logo depois de uma música, 4 minutos depois de ficar pronto (tempo de o site publicar).
+{
+ const {execFileSync}=await import('node:child_process');
+ const html=fs.readFileSync('index.html','utf8'),arr=n=>{const m=html.match(new RegExp('const '+n+'=(\\[[^\\]]*\\])'));try{return JSON.parse(m[1].replace(/'/g,'"'))}catch{return[]}};
+ const BLOQ=arr('BLOQ'),EXATAS=arr('EXATAS'),nrm=s=>String(s).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+ const ofensivo=t=>{const w=nrm(t).split(/[^a-z0-9]+/).filter(Boolean),full=' '+w.join(' ')+' ';return BLOQ.some(b=>b.includes(' ')?full.includes(' '+b):w.some(x=>x.startsWith(b)))||w.some(x=>EXATAS.includes(x))};
+ let R={v:1,lista:[]};try{R=JSON.parse(fs.readFileSync('recados.json','utf8'))}catch{}
+ let off=[];try{off=JSON.parse(fs.readFileSync('config.json','utf8')).recOff||[]}catch{}
+ const ids=new Set(R.lista.map(r=>r.id));let mudou=false,feitos=0;const agoraR=Date.now(),FUSO=3*36e5,DIA=864e5,diaDe=ts=>Math.floor((ts-FUSO)/DIA);
+ try{const t=await (await fetch('https://ntfy.sh/radio-econtec-recados-q7k2m9x4/json?poll=1&since=12h',{signal:AbortSignal.timeout(15000)})).text();
+  for(const ln of t.split('\n')){if(!ln.trim())continue;let m;try{m=JSON.parse(ln)}catch{continue}if(m.event!=='message'||ids.has(m.id))continue;ids.add(m.id);
+   let p;try{p=JSON.parse(m.message)}catch{continue}
+   const nome=limpaN(p.nome).slice(0,40),para=limpaN(p.para).slice(0,40),txt=String(p.txt||'').replace(/\s+/g,' ').trim().slice(0,200);
+   if(!nome||txt.length<5||ofensivo(nome+' '+para+' '+txt)||/https?:|www\.|\.com\b/i.test(txt))continue;
+   const hoje=R.lista.filter(r=>diaDe(r.ts)===diaDe(m.time*1000));
+   if(hoje.length>=60||hoje.filter(r=>r.nome.toLowerCase()===nome.toLowerCase()).length>=3)continue; /* limite: 3 por pessoa e 60 por dia */
+   R.lista.push({id:m.id,ts:m.time*1000,nome,...(para?{para}:{}),txt});mudou=true}}catch(e){console.log('recados ntfy falhou',e.message)}
+ fs.mkdirSync('v/rec',{recursive:true});
+ for(const r of R.lista){if(r.url||off.includes(r.id)||agoraR-r.ts>6*36e5)continue;if(feitos>=6||process.uptime()>200)break;
+  const dito=pronuncia(tituloNome(r.nome)),ditoP=r.para?pronuncia(tituloNome(r.para)):'',corpo=pronuncia(falaNatural(r.txt)).replace(/[.!\s]*$/,'');
+  const fala=falaFone((r.para?`Recado do ouvinte especial ${dito} para ${ditoP}: `:`Recado do ouvinte especial ${dito}: `)+corpo+'. Recado lido aqui na Rádio Econtéc!');
+  const f='v/rec/'+r.id.replace(/[^\w-]/g,'')+'.mp3';
+  try{execFileSync('edge-tts',['--voice','pt-BR-FranciscaNeural','--rate=+4%','--text',fala,'--write-media',f],{stdio:'pipe',timeout:25000});const bytes=fs.statSync(f).size;if(bytes<2000)throw new Error('áudio vazio');
+   r.url=f+'?1';r.dur=Math.round(bytes*8/48000*10)/10;r.pronto=Date.now();mudou=true;feitos++;console.log('recado gravado',r.nome,r.dur+'s')}catch(e){console.log('recado falhou',e.message);try{fs.unlinkSync(f)}catch{}}}
+ const antes=R.lista.length;R.lista=R.lista.filter(r=>agoraR-r.ts<2*DIA);if(R.lista.length!==antes)mudou=true;
+ const usados=new Set(R.lista.filter(r=>r.url).map(r=>r.url.split('?')[0]));for(const f of fs.readdirSync('v/rec'))if(!usados.has('v/rec/'+f))fs.unlinkSync('v/rec/'+f);
+ if(mudou||!fs.existsSync('recados.json')){fs.writeFileSync('recados.json',JSON.stringify(R)+'\n');console.log('recados',R.lista.length)}
 }
 
 // Ao vivo compartilhado: guarda no site os "Pular" do administrador (assinados), para quem entrar depois ouvir o mesmo ao vivo
